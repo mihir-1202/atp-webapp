@@ -1,10 +1,13 @@
-from fastapi import FastAPI, Body, Request, HTTPException
+from fastapi import FastAPI, Body, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, EmailStr, Field, model_validator, ValidationError
 import uvicorn
 from datetime import datetime
 from typing import Annotated, Literal, Union, Self
 import json
+
 
 
 # BaseModel takes json input data, extracts the values for each key, 
@@ -64,6 +67,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error_messages = [error['msg'] for error in exc.errors()]
+    return JSONResponse(
+        status_code = 422,
+        content = {"errors": '\n'.join(error_messages)}
+    )
 
 @app.post("/form-templates")
 async def create_form_template(form_template: Annotated[FormTemplate, Body()]):

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 export default function FieldItem({order, role, removeItem, register})
 {
     return(
-        <li className = "field-item" data-role = {role}>
+        <li className = "field-item">
             <div className = "item-box-header">
                 <h3>Field</h3>
                 <button className = "remove-item-button" type = "button" onClick={() => removeItem(order)}>−</button>
@@ -16,7 +16,6 @@ export default function FieldItem({order, role, removeItem, register})
                         id = {`${role}-question-${order}`} 
                         className = "question-input" 
                         type = "text" 
-                        name = {`${role}-question-${order}`} 
                         placeholder = "Enter question" 
                         {...register(`sections.${role}.items.${order}.question`)}
                     />
@@ -25,7 +24,6 @@ export default function FieldItem({order, role, removeItem, register})
                 <div className = "input-group" id = "answer-format-input-group">
                     <label htmlFor = {`${role}-answer-format-${order}`} className = "input-label">Answer Format</label>
                     <select 
-                        name = {`${role}-answer-format-${order}`} 
                         id = {`${role}-answer-format-${order}`} 
                         className = "answer-format-input" 
                         {...register(`sections.${role}.items.${order}.answerFormat`)}

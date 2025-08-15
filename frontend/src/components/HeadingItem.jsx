@@ -22,12 +22,11 @@ export default function HeadingItem({order, role, removeItem, register})
             </div>
             <div className = "heading-input-container">
                 <div className = "input-group heading-input-group" id = "heading-input-group">
-                    <label className = "input-label">Heading Text</label>
+                    <label htmlFor = {`${role}-heading-${order}`} className = "input-label">Heading Text</label>
                     <input 
                         id = {`${role}-heading-${order}`} 
                         className = "heading-input" 
                         type = "text" 
-                        name = {`${role}-heading-${order}`} 
                         placeholder = "Enter Heading" 
                         required 
                         {...register(`sections.${role}.items.${order}.content`)}

@@ -12,7 +12,6 @@ export default function FormMetadata({ register })
                     id = "form-title-input" 
                     required 
                     type = "text"  
-                    name = "form-title" 
                     placeholder = "Enter form title" 
                     {...register("metadata.title")}
                 />
@@ -23,7 +22,6 @@ export default function FormMetadata({ register })
                 <textarea 
                     id = "form-description" 
                     required 
-                    name = "form-description" 
                     placeholder = "Enter form description" 
                     rows = {5} 
                     {...register("metadata.description")}

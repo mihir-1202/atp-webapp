@@ -71,24 +71,35 @@ export default function FormBuilder()
         name: "sections.engineer.items"
     });
 
-    function onSubmit(formData)
+    function onSubmit(formData) 
     {
         console.log("Frontend sending:", formData);
-        
-        fetch("http://localhost:8000/form-templates",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formData)
-            }
-        )
-        .then(response => response.json())
-        .then(data => {console.log("Backend response:", data);})
-        .catch(error => {alert("Error:", error);});
-
+      
+        fetch("http://localhost:8000/form-templates", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(formData)
+        })
+        .then(async response => {
+          if (response.ok) 
+            return response.json();
+          else 
+          {
+            const errorData = await response.json();
+            throw new Error(errorData.errors);
+          }
+        })
+        .then(data => {
+          console.log("Backend response:", data);
+          alert("Successfully created form template!");
+        })
+        .catch(error => {
+          alert(`Error: ${error.message}`);
+        });
     }
+      
 
     return(
         <main>
