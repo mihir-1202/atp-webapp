@@ -73,7 +73,21 @@ export default function FormBuilder()
 
     function onSubmit(formData)
     {
-        console.log(formData);
+        console.log("Frontend sending:", formData);
+        
+        fetch("http://localhost:8000/form-templates",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            }
+        )
+        .then(response => response.json())
+        .then(data => {console.log("Backend response:", data);})
+        .catch(error => {alert("Error:", error);});
+
     }
 
     return(
@@ -93,10 +107,8 @@ export default function FormBuilder()
 
                     <hr className = "divider" />
 
-                    <FormActions 
-                        onCancel={() => {console.log("Cancel Button Clicked")}}
-                        onSave={() => {console.log("Save Button Clicked")}}
-                    />
+                    
+                    <FormActions />
                 </form>
             </div>
         </main>

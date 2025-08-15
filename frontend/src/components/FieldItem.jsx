@@ -44,7 +44,7 @@ export default function FieldItem({order, role, removeItem, register})
                     </select>
                 </div>
 
-                {/*TODO: Options for checkbox and radio 
+                {/*TODO: Functionality for checkbox and radio 
                 {(answerFormatInput === 'checkbox' || answerFormatInput === 'radio') && (
                     <div className = "input-group" id = "options-input-group">
                         <label className = "input-label">Options</label>

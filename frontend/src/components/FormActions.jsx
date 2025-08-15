@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function FormActions({ onCancel, onSave })
+export default function FormActions()
 {
     return(
         <div className = "action-buttons-container">
@@ -9,7 +9,6 @@ export default function FormActions({ onCancel, onSave })
             <button 
                 className = "cancel-button" 
                 type = "button" 
-                onClick = {onCancel}
             >
                 Cancel
             </button>
@@ -17,7 +16,6 @@ export default function FormActions({ onCancel, onSave })
             <button 
                 className = "save-form-button" 
                 type = "submit" 
-                onClick = {onSave}
             >
                 Save Form
             </button>
