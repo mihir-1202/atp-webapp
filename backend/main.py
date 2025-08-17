@@ -7,6 +7,9 @@ import uvicorn
 from datetime import datetime
 from typing import Annotated, Literal, Union, Self
 import json
+from dotenv import load_dotenv
+import os
+from pymongo import MongoClient
 
 
 
@@ -39,7 +42,8 @@ FastAPI (via Pydantic) only validates the input against the model in the union w
 Without the discriminator:
 FastAPI tries to validate the input against each model in the union one by one, in order, until one succeeds — can lead to ambiguous or incorrect matches if models share fields.
 """
-    
+
+
 class Section(BaseModel):
     items: Annotated[list[Item], Field(min_length = 1)]
     
@@ -68,6 +72,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+##########################################################################################################################################################################33
+
+MONGO_URI = os.getenv("MONGO_URI")
+client = MongoClient(MONGO_URI)
+db = client['atp-webapp-database']
+atp_forms = db['atp-forms']
+    
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     error_messages = [error['msg'] for error in exc.errors()]
@@ -82,8 +94,23 @@ async def create_form_template(form_template: Annotated[FormTemplate, Body()]):
     form_template_data = form_template.model_dump()
     form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
     print("Validated form template:", form_template_data)
-    return form_template_data
+
+    #return form_template_data
     #returning a dict -> FastAPI automatically converts it to JSON in the HTTP response
+
+    inserted_document = atp_forms.insert_one(form_template_data)
+    return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
+
+@app.get("/form-templates")
+async def get_form_templates():
+    cursor = atp_forms.find()
+    form_templates = []
+    for document in cursor:
+        #convert ObjectId to a string before appending it to the list
+        document['_id'] = str(document['_id'])
+        form_templates.append(document)
+    return form_templates
+
 
 @app.get("/")
 async def root():

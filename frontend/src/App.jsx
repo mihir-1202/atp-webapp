@@ -1,14 +1,9 @@
 import React from 'react';
-import FormBuilder from './components/FormBuilder';
-import Navbar from './components/Navbar';
-import './App.css';
+import CreateATPPage from './pages/CreateATPPage';
 
 export default function App()
 {
     return(
-        <>
-            <Navbar />
-            <FormBuilder />
-        </>
+        <CreateATPPage />
     )
 }

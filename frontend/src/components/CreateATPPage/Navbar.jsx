@@ -1,5 +1,5 @@
 import React from 'react';
-import upwingLogo from '../images/upwing-logo.png';
+import upwingLogo from '../../images/upwing-logo.png';
 
 export default function Navbar({title})
 {
