@@ -7,7 +7,7 @@ export default function CreateATPPage()
 {
     return(
         <>
-            <Navbar />
+            <Navbar title = {"Create ATP"}/>
             <FormBuilder />
         </>
     )

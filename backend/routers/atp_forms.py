@@ -2,13 +2,7 @@ from fastapi import APIRouter, Body, Depends
 from datetime import datetime
 from typing import Annotated
 from pymongo.collection import Collection
-import sys
-import os
-# Add the backend directory to Python path
-backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
-
+from bson import ObjectId
 from dependencies import get_atp_forms_collection
 from schemas import atp_forms as schemas
 
@@ -26,7 +20,8 @@ async def create_form_template(
     return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
 
 @router.get("/metadata")
-async def get_form_templates(atp_forms: Collection = Depends(get_atp_forms_collection)):
+async def get_form_templates_metadata(atp_forms: Collection = Depends(get_atp_forms_collection)):
+    #TODO: only return the metadata of the form templates instead of the entire document
     cursor = atp_forms.find()
     form_templates = []
     for document in cursor:
@@ -34,4 +29,14 @@ async def get_form_templates(atp_forms: Collection = Depends(get_atp_forms_colle
         document['_id'] = str(document['_id'])
         form_templates.append(document)
     return form_templates
+
+@router.get("/{atp_form_id}")
+async def get_atp_form(atp_form_id: str, atp_forms: Collection = Depends(get_atp_forms_collection)):
+    query = {'_id': ObjectId(atp_form_id)}
+    atp_form_document = atp_forms.find_one(query)
+    if not atp_form_document:
+        return {"error": "ATP form not found"}
+        #TODO: add error handling if an atp form is not found
+    atp_form_document['_id'] = str(atp_form_document['_id'])  # Convert ObjectId to string
+    return atp_form_document
 

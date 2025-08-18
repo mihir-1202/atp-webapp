@@ -2,16 +2,19 @@ from fastapi import APIRouter, Body, Depends
 from datetime import datetime
 from typing import Annotated
 from pymongo.collection import Collection
-import sys
-import os
-# Add the backend directory to Python path
-backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
-
-from dependencies import get_atp_forms_collection
+from bson import ObjectId
+from dependencies import get_atp_submissions_collection
+from schemas import atp_submissions as schemas
 
 router = APIRouter()
 
-# TODO: Add ATP submission endpoints here
-# This router will handle form submissions and related functionality
+@router.post("/")
+async def create_atp_submission(
+    atp_submission: Annotated[schemas.ATPTechnicianSubmission, Body()],
+    atp_submissions: Collection = Depends(get_atp_submissions_collection)
+):
+    atp_submission_data = atp_submission.model_dump()
+    atp_submission_data['submittedAt'] = datetime.now().isoformat()
+    atp_submission_data['status'] = 'pending'
+    inserted_document = atp_submissions.insert_one(atp_submission_data)
+    return {'message': 'Submitted ATP succesfully', 'submission_id': str(inserted_document.inserted_id)}

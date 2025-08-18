@@ -1,6 +1,7 @@
 import React from 'react';
 import {useState, useEffect} from 'react';
 import ATPCard from './ATPCard';
+import loading from '../../images/loading.gif';
 
 export default function ATPCardsContainer()
 {
@@ -18,7 +19,7 @@ export default function ATPCardsContainer()
 
     //TODO: add a loading state
     if(isLoading)
-        return <div>Loading...</div>
+        return <div><img src = {loading} alt = "Loading ..."/></div>
 
     let atpCardsList = [];
 
@@ -29,7 +30,8 @@ export default function ATPCardsContainer()
         {
             return <ATPCard 
                 key = {atpCard._id} 
-                atpId = {atpCard.metadata.title} 
+                atpId = {atpCard._id}
+                atpTitle = {atpCard.metadata.title} 
                 atpDescription = {atpCard.metadata.description}
             />
         })

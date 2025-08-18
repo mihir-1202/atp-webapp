@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATP Form Submission - Upwing Energy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="form-submission.css">
+</head>
+<body>
+    <!-- Form Container -->
+    <div class="form-container">
+        <!-- Navigation Header -->
+        <nav class="navbar">
+            <img class="upwing-logo" src="../images/upwing-logo.png" alt="Upwing Logo">
+            <span>Submit ATP Form</span>
+        </nav>
+
+        <!-- Form Header -->
+        <div class="form-header">
+            <h1 class="form-title">ATP-0003-D4-CHK</h1>
+            <h2 class="form-description">SCS Motor Solo Acceptance Test</h2>
+        </div>
+
+        <!-- Form Content -->
+        <form class="atp-form" id="submissionForm">
+            
+            <!-- Technician Section -->
+            <div class="form-section">
+                <h3 class="section-heading">Technician Section</h3>
+                
+                <!-- Heading Item (order: 1, type: 'heading') -->
+                <div class="heading-item">
+                    <h4 class="heading-text">Motor Assembly Information - Please verify all part numbers match the work order specifications before proceeding with data entry</h4>
+                </div>
+                
+                <!-- Field Item (order: 2, type: 'field') -->
+                <div class="field-item">
+                    <label class="field-label">Motor Assembly Part Number</label>
+                    <input type="text" class="field-input" placeholder="Text">
+                </div>
+
+                <!-- Field Item (order: 3, type: 'field') -->
+                <div class="field-item">
+                    <label class="field-label">Motor Assembly Serial Number</label>
+                    <input type="text" class="field-input" placeholder="Text">
+                </div>
+
+                <!-- Heading Item (order: 4, type: 'heading') -->
+                <div class="heading-item">
+                    <h4 class="heading-text">Work Order Details</h4>
+                </div>
+                
+                <!-- Field Item (order: 5, type: 'field') -->
+                <div class="field-item">
+                    <label class="field-label">Work Order Number</label>
+                    <input type="number" class="field-input" placeholder="Number">
+                </div>
+
+                <!-- Field Item (order: 6, type: 'field') -->
+                <div class="field-item">
+                    <label class="field-label">Motor Rotor Serial Number</label>
+                    <input type="number" class="field-input" placeholder="Number">
+                </div>
+            </div>
+
+            <!-- Engineer Section -->
+            <div class="form-section">
+                <h3 class="section-heading">Engineer Section</h3>
+                
+                <!-- Heading Item (order: 1, type: 'heading') -->
+                <div class="heading-item">
+                    <h4 class="heading-text">Test Verification and Final Approval - Review all technician entries for accuracy and completeness. Ensure all safety protocols were followed during testing procedures.</h4>
+                </div>
+                
+                <!-- Field Item (order: 2, type: 'field') -->
+                <div class="field-item">
+                    <label class="field-label">Test Results Status</label>
+                    <select class="field-input">
+                        <option value="">Select Status</option>
+                        <option value="pass">Pass</option>
+                        <option value="fail">Fail</option>
+                        <option value="conditional">Conditional Pass</option>
+                    </select>
+                </div>
+
+                <!-- Field Item (order: 3, type: 'field') -->
+                <div class="field-item">
+                    <label class="field-label">Engineer Comments</label>
+                    <textarea class="field-input" rows="4" placeholder="Enter comments and observations..."></textarea>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="action-btn save">Save Form</button>
+                <button type="submit" class="action-btn submit">Submit Form</button>
+                <button type="button" class="action-btn reset">Reset Form</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <footer class="form-footer">
+        <p>&copy; 2024 Upwing Energy. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function nextSection() {
+            document.querySelector('.progress-fill').style.width = '100%';
+            document.querySelector('.progress-text').textContent = 'Section 2 of 2 - Engineer Review';
+            document.getElementById('engineerSection').style.display = 'block';
+            document.querySelector('.nav-btn.secondary').disabled = false;
+            document.querySelector('.nav-btn.primary').textContent = 'Complete Form';
+            
+            // Scroll to engineer section
+            document.getElementById('engineerSection').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

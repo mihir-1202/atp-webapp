@@ -14,6 +14,7 @@ db = client['atp-webapp-database']  # Database name
 
 # Collections
 atp_forms_collection = db['atp-forms']  # Collection name
+atp_submissions_collection = db['atp-submissions']
 
 # Dependency functions
 def get_database():
@@ -23,3 +24,6 @@ def get_database():
 def get_atp_forms_collection():
     """Dependency function to get ATP forms collection"""
     return atp_forms_collection
+
+def get_atp_submissions_collection():
+    return atp_submissions_collection
