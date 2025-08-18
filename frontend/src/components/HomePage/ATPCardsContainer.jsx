@@ -8,7 +8,7 @@ export default function ATPCardsContainer()
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        fetch('http://localhost:8000/form-templates')
+        fetch('http://localhost:8000/atp-forms/metadata')
         .then(response => response.json())
         .then(data => setATPCards(data))
         .then(() => setIsLoading(false))
@@ -18,9 +18,7 @@ export default function ATPCardsContainer()
 
     //TODO: add a loading state
     if(isLoading)
-    {
         return <div>Loading...</div>
-    }
 
     let atpCardsList = [];
 

@@ -75,7 +75,7 @@ export default function FormBuilder()
     {
         console.log("Frontend sending:", formData);
       
-        fetch("http://localhost:8000/form-templates", {
+        fetch("http://localhost:8000/atp-forms/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
