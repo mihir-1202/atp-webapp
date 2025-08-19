@@ -6,7 +6,7 @@
     min-height: 100vh;
     background: rgb(248, 249, 250);
     font-family: "Inter", "Roboto", sans-serif;
-    padding-top: 115px;
+    padding-top: 100px;
 }
 
 .navbar
@@ -45,7 +45,7 @@
     flex-direction: column;
     max-width: 2000px;
     min-width: 500px;
-    flex: 0.3;
+    flex: 0.2;
     border-radius: 30px;
 }
 

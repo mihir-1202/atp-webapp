@@ -37,7 +37,7 @@ export default function ReviewATPPage()
         {
             try
             {
-                let data = await fetch(`http://localhost:8000/atp-submissions/technicianSubmission/${prevSubmissionId}`);
+                let data = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`);
                 data = await data.json();
                 setPrevTechnicianResponses(data.technicianResponses);
                 reset({formId: atpFormId, reviewedBy: 'engineer@upwingenergy.com', submittedBy: data.submittedBy, submittedAt: data.submittedAt, submissionId: prevSubmissionId}); //insert the submittedAt to the form data once the data from the api is fetched
@@ -133,7 +133,7 @@ export default function ReviewATPPage()
         console.log('prevSubmissionId', prevSubmissionId);
 
         fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`, {
-            method: 'PATCH',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },

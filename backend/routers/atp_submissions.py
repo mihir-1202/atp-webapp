@@ -19,7 +19,7 @@ async def create_atp_submission(
     inserted_document = atp_submissions.insert_one(atp_submission_data)
     return {'message': 'Submitted ATP succesfully', 'submissionId': str(inserted_document.inserted_id)}
    
-@router.patch("/{atp_submission_id}")
+@router.put("/{atp_submission_id}")
 async def update_atp_submission(atp_submission_id: str, 
                                 atp_submission: Annotated[schemas.ATPReviewSubmission, Body()], 
                                 atp_submissions: Collection = Depends(get_atp_submissions_collection)):
@@ -43,20 +43,13 @@ async def update_atp_submission(atp_submission_id: str,
     
     return {'message': 'ATP submission updated successfully', 'submissionId': atp_submission_id}
 
-@router.get("/technicianSubmission/{atp_submission_id}")
-async def get_technician_submission(atp_submission_id: str, atp_submissions: Collection = Depends(get_atp_submissions_collection)):
-    query = {'_id': ObjectId(atp_submission_id)}
-    projection = {'_id': 1,'technicianResponses': 1, 'formId': 1, 'submittedBy': 1, 'submittedAt': 1}
-    atp_submission_document = atp_submissions.find_one(query, projection)
-    if not atp_submission_document:
-        return {'error': 'ATP submission not found'}
-    atp_submission_document['_id'] = str(atp_submission_document['_id'])
-    return atp_submission_document
-
-@router.get("/pending")
+@router.get("/pending/metadata")
 async def get_pending_atp_submission(atp_submissions: Collection = Depends(get_atp_submissions_collection), atp_forms: Collection = Depends(get_atp_forms_collection)):
 
     pending_submissions = list(atp_submissions.find({'status': 'pending'}))
+    
+    if not pending_submissions:
+        return []
     
     # Extract unique form IDs from the submissions and convert to ObjectId
     form_ids = set(str(sub['formId']) for sub in pending_submissions)
@@ -65,6 +58,7 @@ async def get_pending_atp_submission(atp_submissions: Collection = Depends(get_a
     # Get form metadata for all relevant forms
     atp_forms_cursor = atp_forms.find({'_id': {'$in': form_object_ids}})
     
+    #Create a dictionary of form metadata for all relevant forms where the key is the form id and the value is the form metadata
     form_metadata_dict = {
         str(form['_id']): {
             'formTitle': form['metadata']['title'], 
@@ -83,7 +77,78 @@ async def get_pending_atp_submission(atp_submissions: Collection = Depends(get_a
             'submittedAt': atp_submission['submittedAt'],
             'formTitle': form_metadata_dict[form_id]['formTitle'],
             'formDescription': form_metadata_dict[form_id]['formDescription'],
+            'status': atp_submission['status']
         }
         result.append(submission_data)
     return result
+
+@router.get("/metadata")
+async def get_atp_submission_metadata(atp_submissions: Collection = Depends(get_atp_submissions_collection), atp_forms: Collection = Depends(get_atp_forms_collection)):
+    all_submissions = list(atp_submissions.find())
+    if not all_submissions:
+        return []
+    
+    # Extract unique form IDs from the submissions and convert to ObjectId
+    form_ids = set(str(sub['formId']) for sub in all_submissions)
+    form_object_ids = [ObjectId(form_id) for form_id in form_ids]
+    
+    # Get form metadata for all relevant forms
+    atp_forms_cursor = atp_forms.find({'_id': {'$in': form_object_ids}})
+    
+    #Create a dictionary of form metadata for all relevant forms where the key is the form id and the value is the form metadata
+    form_metadata_dict = {
+        str(form['_id']): {
+            'formTitle': form['metadata']['title'], 
+            'formDescription': form['metadata']['description']
+        } 
+        for form in atp_forms_cursor
+    }
+    
+    result = []
+    for atp_submission in all_submissions:
+        form_id = str(atp_submission['formId'])
+        if atp_submission['status'] == 'pending':
+            submission_data = {
+                'submissionId': str(atp_submission['_id']),
+                'formId': form_id,
+                'formTitle': form_metadata_dict[form_id]['formTitle'],
+                'formDescription': form_metadata_dict[form_id]['formDescription'],
+                'submittedBy': atp_submission['submittedBy'],
+                'submittedAt': atp_submission['submittedAt'],
+                'reviewedBy': None,
+                'reviewedAt': None,
+                'status': atp_submission['status']
+            }
+        else:
+            submission_data = {
+                'submissionId': str(atp_submission['_id']),
+                'formId': form_id,
+                'formTitle': form_metadata_dict[form_id]['formTitle'],
+                'formDescription': form_metadata_dict[form_id]['formDescription'],
+                'submittedBy': atp_submission['submittedBy'],
+                'submittedAt': atp_submission['submittedAt'],
+                'reviewedBy': atp_submission['reviewedBy'],
+                'reviewedAt': atp_submission['reviewedAt'],
+                'status': atp_submission['status']
+            }
+        result.append(submission_data)
+    return result
+
+
+@router.get("/")
+async def get_all_atp_submissions(atp_submissions: Collection = Depends(get_atp_submissions_collection)):
+    all_submissions = [{**doc, '_id': str(doc['_id'])} for doc in atp_submissions.find()]
+    return all_submissions
+
+#FastAPI checks routes based on the order they are defined -> most specific routes should be defined first
+#This route is the least specific because it matches to anything
+@router.get("/{atp_submission_id}")
+async def get_technician_submission(atp_submission_id: str, atp_submissions: Collection = Depends(get_atp_submissions_collection)):
+    query = {'_id': ObjectId(atp_submission_id)}
+    projection = {'_id': 1,'technicianResponses': 1, 'formId': 1, 'submittedBy': 1, 'submittedAt': 1}
+    atp_submission_document = atp_submissions.find_one(query, projection)
+    if not atp_submission_document:
+        return {'error': 'ATP submission not found'}
+    atp_submission_document['_id'] = str(atp_submission_document['_id'])
+    return atp_submission_document
    

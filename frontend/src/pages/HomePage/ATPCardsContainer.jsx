@@ -1,7 +1,7 @@
 import React from 'react';
 import {useState, useEffect} from 'react';
 import ATPCard from './ATPCard';
-import loading from '../../images/Loading.gif';
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import styles from './ATPCardsContainer.module.css';
 
 export default function ATPCardsContainer()
@@ -18,9 +18,12 @@ export default function ATPCardsContainer()
         .catch(error => console.error('Error fetching ATP cards:', error));
     }, []);
 
-    //TODO: add a loading state
     if(isLoading)
-        return <div><img src = {loading} alt = "Loading ..."/></div>
+        return (
+            <div className={styles.atpCardsContainer}>
+                <LoadingSpinner size="large" position="inline" />
+            </div>
+        )
 
     let atpCardsList = [];
 

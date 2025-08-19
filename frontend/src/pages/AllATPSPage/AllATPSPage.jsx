@@ -1,25 +1,25 @@
 import React from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import SubmissionCardsContainer from '../../components/SubmissionCardsContainer/SubmissionCardsContainer';
-import styles from './PendingATPSPage.module.css';
+import styles from './AllATPSPage.module.css';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 
-//Path: /pending-atps
+//Path: /reviewed-atps
 export default function PendingATPSPage()
 {
-    const [pendingSubmissions, setPendingSubmissions] = React.useState([]);
+    const [allSubmissions, setAllSubmissions] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
 
-    async function fetchPendingSubmissions()
+    async function fetchAllSubmissions()
     {
-        fetch(`http://localhost:8000/atp-submissions/pending/metadata`)
+        fetch(`http://localhost:8000/atp-submissions/metadata`)
         .then(response => response.json())
-        .then(data => {console.log(data); setPendingSubmissions(data); setIsLoading(false);})
+        .then(data => {console.log(data); setAllSubmissions(data); setIsLoading(false);})
         .catch(error => {console.error('Error fetching submissions:', error); setIsLoading(false);})
     }
 
     React.useEffect(() => {
-        fetchPendingSubmissions();
+        fetchAllSubmissions();
     }, []);
 
     if (isLoading)
@@ -27,9 +27,9 @@ export default function PendingATPSPage()
     
     return(
         <div className={styles.pageContainer}>
-            <Navbar title = "Pending ATPs" />
+            <Navbar title = "All ATPs" />
             <main className={styles.mainContent}>
-                <SubmissionCardsContainer pending = {true} approved = {false} rejected = {false} submissions = {pendingSubmissions} />
+                <SubmissionCardsContainer pending = {true} approved = {true} rejected = {true} submissions = {allSubmissions} />
             </main>
         </div>
     )

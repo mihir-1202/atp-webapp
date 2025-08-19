@@ -78,7 +78,18 @@
     margin-top: 4px;
 }
 
+/*Styles apply on an element with class status and class pending*/
 .status.pending {
     background-color: rgb(255, 243, 205);
     color: rgb(180, 83, 9);
+}
+
+.status.approved {
+    background-color: rgb(220, 252, 231);
+    color: rgb(22, 163, 74);
+}
+
+.status.rejected {
+    background-color: rgb(254, 226, 226);
+    color: rgb(220, 38, 38);
 }

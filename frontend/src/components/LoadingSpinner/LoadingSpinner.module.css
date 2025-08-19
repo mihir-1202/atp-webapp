@@ -1,0 +1,78 @@
+.loadingContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.center {
+    height: 200px;
+    width: 100%;
+}
+
+.topLeft {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    height: auto;
+    width: auto;
+}
+
+.topCenter {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: auto;
+    width: auto;
+    z-index: 1000;
+}
+
+.inline {
+    height: 150px;
+    width: 100%;
+    display: flex;
+}
+
+/* Spinner Animation */
+.spinner {
+    border: 4px solid rgba(44, 76, 142, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid rgb(44, 76, 142);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Size variants */
+.small {
+    width: 24px;
+    height: 24px;
+    border-width: 2px;
+}
+
+.small:before {
+    border-top: 2px solid rgb(44, 76, 142);
+}
+
+.medium {
+    width: 48px;
+    height: 48px;
+    border-width: 3px;
+}
+
+.medium:before {
+    border-top: 3px solid rgb(44, 76, 142);
+}
+
+.large {
+    width: 96px;
+    height: 96px;
+    border-width: 6px;
+}
+
+.large:before {
+    border-top: 6px solid rgb(44, 76, 142);
+}

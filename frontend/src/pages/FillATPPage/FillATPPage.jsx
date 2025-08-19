@@ -6,6 +6,7 @@ import FormHeader from '../../components/FormHeader/FormHeader'
 import styles from './FillATPPage.module.css'
 import {useForm} from 'react-hook-form'
 import {useNavigate} from 'react-router-dom'
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 
 //Path: /fill-atp/:atpFormId
 export default function FillATPPage()
@@ -137,7 +138,7 @@ export default function FillATPPage()
     React.useEffect(() => {loadAllData();}, [atpFormId]);
 
     if (isLoading) {
-        return <div className={styles.loading}>Loading...</div>;
+        return <LoadingSpinner size = "large" position = "center" />;
     }
 
     if (!atpTemplateData) {
