@@ -1,5 +1,5 @@
 import React from 'react'
-import {useParams} from 'react-router-dom'
+import {useParams, useNavigate} from 'react-router-dom'
 import {useForm} from 'react-hook-form'
 import Navbar from '../../components/Navbar/Navbar'
 import ATPInputSection from '../../components/ATPInputSection/ATPInputSection'
@@ -10,6 +10,7 @@ import StatusSelector from './StatusSelector'
 //Path: /review-atp/:atpFormId/:prevSubmissionId
 export default function ReviewATPPage()
 {
+    const navigate = useNavigate();
     const {atpFormId, prevSubmissionId} = useParams();
     const {register, handleSubmit, reset} = useForm({defaultValues: {formId: atpFormId, reviewedBy: 'engineer@upwingenergy.com'}});
 
@@ -141,9 +142,14 @@ export default function ReviewATPPage()
         .then(response => response.json())
         .then(data => {
             console.log('Submission updated successfully:', data);
+            
+            //TODO: instead of hardcoding alert, display the message returned by the backend
+            alert('Submission updated successfully');
+            navigate('/');
         })
         .catch(error => {
             console.error('Error updating submission:', error);
+            alert('Error updating submission');
         });
         
     }

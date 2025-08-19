@@ -5,10 +5,12 @@ import ATPInputSection from '../../components/ATPInputSection/ATPInputSection'
 import FormHeader from '../../components/FormHeader/FormHeader'
 import styles from './FillATPPage.module.css'
 import {useForm} from 'react-hook-form'
+import {useNavigate} from 'react-router-dom'
 
 //Path: /fill-atp/:atpFormId
 export default function FillATPPage()
 {
+    const navigate = useNavigate();
     const {atpFormId} = useParams();
 
     const [atpTemplateData, setATPTemplateData] = React.useState(null);
@@ -129,7 +131,7 @@ export default function FillATPPage()
         .catch(error => {
             console.error('Error submitting ATP:', error);
         })
-        .then(() => {alert('ATP submitted successfully')});
+        .then(() => {alert('ATP submitted successfully'); navigate('/');});
     }
 
     React.useEffect(() => {loadAllData();}, [atpFormId]);
