@@ -1,0 +1,22 @@
+/* FormBuilder CSS Module */
+
+.formContainer {
+    margin: auto;
+    background-color: white;
+    padding: 40px;
+    box-shadow: 1px 1px 10px 0 rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    max-width: 2000px;
+    min-width: 500px;
+    flex: 0.3;
+    border-radius: 30px;
+}
+
+.formTitle {
+    font-size: 32px;
+    font-weight: bold;
+    color: rgb(76, 75, 75);
+    text-align: center;
+    margin-bottom: 30px;
+}

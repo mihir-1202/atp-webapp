@@ -17,19 +17,41 @@ async def create_atp_submission(
     atp_submission_data['submittedAt'] = datetime.now().isoformat()
     atp_submission_data['status'] = 'pending'
     inserted_document = atp_submissions.insert_one(atp_submission_data)
-    return {'message': 'Submitted ATP succesfully', 'submission_id': str(inserted_document.inserted_id)}
-
+    return {'message': 'Submitted ATP succesfully', 'submissionId': str(inserted_document.inserted_id)}
+   
+@router.patch("/{atp_submission_id}")
+async def update_atp_submission(atp_submission_id: str, 
+                                atp_submission: Annotated[schemas.ATPReviewSubmission, Body()], 
+                                atp_submissions: Collection = Depends(get_atp_submissions_collection)):
+    try:
+        # Validate ObjectId format
+        object_id = ObjectId(atp_submission_id)
+    except Exception:
+        return {'error': 'Invalid submission ID format', 'submissionId': None}
+    
+    atp_review_data = atp_submission.model_dump()
+    atp_review_data['reviewedAt'] = datetime.now().isoformat()
+    
+    # Check if the submission exists and update it
+    result = atp_submissions.update_one({'_id': object_id}, {'$set': atp_review_data})
+    
+    if result.matched_count == 0:
+        return {'error': 'ATP submission not found', 'submissionId': None}
+    
+    if result.modified_count == 0:
+        return {'error': 'ATP submission was not modified', 'submissionId': atp_submission_id}
+    
+    return {'message': 'ATP submission updated successfully', 'submissionId': atp_submission_id}
 
 @router.get("/technicianSubmission/{atp_submission_id}")
 async def get_technician_submission(atp_submission_id: str, atp_submissions: Collection = Depends(get_atp_submissions_collection)):
     query = {'_id': ObjectId(atp_submission_id)}
-    projection = {'_id': 1,'technicianResponses': 1, 'formId': 1}
+    projection = {'_id': 1,'technicianResponses': 1, 'formId': 1, 'submittedBy': 1, 'submittedAt': 1}
     atp_submission_document = atp_submissions.find_one(query, projection)
     if not atp_submission_document:
         return {'error': 'ATP submission not found'}
     atp_submission_document['_id'] = str(atp_submission_document['_id'])
     return atp_submission_document
-
 
 @router.get("/pending")
 async def get_pending_atp_submission(atp_submissions: Collection = Depends(get_atp_submissions_collection), atp_forms: Collection = Depends(get_atp_forms_collection)):
@@ -65,9 +87,3 @@ async def get_pending_atp_submission(atp_submissions: Collection = Depends(get_a
         result.append(submission_data)
     return result
    
-   
-@router.patch("/{atp_submission_id}")
-async def update_atp_submission(atp_submission_id: str, 
-                                atp_submission: Annotated[schemas.ATPTechnicianSubmission, Body()], 
-                                atp_submissions: Collection = Depends(get_atp_submissions_collection)):
-    pass

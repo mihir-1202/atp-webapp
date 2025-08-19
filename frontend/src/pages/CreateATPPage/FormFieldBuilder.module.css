@@ -1,0 +1,77 @@
+/* FormFieldBuilder CSS Module */
+
+.fieldItem {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.itemBoxHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.itemBoxHeader h3 {
+    margin: 0;
+    color: rgb(44, 76, 142);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.removeItemButton {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.removeItemButton:hover {
+    background: #c82333;
+}
+
+.fieldInputsContainer {
+    margin-top: 15px;
+}
+
+.inputGroup {
+    margin-bottom: 15px;
+}
+
+.inputLabel {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.inputGroup input,
+.inputGroup select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.inputGroup input:focus,
+.inputGroup select:focus {
+    outline: none;
+    border-color: rgb(44, 76, 142);
+}

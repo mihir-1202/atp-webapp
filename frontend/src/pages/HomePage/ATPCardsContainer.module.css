@@ -1,0 +1,17 @@
+/* ATPCardsContainer CSS Module */
+
+.atpCardsContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    white-space: nowrap;
+    gap: 30px;
+    max-height: 75vh;
+    max-width: 900px;
+    min-width: 500px;
+    box-shadow: 1px 1px 10px 0 rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}

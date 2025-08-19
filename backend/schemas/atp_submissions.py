@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, model_validator
-from typing import Annotated, Dict, List
+from typing import Annotated, Dict, List, Literal, Optional
 from dateutil.parser import parse
+from datetime import datetime
 
 """
 Initial Form Data:
@@ -69,4 +70,21 @@ class ATPTechnicianSubmission(BaseModel):
     def validate_all_questions_answered(self) -> 'ATPTechnicianSubmission':
         #TODO: Fetch the form template from the database and check if all questions have been answered because the user can submit empty fields and they will be excluded from the form data object
         return self
+    
+
+class ATPReviewSubmission(BaseModel):
+    formId: Annotated[str, Field(min_length = 1)]
+    reviewedBy: Annotated[EmailStr, Field(min_length = 1)]
+    technicianResponses: Annotated[List[Responses], Field(min_items = 1)]
+    engineerResponses: Annotated[List[Responses], Field(min_items = 1)] 
+    submittedBy: Annotated[EmailStr, Field(min_length = 1)]
+    submittedAt: Annotated[str, Field(min_length = 1)]
+    status: Annotated[Literal['approved', 'rejected'], Field(min_length = 1)]
+    
+    @model_validator(mode='after')
+    def validate_all_questions_answered(self) -> 'ATPReviewSubmission':
+        #TODO: Fetch the form template from the database and check if all questions have been answered because the user can submit empty fields and they will be excluded from the form data object
+        return self
+    
+    
 

@@ -1,0 +1,65 @@
+/* ATPInputSection CSS Module */
+
+/* Form Sections */
+.formSection {
+    margin-bottom: 60px;
+    padding: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+}
+
+.formSection:not(:last-child) {
+    margin-bottom: 80px;
+}
+
+.sectionHeading {
+    background: linear-gradient(135deg, rgb(44, 76, 142) 0%, rgb(52, 90, 168) 100%);
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0;
+    padding: 25px;
+    border-bottom: none;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(44, 76, 142, 0.2);
+}
+
+.sectionContent {
+    padding: 30px;
+}
+
+/* Form Actions */
+.formActions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 40px;
+    padding: 30px;
+}
+
+.actionButton {
+    background: linear-gradient(135deg, rgb(44, 76, 142) 0%, rgb(52, 90, 168) 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+.actionButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(44, 76, 142, 0.3);
+}
+
+.actionButton:active {
+    transform: translateY(0);
+}

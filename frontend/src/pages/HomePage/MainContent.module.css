@@ -1,0 +1,10 @@
+/* MainContent CSS Module */
+
+.mainContent {
+    padding-left: 80px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 100px;
+    align-items: flex-start;
+}

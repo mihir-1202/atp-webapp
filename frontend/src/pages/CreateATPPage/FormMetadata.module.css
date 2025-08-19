@@ -1,0 +1,44 @@
+/* FormMetadata CSS Module */
+
+.sectionTitle {
+    font-size: 24px;
+    font-weight: 600;
+    color: rgb(76, 75, 75);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.inputGroup {
+    margin-bottom: 20px;
+}
+
+.inputLabel {
+    display: block;
+    font-size: 16px;
+    font-weight: 500;
+    color: rgb(76, 75, 75);
+    margin-bottom: 8px;
+}
+
+.inputGroup input,
+.inputGroup textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: "Inter", "Roboto", sans-serif;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.inputGroup input:focus,
+.inputGroup textarea:focus {
+    outline: none;
+    border-color: rgb(44, 76, 142);
+}
+
+#formDescriptionInputGroup textarea {
+    resize: vertical;
+    min-height: 100px;
+}

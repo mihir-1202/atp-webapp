@@ -1,10 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import CreateATPPage from './pages/CreateATPPage.jsx'
-import HomePage from './pages/HomePage.jsx'
-import FillATPPage from './pages/FillATPPage.jsx'
-import ReviewATPPage from './pages/ReviewATPPage.jsx'
-import PendingATPSPage from './pages/PendingATPSPage.jsx'
+import CreateATPPage from './pages/CreateATPPage/CreateATPPage.jsx'
+import HomePage from './pages/HomePage/HomePage.jsx'
+import FillATPPage from './pages/FillATPPage/FillATPPage.jsx'
+import ReviewATPPage from './pages/ReviewATPPage/ReviewATPPage.jsx'
+import PendingATPSPage from './pages/PendingATPSPage/PendingATPSPage.jsx'
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 
 const router = createBrowserRouter([
