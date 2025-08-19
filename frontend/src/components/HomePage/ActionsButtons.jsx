@@ -1,17 +1,18 @@
 import React from 'react';
 import {useNavigate} from 'react-router-dom';
+import styles from '../../styles/HomePage.module.css';
 
 export default function ActionsButtons()
 {
     const navigate = useNavigate();
 
     return(
-        <div className = "buttons-container">
-            <button className = "atp-button" onClick = {() => navigate('/create-atp')}>Create New ATP</button>
-            <button className = "atp-button">Update ATP</button>
-            <button className = "atp-button">Drafts</button>
-            <button className = "atp-button">Pending Reviews</button>
-            <button className = "atp-button">Approved Reviews</button>
+        <div className={styles.buttonsContainer}>
+            <button className={styles.atpButton} onClick = {() => navigate('/create-atp')}>Create New ATP</button>
+            <button className={styles.atpButton}>Update ATP</button>
+            <button className={styles.atpButton}>Drafts</button>
+            <button className={styles.atpButton} onClick = {() => navigate('/pending-atps')}>Pending ATPs</button>
+            <button className={styles.atpButton}>Approved Reviews</button>
         </div>
     )
 }

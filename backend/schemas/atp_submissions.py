@@ -64,4 +64,9 @@ class ATPTechnicianSubmission(BaseModel):
     formId: Annotated[str, Field(min_length = 1)]
     submittedBy: Annotated[EmailStr, Field(min_length = 1)]
     technicianResponses: Annotated[List[Responses], Field(min_items = 1)]
+    
+    @model_validator(mode='after')
+    def validate_all_questions_answered(self) -> 'ATPTechnicianSubmission':
+        #TODO: Fetch the form template from the database and check if all questions have been answered because the user can submit empty fields and they will be excluded from the form data object
+        return self
 

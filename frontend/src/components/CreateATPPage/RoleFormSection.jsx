@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import HeadingItem from './HeadingItem';
 import FieldItem from './FieldItem';
+import styles from '../../styles/CreateATPPage.module.css';
 
 export default function RoleFormSection({role, items, appendItem, removeItem, register})
 {
@@ -29,22 +30,22 @@ export default function RoleFormSection({role, items, appendItem, removeItem, re
     )
 
     return(
-        <section className = {`${role}-form-section`}>
-            <div className = "section-header">
-                <h2>{role.charAt(0).toUpperCase() + role.slice(1)} Form</h2>
+        <section className={role === "technician" ? styles.technicianFormSection : styles.engineerFormSection}>
+            <div className={styles.sectionHeader}>
+                <h2 className={styles.sectionTitle}>{role.charAt(0).toUpperCase() + role.slice(1)} Form</h2>
                 
-                <div className = "section-buttons">
-                    <button className = "add-heading-button" type = "button" onClick = {() => appendItem({order: items.length, type: "heading", content: ""})}>
+                <div className={styles.sectionButtons}>
+                    <button className={styles.addHeadingButton} type="button" onClick = {() => appendItem({order: items.length, type: "heading", content: ""})}>
                         Add Heading
                     </button>
 
-                    <button className = "add-field-button" type = "button" onClick = {() => appendItem({order: items.length, type: "field", question: "", answerFormat: "text"})}>
+                    <button className={styles.addFieldButton} type="button" onClick = {() => appendItem({order: items.length, type: "field", question: "", answerFormat: "text"})}>
                         Add New Field
                     </button>
                 </div>
             </div>
 
-            <ul className = {`${role}-form-items`}>  
+            <ul className={role === "technician" ? styles.technicianFormItems : styles.engineerFormItems}>  
                 {formItemsJSX}
             </ul>
         </section>

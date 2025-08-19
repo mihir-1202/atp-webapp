@@ -1,15 +1,16 @@
 import React from 'react';
 import upwingLogo from '../../images/upwing-logo.png';
-import {useNavigate} from 'react-router-dom'
+import {useNavigate} from 'react-router-dom';
+import styles from '../../styles/CreateATPPage.module.css';
 
 export default function Navbar({title})
 {
     const navigate = useNavigate();
     
     return(
-        <nav className="navbar">
+        <nav className={styles.navbar}>
             <img 
-                className="upwing-logo" 
+                className={styles.upwingLogo} 
                 src={upwingLogo} 
                 alt="Upwing Logo"
                 onClick = {() => navigate('/')} 

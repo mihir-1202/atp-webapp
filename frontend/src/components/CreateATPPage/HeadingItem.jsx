@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import styles from '../../styles/CreateATPPage.module.css';
 
 export default function HeadingItem({order, role, removeItem, register})
 {
@@ -15,19 +16,19 @@ export default function HeadingItem({order, role, removeItem, register})
     }
 
     return(
-        <li className = "heading-item" data-role = {role}>
-            <div className = "item-box-header">
+        <li className={styles.headingItem} data-role={role}>
+            <div className={styles.itemBoxHeader}>
                 <h3>Heading</h3>
-                <button className = "remove-item-button" type = "button" onClick = {() => removeItem(order)}>−</button>
+                <button className={styles.removeItemButton} type="button" onClick = {() => removeItem(order)}>−</button>
             </div>
-            <div className = "heading-input-container">
-                <div className = "input-group heading-input-group" id = "heading-input-group">
-                    <label htmlFor = {`${role}-heading-${order}`} className = "input-label">Heading Text</label>
+            <div className={styles.headingInputContainer}>
+                <div className={`${styles.inputGroup} ${styles.headingInputGroup}`} id="heading-input-group">
+                    <label htmlFor={`${role}-heading-${order}`} className={styles.inputLabel}>Heading Text</label>
                     <input 
-                        id = {`${role}-heading-${order}`} 
-                        className = "heading-input" 
-                        type = "text" 
-                        placeholder = "Enter Heading" 
+                        id={`${role}-heading-${order}`} 
+                        className="heading-input" 
+                        type="text" 
+                        placeholder="Enter Heading" 
                         required 
                         {...register(`sections.${role}.items.${order}.content`)}
                     />

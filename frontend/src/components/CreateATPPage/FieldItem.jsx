@@ -1,37 +1,38 @@
 import React, { useState } from 'react';
+import styles from '../../styles/CreateATPPage.module.css';
 
 export default function FieldItem({order, role, removeItem, register})
 {
     return(
-        <li className = "field-item">
-            <div className = "item-box-header">
+        <li className={styles.fieldItem}>
+            <div className={styles.itemBoxHeader}>
                 <h3>Field</h3>
-                <button className = "remove-item-button" type = "button" onClick={() => removeItem(order)}>−</button>
+                <button className={styles.removeItemButton} type="button" onClick={() => removeItem(order)}>−</button>
             </div>
-            <div className = "field-inputs-container">
+            <div className={styles.fieldInputsContainer}>
                 
-                <div className = "input-group" id = "question-input-group">
-                    <label htmlFor = {`${role}-question-${order}`} className = "input-label">Question</label>
+                <div className={styles.inputGroup} id={styles.questionInputGroup}>
+                    <label htmlFor={`${role}-question-${order}`} className={styles.inputLabel}>Question</label>
                     <input 
-                        id = {`${role}-question-${order}`} 
-                        className = "question-input" 
-                        type = "text" 
-                        placeholder = "Enter question" 
+                        id={`${role}-question-${order}`} 
+                        className="question-input" 
+                        type="text" 
+                        placeholder="Enter question" 
                         {...register(`sections.${role}.items.${order}.question`)}
                     />
                 </div>
 
-                <div className = "input-group" id = "answer-format-input-group">
-                    <label htmlFor = {`${role}-answer-format-${order}`} className = "input-label">Answer Format</label>
+                <div className={styles.inputGroup} id={styles.answerFormatInputGroup}>
+                    <label htmlFor={`${role}-answer-format-${order}`} className={styles.inputLabel}>Answer Format</label>
                     <select 
-                        id = {`${role}-answer-format-${order}`} 
-                        className = "answer-format-input" 
+                        id={`${role}-answer-format-${order}`} 
+                        className="answer-format-input" 
                         {...register(`sections.${role}.items.${order}.answerFormat`)}
                     >
-                        <option value = "text">Text Input</option>
-                        <option value = "textarea">Text Area</option>
-                        <option value = "number">Number</option>
-                        <option value = "date">Date</option>
+                        <option value="text">Text Input</option>
+                        <option value="textarea">Text Area</option>
+                        <option value="number">Number</option>
+                        <option value="date">Date</option>
 
                         {/* 
                         TODO: add checkbox and radio options after MVP is complete

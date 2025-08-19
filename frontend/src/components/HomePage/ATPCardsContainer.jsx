@@ -2,6 +2,7 @@ import React from 'react';
 import {useState, useEffect} from 'react';
 import ATPCard from './ATPCard';
 import loading from '../../images/loading.gif';
+import styles from '../../styles/HomePage.module.css';
 
 export default function ATPCardsContainer()
 {
@@ -9,7 +10,7 @@ export default function ATPCardsContainer()
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        fetch('http://localhost:8000/atp-forms/metadata')
+        fetch('http://localhost:8000/atp-forms')
         .then(response => response.json())
         .then(data => setATPCards(data))
         .then(() => setIsLoading(false))
@@ -38,7 +39,7 @@ export default function ATPCardsContainer()
     }
 
     return(
-        <ul className="atp-cards-container">
+        <ul className={styles.atpCardsContainer}>
             {atpCardsList}
         </ul>
     )

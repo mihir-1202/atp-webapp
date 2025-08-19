@@ -3,6 +3,7 @@ import FormMetadata from './FormMetadata';
 import RoleFormSection from './RoleFormSection';
 import FormActions from './FormActions';
 import {useForm, useFieldArray} from 'react-hook-form';
+import styles from '../../styles/CreateATPPage.module.css';
 
 export default function FormBuilder()
 {
@@ -103,20 +104,20 @@ export default function FormBuilder()
 
     return(
         <main>
-            <div className = "form-container">
-                <h1>Create New ATP Form</h1>
-                <form className = "atp-form" onSubmit = {handleSubmit(onSubmit)}> 
+            <div className={styles.formContainer}>
+                <h1 className={styles.formTitle}>Create New ATP Form</h1>
+                <form className="atp-form" onSubmit = {handleSubmit(onSubmit)}> 
                     <FormMetadata register = {register}/>
 
-                    <hr className = "divider" />
+                    <hr className="divider" />
 
                     <RoleFormSection role = "technician" items = {technicianItems} appendItem = {appendTechnicianItem} removeItem = {removeTechnicianItem} register = {register}/>
 
-                    <hr className = "divider" />
+                    <hr className="divider" />
 
                     <RoleFormSection role = "engineer" items = {engineerItems} appendItem = {appendEngineerItem} removeItem = {removeEngineerItem} register = {register}/>
 
-                    <hr className = "divider" />
+                    <hr className="divider" />
 
                     
                     <FormActions />

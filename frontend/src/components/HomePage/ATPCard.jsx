@@ -1,6 +1,7 @@
 import React from 'react';
 import arrowIcon from '../../images/arrow-icon.png';
 import {useNavigate} from 'react-router-dom';
+import styles from '../../styles/HomePage.module.css';
 
 export default function ATPCard({atpId, atpTitle, atpDescription})
 {
@@ -8,12 +9,12 @@ export default function ATPCard({atpId, atpTitle, atpDescription})
 
 
     return(
-        <li className="atp-card" onClick = {() => {console.log(atpId); navigate(`/fill-atp/${atpId}`)}}>
-            <div className = "atp-info-container">
-                <div className = "atp-title">{atpTitle}</div>
-                <div className = "atp-description">{atpDescription}</div> 
+        <li className={styles.atpCard} onClick = {() => {console.log(atpId); navigate(`/fill-atp/${atpId}`)}}>
+            <div className={styles.atpInfoContainer}>
+                <div className={styles.atpTitle}>{atpTitle}</div>
+                <div className={styles.atpDescription}>{atpDescription}</div> 
             </div>
-            <img className = "arrow-icon" src={arrowIcon} alt="Arrow Icon"/>
+            <img className={styles.arrowIcon} src={arrowIcon} alt="Arrow Icon"/>
         </li> 
     )
 }

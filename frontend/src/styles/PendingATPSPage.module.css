@@ -1,0 +1,227 @@
+/* Pending ATPs Page Styles */
+
+/* Page Container */
+.root {
+    width: 100%;
+    min-height: 100vh;
+    background: rgb(248, 249, 250);
+    font-family: "Inter", "Roboto", sans-serif;
+    padding-top: 115px;
+}
+
+/* Navigation Bar */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    
+    font-size: 40px;
+    font-weight: bold;
+    color: rgb(76, 75, 75);
+    white-space: nowrap;
+    
+    background-color: white;
+}
+
+.upwingLogo {
+    width: 290px;
+    margin-right: 20px;
+}
+
+/* Page Title */
+.pageTitle {
+    margin-top: 0px;
+    margin-bottom: 30px;
+    white-space: nowrap;
+    font-size: 35px;
+    font-weight: 600;
+    color: rgb(76, 75, 75);
+    text-align: center;
+}
+
+/* Main Content Layout */
+.mainContent {
+    padding: 0 80px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Submissions Container */
+.submissionsContainer {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    gap: 0;
+    max-height: 75vh;
+    box-shadow: 1px 1px 10px 0 rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: white;
+    border-radius: 8px;
+}
+
+/* Individual Submission Card */
+.submissionCard {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 30px;
+    align-items: center;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+    padding: 25px 30px;
+    border-bottom: 1px solid rgb(240, 240, 240);
+}
+
+.submissionCard:last-child {
+    border-bottom: none;
+}
+
+.submissionCard:hover {
+    border-left: 4px solid rgb(44,76,142);
+    cursor: pointer;
+    background-color: rgb(248, 249, 252);
+}
+
+/* Arrow Icon */
+.arrowIcon {
+    width: 30px;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+}
+
+.submissionCard:hover .arrowIcon {
+    opacity: 1;
+}
+
+/* Submission Info Container */
+.submissionInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.submissionTitle {
+    font-size: 25px;
+    font-weight: 600;
+    color: rgb(44, 44, 44);
+}
+
+.submissionDescription {
+    font-size: 18px;
+    color: rgb(100, 100, 100);
+    font-weight: 400;
+    margin-bottom: 5px;
+}
+
+/* Submission Metadata */
+.submissionMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+}
+
+.submittedBy {
+    color: rgb(76, 75, 75);
+    font-weight: 500;
+}
+
+.submittedDate {
+    color: rgb(120, 120, 120);
+}
+
+.status {
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    width: fit-content;
+    margin-top: 4px;
+}
+
+.status.pending {
+    background-color: rgb(255, 243, 205);
+    color: rgb(180, 83, 9);
+}
+
+.status.engineerReview {
+    background-color: rgb(219, 234, 254);
+    color: rgb(29, 78, 216);
+}
+
+.status.approved {
+    background-color: rgb(220, 252, 231);
+    color: rgb(22, 163, 74);
+}
+
+.status.rejected {
+    background-color: rgb(254, 226, 226);
+    color: rgb(220, 38, 38);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .mainContent {
+        padding: 0 40px;
+    }
+    
+    .pageTitle {
+        margin-left: 120px;
+    }
+    
+    .submissionsContainer {
+        max-width: 900px;
+    }
+}
+
+@media (max-width: 768px) {
+    .mainContent {
+        padding: 0 20px;
+    }
+    
+    .pageTitle {
+        margin-left: 40px;
+        font-size: 28px;
+    }
+    
+    .submissionCard {
+        padding: 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .arrowIcon {
+        align-self: flex-end;
+    }
+    
+    .submissionTitle {
+        font-size: 22px;
+    }
+    
+    .submissionDescription {
+        font-size: 16px;
+    }
+    
+    .submissionMeta {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .status {
+        margin-top: 0;
+    }
+}
