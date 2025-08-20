@@ -27,6 +27,7 @@ export default function SubmissionCardsContainer({pending = false, approved = fa
     let submissionCardsJSX = filteredSubmissions.map((atpSubmission) => {
         return <SubmissionCard 
             key = {atpSubmission.submissionId}
+            
             //used for routing
             atpFormId = {atpSubmission.formId}
             atpSubmissionId = {atpSubmission.submissionId}

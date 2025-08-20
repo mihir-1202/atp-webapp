@@ -107,7 +107,7 @@ export default function CompletedATPPage()
                         register = {register}
                         userRole = {"engineer"} 
                         atpTemplateData = {atpTemplateData} 
-                        prevEngineerResponses = {prevEngineerResponses} 
+                        prevEngineerResponses = {prevEngineerResponses || []} //if prevEngineerResponses is null, set it to an empty array so an error is not thrown when ATPInputSection tries to map over its elements
                         showButtons = {false}
                         readOnly = {true}
                     />
