@@ -1,0 +1,39 @@
+/* FillATPPage CSS Module - Scoped styles */
+
+/* Page Container */
+.fillATPPage {
+    width: 100%;
+    min-height: 100vh;
+    background: rgb(248, 249, 250);
+    font-family: "Inter", "Roboto", sans-serif;
+    padding-top: 100px;
+}
+
+/* Form Container */
+.formContainer {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+/* Loading State */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 120px;
+    font-size: 16px;
+    color: #666;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 30px;
+    color: #666;
+    font-size: 14px;
+    border-top: 1px solid #e9ecef;
+    background: white;
+    margin-top: 40px;
+}

@@ -189,7 +189,7 @@ export default function ReviewATPPage()
                         register = {register}
                         userRole = {"engineer"} 
                         atpTemplateData = {atpTemplateData} 
-                        prevTechnicianResponses = {prevTechnicianResponses} 
+                        //prevTechnicianResponses = {prevTechnicianResponses} 
                         showButtons = {true}
                     />
 

@@ -145,7 +145,7 @@ async def get_all_atp_submissions(atp_submissions: Collection = Depends(get_atp_
 @router.get("/{atp_submission_id}")
 async def get_technician_submission(atp_submission_id: str, atp_submissions: Collection = Depends(get_atp_submissions_collection)):
     query = {'_id': ObjectId(atp_submission_id)}
-    projection = {'_id': 1,'technicianResponses': 1, 'formId': 1, 'submittedBy': 1, 'submittedAt': 1}
+    projection = {'_id': 1,'technicianResponses': 1, 'engineerResponses': 1, 'formId': 1, 'submittedBy': 1, 'submittedAt': 1, 'status': 1, 'reviewedBy': 1, 'reviewedAt': 1}
     atp_submission_document = atp_submissions.find_one(query, projection)
     if not atp_submission_document:
         return {'error': 'ATP submission not found'}

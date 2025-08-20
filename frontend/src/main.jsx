@@ -4,6 +4,7 @@ import CreateATPPage from './pages/CreateATPPage/CreateATPPage.jsx'
 import HomePage from './pages/HomePage/HomePage.jsx'
 import FillATPPage from './pages/FillATPPage/FillATPPage.jsx'
 import ReviewATPPage from './pages/ReviewATPPage/ReviewATPPage.jsx'
+import CompletedATPPage from './pages/CompletedATPPage/CompletedATPPage.jsx'
 import PendingATPSPage from './pages/PendingATPSPage/PendingATPSPage.jsx'
 import AllATPSPage from './pages/AllATPSPage/AllATPSPage.jsx'
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
@@ -27,6 +28,11 @@ const router = createBrowserRouter([
   {
     path: "/review-atp/:atpFormId/:prevSubmissionId",
     element: <ReviewATPPage />
+  },
+
+  {
+    path: "/completed-atp/:atpFormId/:prevSubmissionId",
+    element: <CompletedATPPage />
   },
 
   {

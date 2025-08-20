@@ -31,7 +31,7 @@ export default function SubmissionCard({atpFormId, atpSubmissionId, atpFormTitle
         if (status === 'pending')
             navigate(`/review-atp/${atpFormId}/${atpSubmissionId}`);
         else
-            navigate(`/`); //TODO: navigate to the view atp page
+            navigate(`/completed-atp/${atpFormId}/${atpSubmissionId}`);
     }
 
     return(
