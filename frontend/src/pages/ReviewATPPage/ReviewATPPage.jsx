@@ -6,6 +6,7 @@ import ATPInputSection from '../../components/ATPInputSection/ATPInputSection'
 import FormHeader from '../../components/FormHeader/FormHeader'
 import styles from './ReviewATPPage.module.css'
 import StatusSelector from './StatusSelector'
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner'
 
 //Path: /review-atp/:atpFormId/:prevSubmissionId
 export default function ReviewATPPage()
@@ -161,12 +162,12 @@ export default function ReviewATPPage()
     }
 
     if (!atpTemplateData) {
-        return <div className={styles.loading}>Error: Could not load ATP data</div>;
+        return <LoadingSpinner />
     }
 
     return(
         <div className={styles.fillATPPage}>
-            <Navbar title = {"Review ATP"}/>
+            <Navbar title = {"Review Pending ATP"}/>
 
             <FormHeader 
                 title={atpTemplateData.metadata?.title} 

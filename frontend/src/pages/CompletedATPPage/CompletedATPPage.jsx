@@ -6,6 +6,7 @@ import ATPInputSection from '../../components/ATPInputSection/ATPInputSection'
 import FormHeader from '../../components/FormHeader/FormHeader'
 import styles from './CompletedATPPage.module.css'
 import StatusSelector from './StatusSelector'
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner'
 
 //Path: /completed-atp/:atpFormId/:prevSubmissionId
 export default function CompletedATPPage()
@@ -65,20 +66,14 @@ export default function CompletedATPPage()
         }
     }
 
-    function getAnswerFormat(role, questionOrder)
-    {
-        let question = atpTemplateData.sections[role].items.find(item => item.order === parseInt(questionOrder));
-        return question ? question.answerFormat : null;
-    }
-
     React.useEffect(() => {loadAllData();}, [atpFormId, prevSubmissionId]);
 
     if (isLoading) {
-        return <div className={styles.loading}>Loading...</div>;
+        return <LoadingSpinner />
     }
 
     if (!atpTemplateData) {
-        return <div className={styles.loading}>Error: Could not load ATP data</div>;
+        return <LoadingSpinner />
     }
 
     return(

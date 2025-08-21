@@ -3,12 +3,15 @@ import Navbar from '../../components/Navbar/Navbar';
 import SubmissionCardsContainer from '../../components/SubmissionCardsContainer/SubmissionCardsContainer';
 import styles from './AllATPSPage.module.css';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import FilterSelector from '../AllATPSPage/FilterSelector'
 
 //Path: /reviewed-atps
 export default function PendingATPSPage()
 {
     const [allSubmissions, setAllSubmissions] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
+
+    const [filter, setFilter] = React.useState({pending: true, approved: true, rejected: true, all: true});
 
     async function fetchAllSubmissions()
     {
@@ -28,8 +31,9 @@ export default function PendingATPSPage()
     return(
         <div className={styles.pageContainer}>
             <Navbar title = "All ATPs" />
+            <FilterSelector setFilter = {setFilter} />
             <main className={styles.mainContent}>
-                <SubmissionCardsContainer pending = {true} approved = {true} rejected = {true} submissions = {allSubmissions} />
+                <SubmissionCardsContainer pending = {filter.pending} approved = {filter.approved} rejected = {filter.rejected} submissions = {allSubmissions} />
             </main>
         </div>
     )

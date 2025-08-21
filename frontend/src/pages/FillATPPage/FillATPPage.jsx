@@ -163,7 +163,6 @@ export default function FillATPPage()
                         userRole = {"technician"}
                         showButtons = {true}
                         atpTemplateData = {atpTemplateData}
-                        prevTechnicianResponses = {null}
                     />
                 </form>
             </div>

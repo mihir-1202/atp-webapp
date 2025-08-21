@@ -9,10 +9,11 @@ export default function ATPInputSection({register, errors = {}, userRole, showBu
     function getResponse(userRole, questionOrder)
     {
         if (userRole === "technician") {
-            return prevTechnicianResponses.find(response => response.questionOrder === questionOrder);
+            return prevTechnicianResponses?.find(response => response.questionOrder === questionOrder);
         }
         else if (userRole === "engineer") {
-            return prevEngineerResponses.find(response => response.questionOrder === questionOrder);
+            //if technician is responding to atp, prevEngineerResponses is null -> use ?. to short circuit before find is executed to avoid errors
+            return prevEngineerResponses?.find(response => response.questionOrder === questionOrder);
         }
     }
 
