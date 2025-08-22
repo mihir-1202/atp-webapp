@@ -109,8 +109,8 @@ export default function FormBuilder()
     return(
         <main>
             <label style = {{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: "20px"}}>
-                //will not get submitted with the form because it is not wrapped in the form element
                 <input type = "file" />
+                {/* will not get submitted with the form because it is not wrapped in the form element */}
                 <span>Upload ATP Excel Spreadsheet Template</span>
             </label>
 
