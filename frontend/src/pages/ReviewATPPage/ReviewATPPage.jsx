@@ -9,6 +9,8 @@ import StatusSelector from './StatusSelector'
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner'
 
 //Path: /review-atp/:atpFormId/:prevSubmissionId
+
+//TODO: avoid repeated logic in this page (ReviewATPPage) and FillATPPage
 export default function ReviewATPPage()
 {
     const navigate = useNavigate();
@@ -62,10 +64,10 @@ export default function ReviewATPPage()
         }
     }
 
-    function getAnswerFormat(role, questionOrder)
+    function getAnswerFormatAndSpreadsheetCell(role, questionOrder)
     {
         let question = atpTemplateData.sections[role].items.find(item => item.order === parseInt(questionOrder));
-        return question ? question.answerFormat : null;
+        return question ? {answerFormat: question.answerFormat, spreadsheetCell: question.spreadsheetCell} : null;
     }
 
     function engineerOnSubmit(data)
@@ -92,14 +94,16 @@ export default function ReviewATPPage()
                 {
                     questionOrder: 1,                  
                     answer: "Motor tested and operational",
-                    answerFormat: "text"             
+                    answerFormat: "text",
+                    spreadsheetCell: "A1"
                 }
             ],
             engineerResponses: [
                 {
                     questionOrder: 4,
                     answer: "2024-01-15",
-                    answerFormat: "date"
+                    answerFormat: "date",
+                    spreadsheetCell: "B1"
                 }
             ]
         }
@@ -112,9 +116,9 @@ export default function ReviewATPPage()
         let technicianResponses = [];
         for (let questionOrder in data.technicianResponses)
         {
-            let answerFormat = getAnswerFormat("technician", questionOrder);
+            let {answerFormat, spreadsheetCell} = getAnswerFormatAndSpreadsheetCell("technician", questionOrder);
             let answer = data.technicianResponses[questionOrder];
-            technicianResponses.push({questionOrder: parseInt(questionOrder), answer: answer, answerFormat: answerFormat});
+            technicianResponses.push({questionOrder: parseInt(questionOrder), spreadsheetCell: spreadsheetCell, answer: answer, answerFormat: answerFormat});
         }
 
         data['technicianResponses'] = technicianResponses;
@@ -122,15 +126,15 @@ export default function ReviewATPPage()
         let engineerResponses = [];
         for (let questionOrder in data.engineerResponses)
         {
-            let answerFormat = getAnswerFormat("engineer", questionOrder);
+            let {answerFormat, spreadsheetCell} = getAnswerFormatAndSpreadsheetCell("engineer", questionOrder);
             let answer = data.engineerResponses[questionOrder];
-            engineerResponses.push({questionOrder: parseInt(questionOrder), answer: answer, answerFormat: answerFormat});
+            engineerResponses.push({questionOrder: parseInt(questionOrder), spreadsheetCell: spreadsheetCell, answer: answer, answerFormat: answerFormat});
         }
 
         data['engineerResponses'] = engineerResponses;
         
-        //console.log('TRANSFORMED DATA (for backend):');
-        console.log(data);
+        console.log('TRANSFORMED DATA (for backend):', data);
+        
         console.log('prevSubmissionId', prevSubmissionId);
 
         fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`, {
@@ -150,7 +154,7 @@ export default function ReviewATPPage()
         })
         .catch(error => {
             console.error('Error updating submission:', error);
-            alert('Error updating submission');
+            alert('Failed to update submission. Check console for details.');
         });
         
     }

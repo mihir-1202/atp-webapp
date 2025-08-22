@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './FormFieldBuilder.module.css';
+import SpreadsheetCellMapper from './SpreadsheetCellMapper';
 
 export default function FormFieldBuilder({order, role, removeItem, register})
 {
@@ -37,6 +38,12 @@ export default function FormFieldBuilder({order, role, removeItem, register})
                         
                     </select>
                 </div>
+
+                <SpreadsheetCellMapper 
+                    order={order} 
+                    role={role} 
+                    register={register} 
+                />
 
             </div>
         </li>

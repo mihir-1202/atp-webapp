@@ -37,7 +37,8 @@ export default function ATPInputSection({register, errors = {}, userRole, showBu
         :
         <FieldItem 
             key = {item.order} 
-            id = {item.order} 
+            order = {item.order}
+            spreadsheetCell = {item.spreadsheetCell} 
             question = {item.question} 
             answerFormat = {item.answerFormat} 
             register = {register} 
@@ -64,7 +65,8 @@ export default function ATPInputSection({register, errors = {}, userRole, showBu
         :
         <FieldItem 
             key = {item.order} 
-            id = {item.order} 
+            order = {item.order}
+            spreadsheetCell = {item.spreadsheetCell} 
             question = {item.question} 
             answerFormat = {item.answerFormat} 
             register = {register} 

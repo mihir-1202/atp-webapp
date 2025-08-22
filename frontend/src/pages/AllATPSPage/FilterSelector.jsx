@@ -6,9 +6,9 @@ export default function FilterSelector({setFilter})
         let newFilter;
         
         if (selectedValue === 'all') {
-            newFilter = {pending: true, approved: true, rejected: true, all: true};
+            newFilter = {pending: true, approved: true, rejected: true};
         } else {
-            newFilter = {pending: false, approved: false, rejected: false, all: false};
+            newFilter = {pending: false, approved: false, rejected: false};
             newFilter[selectedValue] = true;
         }
         
@@ -19,7 +19,7 @@ export default function FilterSelector({setFilter})
         <div>
             <label>
                 Filter by:
-                <select onChange = {handleFilterChange}>
+                <select onChange = {handleFilterChange} defaultValue="all">
                     <option value = "pending">Pending ATPs</option>
                     <option value = "approved">Approved Reviews</option>
                     <option value = "rejected">Rejected Reviews</option>

@@ -1,0 +1,45 @@
+/* SpreadsheetCellMapper CSS Module */
+
+.cellMapperContainer {
+    margin-bottom: 15px;
+}
+
+.inputGroup {
+    margin-bottom: 15px;
+}
+
+.inputLabel {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.cellInput {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.cellInput:focus {
+    outline: none;
+    border-color: rgb(44, 76, 142);
+}
+
+.cellInput:disabled {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.helpText {
+    display: block;
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+    line-height: 1.4;
+}

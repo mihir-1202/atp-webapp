@@ -27,14 +27,16 @@ export default function FormBuilder()
                             {
                                 order: 0,
                                 type: "heading",
-                                content: "This is a technician heading"
+                                content: "This is a technician heading",
+                                spreadsheetCell: "A1"
                             },
 
                             {
                                 order: 1,
                                 type: "field",
                                 question: "This is a technician question",
-                                answerFormat: "text"
+                                answerFormat: "text",
+                                spreadsheetCell: "A2"
                             }
                         ]
                     },
@@ -46,14 +48,16 @@ export default function FormBuilder()
                             {
                                 order: 0,
                                 type: "heading",
-                                content: "This is a engineer heading"
+                                content: "This is a engineer heading",
+                                spreadsheetCell: "B1"
                             },
 
                             {
                                 order: 1,
                                 type: "field",
                                 question: "This is a engineer question",
-                                answerFormat: "text"
+                                answerFormat: "text",
+                                spreadsheetCell: "B2"
                             }
                         ]
                     }

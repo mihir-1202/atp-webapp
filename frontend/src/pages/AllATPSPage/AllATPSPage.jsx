@@ -11,7 +11,7 @@ export default function PendingATPSPage()
     const [allSubmissions, setAllSubmissions] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
 
-    const [filter, setFilter] = React.useState({pending: true, approved: true, rejected: true, all: true});
+    const [filter, setFilter] = React.useState({pending: true, approved: true, rejected: true});
 
     async function fetchAllSubmissions()
     {

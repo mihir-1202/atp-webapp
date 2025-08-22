@@ -46,10 +46,10 @@ export default function FillATPPage()
         }
     }
 
-    function getAnswerFormat(questionOrder)
+    function getAnswerFormatAndSpreadsheetCell(questionOrder)
     {
         let question = atpTemplateData.sections.technician.items.find(item => item.order === parseInt(questionOrder));
-        return question ? question.answerFormat : null;
+        return question ? {answerFormat: question.answerFormat, spreadsheetCell: question.spreadsheetCell} : null;
     }
 
     function technicianOnSubmit(data) {
@@ -72,32 +72,35 @@ export default function FillATPPage()
                 {
                     questionOrder: 1,                  
                     answer: "Motor tested and operational",
-                    answerFormat: "text"             
+                    answerFormat: "text",
+                    spreadsheetCell: "A1"
                 },
                 
                 {
                     questionOrder: 3,
                     answer: "2024-01-15",
-                    answerFormat: "date"
+                    answerFormat: "date",
+                    spreadsheetCell: "A3"
                 }
             ]
         }
         */
        console.log('original form data: ', data);
         
-        let technicianResponses = [];
+        let formattedTechnicianResponses = [];
         
         // Check if technicianResponses exists
         if (data.technicianResponses) {
             //JS arrays are objects under the hood so they can have missing keys -> even though technicianResponses will be an array instead of an object, for in will skip over the missing keys
             for (let questionOrder in data.technicianResponses) {
-                let answerFormat = getAnswerFormat(questionOrder);
+                let {answerFormat, spreadsheetCell} = getAnswerFormatAndSpreadsheetCell(questionOrder);
                 let answer = data.technicianResponses[questionOrder];
                 
                 // Only add if we found the question and answer exists
-                if (answerFormat && answer !== undefined && answer !== '') {
-                    technicianResponses.push({
+                if (answerFormat && spreadsheetCell && answer !== undefined && answer !== '') {
+                    formattedTechnicianResponses.push({
                         questionOrder: parseInt(questionOrder), // Convert back to number
+                        spreadsheetCell: spreadsheetCell,
                         answer: answer,
                         answerFormat: answerFormat
                     });
@@ -105,7 +108,7 @@ export default function FillATPPage()
             }
         }
     
-        data['technicianResponses'] = technicianResponses;
+        data['technicianResponses'] = formattedTechnicianResponses;
         console.log('transformed form data: ', data);
 
         //TODO: fix issue where user can submit empty fields

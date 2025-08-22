@@ -20,6 +20,7 @@ class FieldItem(BaseModel):
     type: Literal['field']
     question: Annotated[str, Field(min_length = 1)]
     answerFormat: Annotated[str, Field(min_length = 1)]
+    spreadsheetCell: Annotated[str, Field(pattern=r'^[A-Z]{1,3}[1-9]\d{0,6}$', description="Cell reference in format A1, B5, AA10, etc.")]
     
     
 """
