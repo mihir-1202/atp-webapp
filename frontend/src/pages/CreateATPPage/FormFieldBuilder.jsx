@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styles from './FormFieldBuilder.module.css';
-import SpreadsheetCellMapper from './SpreadsheetCellMapper';
 
 export default function FormFieldBuilder({order, role, removeItem, register})
 {
@@ -39,11 +38,18 @@ export default function FormFieldBuilder({order, role, removeItem, register})
                     </select>
                 </div>
 
-                <SpreadsheetCellMapper 
-                    order={order} 
-                    role={role} 
-                    register={register} 
-                />
+                <div className={styles.inputGroup} id={styles.spreadsheetCellInputGroup}>
+                        <label htmlFor={`${role}-cell-${order}`} className={styles.inputLabel}>
+                            Spreadsheet Cell ID
+                        </label>
+                        <input 
+                            id={`${role}-cell-${order}`} 
+                            className={styles.cellInput} 
+                            type="text" 
+                            placeholder="e.g., A1, B5, C10" 
+                            {...register(`sections.${role}.items.${order}.spreadsheetCell`)}
+                        />
+                </div>
 
             </div>
         </li>

@@ -11,11 +11,13 @@ class Metadata(BaseModel):
     createdBy: Annotated[EmailStr, Field(min_length = 1)]
 
 class HeadingItem(BaseModel):
+    uuid: Annotated[str, Field(min_length = 1)]
     order: Annotated[int, Field(ge = 0)]
     type: Literal['heading'] #type can only be a literal string 'heading'
     content: Annotated[str, Field(min_length = 1)]
     
 class FieldItem(BaseModel):
+    uuid: Annotated[str, Field(min_length = 1)]
     order: Annotated[int, Field(ge = 0)]
     type: Literal['field']
     question: Annotated[str, Field(min_length = 1)]

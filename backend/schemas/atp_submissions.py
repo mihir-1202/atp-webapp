@@ -47,6 +47,7 @@ def is_date(value):
         return False
 
 class Responses(BaseModel):
+    questionUUID: Annotated[str, Field(min_length = 1)]
     questionOrder: Annotated[int, Field(ge = 0)]
     spreadsheetCell: Annotated[str, Field(pattern=r'^[A-Z]{1,3}[1-9]\d{0,6}$', description="Cell reference in format A1, B5, AA10, etc.")]
     answer: Annotated[str, Field(min_length = 1)]

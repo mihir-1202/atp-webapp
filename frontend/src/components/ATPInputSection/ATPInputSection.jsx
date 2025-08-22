@@ -30,16 +30,16 @@ export default function ATPInputSection({register, errors = {}, userRole, showBu
         
         return item.type === 'heading' ? 
         <HeadingItem 
-            key = {item.order} 
-            id = {item.order} 
+            key = {item.uuid} 
+            order = {item.order}
             headingText = {item.content} 
         />
         :
         <FieldItem 
-            key = {item.order} 
+            key = {item.uuid} 
             order = {item.order}
-            spreadsheetCell = {item.spreadsheetCell} 
-            question = {item.question} 
+            questionUUID = {item.uuid} 
+            questionText = {item.content} 
             answerFormat = {item.answerFormat} 
             register = {register} 
             errors = {errors}
@@ -58,16 +58,17 @@ export default function ATPInputSection({register, errors = {}, userRole, showBu
         
         return item.type === 'heading' ? 
         <HeadingItem 
-            key = {item.order} 
-            id = {item.order} 
+            key = {item.uuid} 
+            order = {item.order}
             headingText = {item.content} 
         />
         :
         <FieldItem 
-            key = {item.order} 
+            key = {item.uuid} 
             order = {item.order}
+            questionUUID = {item.uuid} 
             spreadsheetCell = {item.spreadsheetCell} 
-            question = {item.question} 
+            questionText = {item.question} 
             answerFormat = {item.answerFormat} 
             register = {register} 
             errors = {errors}
@@ -90,6 +91,7 @@ export default function ATPInputSection({register, errors = {}, userRole, showBu
 
         {showButtons && 
         <div className={styles.formActions}>
+            {/* onSubmit submits a post request to /atp-submissions/ */}
             <button type="button" className={styles.actionButton}>Save Form</button>
             <button type="submit" className={styles.actionButton}>Submit Form</button>
             <button type="button" className={styles.actionButton}>Reset Form</button>

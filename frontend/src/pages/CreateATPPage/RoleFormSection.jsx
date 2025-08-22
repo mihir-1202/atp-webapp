@@ -34,11 +34,23 @@ export default function RoleFormSection({role, items, appendItem, removeItem, re
                 <h2 className={styles.sectionTitle}>{role.charAt(0).toUpperCase() + role.slice(1)} Form</h2>
                 
                 <div className={styles.sectionButtons}>
-                    <button className={styles.addHeadingButton} type="button" onClick = {() => appendItem({order: items.length, type: "heading", content: ""})}>
+                    <button className={styles.addHeadingButton} type="button" onClick = {() => appendItem({
+                        id: crypto.randomUUID(),
+                        order: items.length, 
+                        type: "heading", 
+                        content: "",
+                    })}>
                         Add Heading
                     </button>
 
-                    <button className={styles.addFieldButton} type="button" onClick = {() => appendItem({order: items.length, type: "field", question: "", answerFormat: "text"})}>
+                    <button className={styles.addFieldButton} type="button" onClick = {() => appendItem({
+                        id: crypto.randomUUID(),
+                        order: items.length, 
+                        type: "field", 
+                        question: "", 
+                        answerFormat: "text",
+                        spreadsheetCell: ""
+                    })}>
                         Add New Field
                     </button>
                 </div>

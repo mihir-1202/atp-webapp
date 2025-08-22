@@ -46,10 +46,11 @@ export default function FillATPPage()
         }
     }
 
-    function getAnswerFormatAndSpreadsheetCell(questionOrder)
+    function getQuestionMetadataByUUID(questionUUID)
     {
-        let question = atpTemplateData.sections.technician.items.find(item => item.order === parseInt(questionOrder));
-        return question ? {answerFormat: question.answerFormat, spreadsheetCell: question.spreadsheetCell} : null;
+        //iterates through the items in the atpTemplateData.sections.technician.items array and returns the item which has the same order as the argument
+        let question = atpTemplateData.sections.technician.items.find(item => item.uuid === questionUUID);
+        return question;
     }
 
     function technicianOnSubmit(data) {
@@ -59,8 +60,8 @@ export default function FillATPPage()
             formId: "68a354881d8bf3c326340621",
             submittedBy: "technician@upwingenergy.com", 
             technicianResponses: {
-                "1": "Motor tested and operational",     
-                "3": "2024-01-15"                       
+                "question1_uuid": "Motor tested and operational",     
+                "question3_uuid": "2024-01-15"                       
             }
         }
         
@@ -70,6 +71,7 @@ export default function FillATPPage()
             submittedBy: "technician@upwingenergy.com",
             technicianResponses: [
                 {
+                    questionUUID: "question1_uuid",
                     questionOrder: 1,                  
                     answer: "Motor tested and operational",
                     answerFormat: "text",
@@ -77,6 +79,7 @@ export default function FillATPPage()
                 },
                 
                 {
+                    questionUUID: "question3_uuid",
                     questionOrder: 3,
                     answer: "2024-01-15",
                     answerFormat: "date",
@@ -92,14 +95,16 @@ export default function FillATPPage()
         // Check if technicianResponses exists
         if (data.technicianResponses) {
             //JS arrays are objects under the hood so they can have missing keys -> even though technicianResponses will be an array instead of an object, for in will skip over the missing keys
-            for (let questionOrder in data.technicianResponses) {
-                let {answerFormat, spreadsheetCell} = getAnswerFormatAndSpreadsheetCell(questionOrder);
-                let answer = data.technicianResponses[questionOrder];
+            for (let questionUUID in data.technicianResponses) {
+                const question = getQuestionMetadataByUUID(questionUUID);
+                const {answerFormat, spreadsheetCell, order} = question;
+                const answer = data.technicianResponses[questionUUID];
                 
                 // Only add if we found the question and answer exists
-                if (answerFormat && spreadsheetCell && answer !== undefined && answer !== '') {
+                if (answerFormat && spreadsheetCell && order && answer !== undefined && answer !== '') {
                     formattedTechnicianResponses.push({
-                        questionOrder: parseInt(questionOrder), // Convert back to number
+                        questionUUID: questionUUID,
+                        questionOrder: typeof order === 'number' ? order : parseInt(order),
                         spreadsheetCell: spreadsheetCell,
                         answer: answer,
                         answerFormat: answerFormat
@@ -161,12 +166,14 @@ export default function FillATPPage()
                 <form className="atp-form" 
                 id="submissionForm" 
                 onSubmit = {handleSubmit(technicianOnSubmit)}>
+                    
                     <ATPInputSection 
                         register = {register}
                         userRole = {"technician"}
                         showButtons = {true}
                         atpTemplateData = {atpTemplateData}
                     />
+                    
                 </form>
             </div>
 

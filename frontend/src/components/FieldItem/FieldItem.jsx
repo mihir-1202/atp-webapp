@@ -16,7 +16,7 @@ function getPlaceholder(answerFormat)
     }
 }
 
-export default function FieldItem({order, spreadsheetCell, question, answerFormat, register, userRole, readOnly = false, defaultValue = "" })
+export default function FieldItem({questionUUID, questionText, answerFormat, register, userRole, readOnly = false, defaultValue = "" })
 {
     // Subtle styling for empty readonly fields to make them visible
     const emptyReadonlyStyle = readOnly && !defaultValue ? {
@@ -27,9 +27,9 @@ export default function FieldItem({order, spreadsheetCell, question, answerForma
 
     //TODO: implement the logic to display the correct type of input field
     return(
-        <div className={styles.fieldItem} key = {order}>
+        <div className={styles.fieldItem} key = {questionUUID}>
             <label className={styles.fieldLabel}>
-                {question}
+                {questionText}
                 {readOnly && !defaultValue && <span style={{color: '#6c757d', fontSize: '0.9em'}}> (No response)</span>}
             </label>
             {answerFormat !== 'textarea' ? 
@@ -43,7 +43,7 @@ export default function FieldItem({order, spreadsheetCell, question, answerForma
                     placeholder={readOnly && !defaultValue ? `No ${userRole} response yet` : getPlaceholder(answerFormat)} 
                     defaultValue={defaultValue} 
                     required 
-                    {...register(`${userRole}Responses.${order}`)} 
+                    {...register(`${userRole}Responses.${questionUUID}`)} 
                     readOnly={readOnly} 
                 />
                 :
@@ -52,7 +52,7 @@ export default function FieldItem({order, spreadsheetCell, question, answerForma
                     style={{...emptyReadonlyStyle}}
                     placeholder={readOnly && !defaultValue ? `No ${userRole} response yet` : getPlaceholder(answerFormat)} 
                     defaultValue={defaultValue} 
-                    required {...register(`${userRole}Responses.${order}`)} 
+                    required {...register(`${userRole}Responses.${questionUUID}`)} 
                     readOnly={readOnly}
                 />
             }

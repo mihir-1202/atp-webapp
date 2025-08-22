@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styles from './FormHeadingBuilder.module.css';
-import SpreadsheetCellMapper from './SpreadsheetCellMapper';
 
 export default function FormHeadingBuilder({order, role, removeItem, register})
 {
@@ -29,12 +28,6 @@ export default function FormHeadingBuilder({order, role, removeItem, register})
                         {...register(`sections.${role}.items.${order}.content`)}
                     />
                 </div>
-                
-                <SpreadsheetCellMapper 
-                    order={order} 
-                    role={role} 
-                    register={register} 
-                />
             </div>
         </li>
     )

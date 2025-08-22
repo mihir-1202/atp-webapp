@@ -25,13 +25,14 @@ export default function FormBuilder()
                         items: 
                         [
                             {
+                                id: crypto.randomUUID(),
                                 order: 0,
                                 type: "heading",
                                 content: "This is a technician heading",
-                                spreadsheetCell: "A1"
                             },
 
                             {
+                                id: crypto.randomUUID(),
                                 order: 1,
                                 type: "field",
                                 question: "This is a technician question",
@@ -46,13 +47,14 @@ export default function FormBuilder()
                         items: 
                         [
                             {
+                                id: crypto.randomUUID(),
                                 order: 0,
                                 type: "heading",
                                 content: "This is a engineer heading",
-                                spreadsheetCell: "B1"
                             },
 
                             {
+                                id: crypto.randomUUID(),
                                 order: 1,
                                 type: "field",
                                 question: "This is a engineer question",
@@ -79,6 +81,15 @@ export default function FormBuilder()
     function onSubmit(formData) 
     {
         console.log("Frontend sending:", formData);
+
+        //Generate a random UUID for each item (heading or field) in the formData
+        formData.sections.technician.items.forEach(item => {
+            item.uuid = crypto.randomUUID();
+        });
+
+        formData.sections.engineer.items.forEach(item => {
+            item.uuid = crypto.randomUUID();
+        });
       
         fetch("http://localhost:8000/atp-forms/", {
           method: "POST",

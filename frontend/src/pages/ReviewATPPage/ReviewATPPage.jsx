@@ -64,10 +64,11 @@ export default function ReviewATPPage()
         }
     }
 
-    function getAnswerFormatAndSpreadsheetCell(role, questionOrder)
+    function getQuestionMetadataByUUID(role, questionUUID)
     {
-        let question = atpTemplateData.sections[role].items.find(item => item.order === parseInt(questionOrder));
-        return question ? {answerFormat: question.answerFormat, spreadsheetCell: question.spreadsheetCell} : null;
+        //iterates through the items in the atpTemplateData.sections.technician.items array and returns the item which has the same uuid as the argument
+        let question = atpTemplateData.sections[role].items.find(item => item.uuid === questionUUID);
+        return question;
     }
 
     function engineerOnSubmit(data)
@@ -79,10 +80,10 @@ export default function ReviewATPPage()
             formId: "68a354881d8bf3c326340621",
             submittedBy: "technician@upwingenergy.com", 
             technicianResponses: {
-                "1": "Motor tested and operational",                       
+                "question1_uuid": "Motor tested and operational",                       
             },
             engineerResponses: {     
-                "4": "2024-01-15"                       
+                "question4_uuid": "2024-01-15"                       
             }
         }
         
@@ -114,21 +115,33 @@ export default function ReviewATPPage()
 
         
         let technicianResponses = [];
-        for (let questionOrder in data.technicianResponses)
+        for (let questionUUID in data.technicianResponses)
         {
-            let {answerFormat, spreadsheetCell} = getAnswerFormatAndSpreadsheetCell("technician", questionOrder);
-            let answer = data.technicianResponses[questionOrder];
-            technicianResponses.push({questionOrder: parseInt(questionOrder), spreadsheetCell: spreadsheetCell, answer: answer, answerFormat: answerFormat});
+            let question = getQuestionMetadataByUUID("technician", questionUUID);
+            let {id, answerFormat, spreadsheetCell} = question;
+            let answer = data.technicianResponses[questionUUID];
+            technicianResponses.push({
+                questionUUID: questionUUID,
+                questionOrder: question.order, 
+                spreadsheetCell: spreadsheetCell, 
+                answer: answer, 
+                answerFormat: answerFormat});
         }
 
         data['technicianResponses'] = technicianResponses;
 
         let engineerResponses = [];
-        for (let questionOrder in data.engineerResponses)
+        for (let questionUUID in data.engineerResponses)
         {
-            let {answerFormat, spreadsheetCell} = getAnswerFormatAndSpreadsheetCell("engineer", questionOrder);
-            let answer = data.engineerResponses[questionOrder];
-            engineerResponses.push({questionOrder: parseInt(questionOrder), spreadsheetCell: spreadsheetCell, answer: answer, answerFormat: answerFormat});
+            let question = getQuestionMetadataByUUID("engineer", questionUUID);
+            let {id, answerFormat, spreadsheetCell} = question;
+            let answer = data.engineerResponses[questionUUID];
+            engineerResponses.push({
+                questionUUID: questionUUID,
+                questionOrder: question.order, 
+                spreadsheetCell: spreadsheetCell, 
+                answer: answer, 
+                answerFormat: answerFormat});
         }
 
         data['engineerResponses'] = engineerResponses;
