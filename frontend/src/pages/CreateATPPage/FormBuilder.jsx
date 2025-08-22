@@ -108,6 +108,12 @@ export default function FormBuilder()
 
     return(
         <main>
+            <label style = {{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: "20px"}}>
+                //will not get submitted with the form because it is not wrapped in the form element
+                <input type = "file" />
+                <span>Upload ATP Excel Spreadsheet Template</span>
+            </label>
+
             <div className={styles.formContainer}>
                 <h1 className={styles.formTitle}>Create New ATP Form</h1>
                 <form className="atp-form" onSubmit = {handleSubmit(onSubmit)}> 
