@@ -16,7 +16,7 @@ function getPlaceholder(answerFormat)
     }
 }
 
-export default function FieldItem({questionUUID, questionText, answerFormat, register, userRole, readOnly = false, defaultValue = "" })
+export default function FieldItem({questionUUID, questionText, answerFormat, register, role, readOnly = false, defaultValue = "" })
 {
     // Subtle styling for empty readonly fields to make them visible
     const emptyReadonlyStyle = readOnly && !defaultValue ? {
@@ -40,19 +40,19 @@ export default function FieldItem({questionUUID, questionText, answerFormat, reg
                     type={answerFormat} 
                     className={styles.fieldInput} 
                     style={{...emptyReadonlyStyle}}
-                    placeholder={readOnly && !defaultValue ? `No ${userRole} response yet` : getPlaceholder(answerFormat)} 
+                    placeholder={readOnly && !defaultValue ? `No ${role} response yet` : getPlaceholder(answerFormat)} 
                     defaultValue={defaultValue} 
                     required 
-                    {...register(`${userRole}Responses.${questionUUID}`)} 
+                    {...register(`${role}Responses.${questionUUID}`)} 
                     readOnly={readOnly} 
                 />
                 :
                 <textarea 
                     className={styles.fieldInput} 
                     style={{...emptyReadonlyStyle}}
-                    placeholder={readOnly && !defaultValue ? `No ${userRole} response yet` : getPlaceholder(answerFormat)} 
+                    placeholder={readOnly && !defaultValue ? `No ${role} response yet` : getPlaceholder(answerFormat)} 
                     defaultValue={defaultValue} 
-                    required {...register(`${userRole}Responses.${questionUUID}`)} 
+                    required {...register(`${role}Responses.${questionUUID}`)} 
                     readOnly={readOnly}
                 />
             }

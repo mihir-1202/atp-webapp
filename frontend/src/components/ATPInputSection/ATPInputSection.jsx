@@ -3,29 +3,20 @@ import HeadingItem from '../HeadingItem/HeadingItem';
 import FieldItem from '../FieldItem/FieldItem';
 import styles from './ATPInputSection.module.css';
 
-export default function ATPInputSection({register, errors = {}, userRole, showButtons, atpTemplateData, readOnly = false, prevTechnicianResponses = [], prevEngineerResponses = []})
+export default function ATPInputSection({register, role, showButtons, atpTemplateData, readOnly = false, prevResponses = []})
 {
   
-    function getResponse(userRole, questionOrder)
+    function getResponseByUUID(questionUUID)
     {
-        if (userRole === "technician") {
-            return prevTechnicianResponses?.find(response => response.questionOrder === questionOrder);
-        }
-        else if (userRole === "engineer") {
-            //if technician is responding to atp, prevEngineerResponses is null -> use ?. to short circuit before find is executed to avoid errors
-            return prevEngineerResponses?.find(response => response.questionOrder === questionOrder);
-        }
+        return prevResponses?.find(response => response.questionUUID === questionUUID);
     }
 
-    let technicianFormItems = atpTemplateData.sections.technician.items;
-    let engineerFormItems = atpTemplateData.sections.engineer.items;
+    const formItems = atpTemplateData.sections[role].items;
     
-
-    
-    let technicianFormItemsJSX = technicianFormItems.map(item => {
+    let formItemsJSX = formItems.map(item => {
         
         //If in the pending review page, prevTechnicianResponses is not null -> if the InputSection is for the technician we want to populate the inputs with the previous responses
-        const previousResponse = getResponse("technician", item.order);
+        const previousResponse = getResponseByUUID(item.uuid);
         const previousValue = previousResponse ? previousResponse.answer : '';
         
         return item.type === 'heading' ? 
@@ -42,50 +33,18 @@ export default function ATPInputSection({register, errors = {}, userRole, showBu
             questionText = {item.content} 
             answerFormat = {item.answerFormat} 
             register = {register} 
-            errors = {errors}
             defaultValue = {previousValue} 
-            userRole = {userRole}
+            role = {role}
             readOnly = {readOnly}
         />
     });
-
-
-    let engineerFormItemsJSX = engineerFormItems.map(item => {
-        
-        //If in the pending review page, prevTechnicianResponses is not null -> if the InputSection is for the technician we want to populate the inputs with the previous responses
-        const previousResponse = getResponse("engineer", item.order);
-        const previousValue = previousResponse ? previousResponse.answer : '';
-        
-        return item.type === 'heading' ? 
-        <HeadingItem 
-            key = {item.uuid} 
-            order = {item.order}
-            headingText = {item.content} 
-        />
-        :
-        <FieldItem 
-            key = {item.uuid} 
-            order = {item.order}
-            questionUUID = {item.uuid} 
-            spreadsheetCell = {item.spreadsheetCell} 
-            questionText = {item.question} 
-            answerFormat = {item.answerFormat} 
-            register = {register} 
-            errors = {errors}
-            defaultValue = {previousValue} 
-            userRole = {userRole}
-            readOnly = {readOnly}
-        />
-    });
-
-    
 
     return(
     <>
         <div className={styles.formSection}>
-            <h3 className={styles.sectionHeading}>{userRole.charAt(0).toUpperCase() + userRole.slice(1)} Section</h3>
+            <h3 className={styles.sectionHeading}>{role.charAt(0).toUpperCase() + role.slice(1)} Section</h3>
             <div className={styles.sectionContent}>
-                {userRole === "technician" ? technicianFormItemsJSX : engineerFormItemsJSX}  
+                {formItemsJSX}  
             </div>
         </div>
 
