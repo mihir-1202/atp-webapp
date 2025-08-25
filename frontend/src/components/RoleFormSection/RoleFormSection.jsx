@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
-import FormHeadingBuilder from './FormHeadingBuilder';
-import FormFieldBuilder from './FormFieldBuilder';
+import FormHeadingBuilder from '../FormHeadingBuilder/FormHeadingBuilder';
+import FormFieldBuilder from '../FormFieldBuilder/FormFieldBuilder';
 import styles from './RoleFormSection.module.css';
 
 export default function RoleFormSection({role, items, appendItem, removeItem, register})

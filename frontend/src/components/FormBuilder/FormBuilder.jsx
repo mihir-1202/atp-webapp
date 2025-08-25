@@ -1,7 +1,7 @@
 import React from 'react';
-import FormMetadata from './FormMetadata';
-import RoleFormSection from './RoleFormSection';
-import FormActions from './FormActions';
+import FormMetadata from '../FormMetadata/FormMetadata';
+import RoleFormSection from '../RoleFormSection/RoleFormSection';
+import CreateFormActions from '../CreateFormActions/CreateFormActions';
 import {useForm, useFieldArray} from 'react-hook-form';
 import styles from './FormBuilder.module.css';
 
@@ -141,7 +141,7 @@ export default function FormBuilder()
                     <hr className="divider" />
 
                     
-                    <FormActions />
+                    <CreateFormActions />
                 </form>
             </div>
         </main>

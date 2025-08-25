@@ -243,7 +243,7 @@ export default function ATPUI()
     }
 
     if (isLoading) {
-        return <div className={styles.loading}>Loading...</div>;
+        return <LoadingSpinner />;
     }
 
     if (!atpTemplateData) {

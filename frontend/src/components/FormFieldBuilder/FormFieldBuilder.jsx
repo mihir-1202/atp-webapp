@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './FormFieldBuilder.module.css';
 
-export default function FormFieldBuilder({order, role, removeItem, register})
+export default function FormFieldBuilder({order, role, removeItem, defaultValue = "", register})
 {
     return(
         <li className={styles.fieldItem}>
@@ -18,6 +18,7 @@ export default function FormFieldBuilder({order, role, removeItem, register})
                         className="question-input" 
                         type="text" 
                         placeholder="Enter question" 
+                        defaultValue={defaultValue || ""}
                         {...register(`sections.${role}.items.${order}.question`)}
                     />
                 </div>
@@ -29,11 +30,12 @@ export default function FormFieldBuilder({order, role, removeItem, register})
                         required
                         className="answer-format-input" 
                         {...register(`sections.${role}.items.${order}.answerFormat`)}
+                        defaultValue = {defaultValue || "text"}
                     >
-                        <option value="text">Text Input</option>
-                        <option value="textarea">Text Area</option>
-                        <option value="number">Number</option>
-                        <option value="date">Date</option>
+                        <option value="text" >Text Input</option>
+                        <option value="textarea" >Text Area</option>
+                        <option value="number" >Number</option>
+                        <option value="date" >Date</option>
                         
                     </select>
                 </div>

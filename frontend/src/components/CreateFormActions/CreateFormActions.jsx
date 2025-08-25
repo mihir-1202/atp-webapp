@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from './FormActions.module.css';
+import styles from './CreateFormActions.module.css';
 
-export default function FormActions()
+export default function CreateFormActions()
 {
     return(
         <div className={styles.actionButtonsContainer}>
