@@ -2,6 +2,7 @@ import React from 'react';
 import HeadingItem from '../HeadingItem/HeadingItem';
 import FieldItem from '../FieldItem/FieldItem';
 import styles from './ATPInputSection.module.css';
+import {useNavigate} from 'react-router-dom';
 
 export default function ATPInputSection({register, role, showButtons, atpTemplateData, readOnly = false, prevResponses = []})
 {

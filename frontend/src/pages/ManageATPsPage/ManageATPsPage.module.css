@@ -1,0 +1,155 @@
+/* ManageATPsPage CSS Module - Scoped styles */
+
+/* Page Container */
+.manageATPsPage {
+    width: 100%;
+    min-height: 100vh;
+    background: rgb(248, 249, 250);
+    font-family: "Inter", "Roboto", sans-serif;
+    padding-top: 100px;
+}
+
+.mainContent {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: 0 40px;
+}
+
+/* ManageATPCardsContainer Styles */
+.manageATPCardsContainer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1200px;
+    gap: 20px;
+}
+
+.noFormsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 1px 1px 10px 0 rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.noFormsTitle {
+    font-size: 28px;
+    color: rgb(44, 76, 142);
+    margin-bottom: 16px;
+    font-weight: 500;
+}
+
+.noFormsDescription {
+    font-size: 18px;
+    color: rgb(76, 75, 75);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ManageATPCard Styles */
+.manageATPCard {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 50px;
+    align-items: center;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+    padding: 20px 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 1px 1px 10px 0 rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.manageATPCard:hover {
+    border-left: 4px solid rgb(44, 76, 142);
+    background-color: rgb(248, 249, 250);
+    transform: translateY(-2px);
+    box-shadow: 2px 4px 15px 0 rgba(0, 0, 0, 0.15);
+}
+
+.atpInfoContainer {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.atpTitle {
+    font-size: 25px;
+    font-weight: 500;
+    color: rgb(44, 76, 142);
+    margin-bottom: 8px;
+}
+
+.atpDescription {
+    font-size: 18px;
+    color: rgb(76, 75, 75);
+}
+
+.actionButtons {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    align-items: center;
+}
+
+.updateButton {
+    background-color: rgb(44, 76, 142);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-family: "Inter", "Roboto", sans-serif;
+}
+
+.updateButton:hover {
+    background-color: rgb(52, 90, 168);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.updateButton:active {
+    background-color: rgb(36, 62, 120);
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.deleteButton {
+    background-color: rgb(211, 63, 63);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-family: "Inter", "Roboto", sans-serif;
+}
+
+.deleteButton:hover {
+    background-color: rgb(175, 43, 43);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.deleteButton:active {
+    background-color: rgb(175, 43, 43);
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

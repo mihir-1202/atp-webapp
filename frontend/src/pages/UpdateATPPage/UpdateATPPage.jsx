@@ -22,7 +22,8 @@ export default function UpdateATPPage()
         .then(() => setIsLoading(false));
     }, [atpFormId]);
 
-    const handleSubmit = (formData) => {
+    function handleSubmit(formData)
+    {
         fetch(`http://localhost:8000/atp-forms/${atpFormId}`, {
             method: "PUT",
             headers: {

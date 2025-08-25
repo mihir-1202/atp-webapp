@@ -71,3 +71,19 @@ async def get_atp_form(atp_form_id: str, atp_forms: Collection = Depends(get_atp
     atp_form_document['_id'] = str(atp_form_document['_id'])  # Convert ObjectId to string
     return atp_form_document
 
+@router.delete("/{atp_form_id}")
+async def delete_form_template(atp_form_id: str, atp_forms: Collection = Depends(get_atp_forms_collection)):
+    try:
+        # Validate ObjectId format
+        object_id = ObjectId(atp_form_id)
+    except Exception:
+        return {"error": "Invalid ATP form ID format"}
+    
+    query = {'_id': object_id}
+    result = atp_forms.delete_one(query)
+    
+    if result.deleted_count == 0:
+        return {"error": "ATP form not found"}
+    
+    return {"message": "ATP form deleted successfully"}
+

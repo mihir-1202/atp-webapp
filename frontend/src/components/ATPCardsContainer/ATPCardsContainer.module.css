@@ -15,3 +15,40 @@
     padding: 0;
     margin: 0;
 }
+
+.noATPsContainer {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 900px;
+    min-width: 500px;
+}
+
+.noATPsMessage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 1px 1px 10px 0 rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+}
+
+.noATPsTitle {
+    font-size: 24px;
+    color: rgb(44, 76, 142);
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.noATPsDescription {
+    font-size: 18px;
+    color: rgb(76, 75, 75);
+    line-height: 1.5;
+    margin: 0;
+}

@@ -25,21 +25,30 @@ export default function ATPCardsContainer()
             </div>
         )
 
-    let atpCardsList = [];
-
-    //TODO: add handling for when there are no ATP cards or when entry in the database is in the wrong format
-    if(atpCards.length !== 0)
+    //if there are no ATPs the message should NOT be shown in an ul element
+    if(atpCards.length === 0)
     {
-        atpCardsList = atpCards.map((atpCard) => 
-        {
-            return <ATPCard 
-                key = {atpCard._id} 
-                atpId = {atpCard._id}
-                atpTitle = {atpCard.metadata.title} 
-                atpDescription = {atpCard.metadata.description}
-            />
-        })
+        return (
+            <div className={styles.noATPsContainer}>
+                <div className={styles.noATPsMessage}>
+                    <h2 className={styles.noATPsTitle}>No ATP Forms Found</h2>
+                    <p className={styles.noATPsDescription}>
+                        There are no ATP forms available to display. Create your first ATP form to get started.
+                    </p>
+                </div>
+            </div>
+        );
     }
+
+    const atpCardsList = atpCards.map((atpCard) => 
+    {
+        return <ATPCard 
+            key = {atpCard._id} 
+            atpId = {atpCard._id}
+            atpTitle = {atpCard.metadata.title} 
+            atpDescription = {atpCard.metadata.description}
+        />
+    });
 
     return(
         <ul className={styles.atpCardsContainer}>

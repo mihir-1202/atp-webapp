@@ -4,6 +4,7 @@ import CreateATPPage from './pages/CreateATPPage/CreateATPPage.jsx'
 import HomePage from './pages/HomePage/HomePage.jsx'
 import UpdateATPPage from './pages/UpdateATPPage/UpdateATPPage.jsx'
 import SelectATPPage from './pages/SelectATPPage/SelectATPPage.jsx'
+import ManageATPsPage from './pages/ManageATPsPage/ManageATPsPage.jsx'
 
 //import FillATPPage from './pages/FillATPPage/FillATPPage.jsx'
 //import ReviewATPPage from './pages/ReviewATPPage/ReviewATPPage.jsx'
@@ -58,6 +59,11 @@ const router = createBrowserRouter([
   {
     path: "/all-atps",
     element: <AllATPSPage />
+  },
+
+  {
+    path: "/manage-atps",
+    element: <ManageATPsPage />
   }
 ])
 
