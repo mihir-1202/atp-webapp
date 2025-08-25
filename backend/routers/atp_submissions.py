@@ -84,6 +84,7 @@ async def get_pending_atp_submission(atp_submissions: Collection = Depends(get_a
 
 @router.get("/metadata")
 async def get_atp_submission_metadata(atp_submissions: Collection = Depends(get_atp_submissions_collection), atp_forms: Collection = Depends(get_atp_forms_collection)):
+    #TODO: add error handling when a form is submitted but the form template metadata is deleted/not found
     all_submissions = list(atp_submissions.find())
     if not all_submissions:
         return []
