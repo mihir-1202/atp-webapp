@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './FormHeadingBuilder.module.css';
 
-export default function FormHeadingBuilder({order, role, removeItem, register})
+export default function FormHeadingBuilder({order, role, removeItem, defaultValue = "", register})
 {
     const [headingInput, setHeadingInput] = useState("");
 
@@ -24,6 +24,7 @@ export default function FormHeadingBuilder({order, role, removeItem, register})
                         className="heading-input" 
                         type="text" 
                         placeholder="Enter Heading" 
+                        defaultValue={defaultValue}
                         required 
                         {...register(`sections.${role}.items.${order}.content`)}
                     />

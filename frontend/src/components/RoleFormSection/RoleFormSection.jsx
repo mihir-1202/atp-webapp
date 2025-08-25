@@ -5,26 +5,12 @@ import styles from './RoleFormSection.module.css';
 
 export default function RoleFormSection({role, items, appendItem, removeItem, register})
 {
-    
-    const [formItemId, setFormItemId] = useState(1);
-    const [formItems, setFormItems] = useState([]);
-
-    function addFormItem(type)
-    {
-        setFormItems([...formItems, {id: formItemId, type: type}]);
-        setFormItemId(formItemId + 1);
-    }
-
-    function removeFormItem(id)
-    {
-        setFormItems(formItems.filter((item) => item.id !== id));
-    }
  
     let formItemsJSX = items.map((item, index) => 
         {
             return (item.type === "heading") 
-            ? <FormHeadingBuilder key = {item.id} order = {index} role = {role} removeItem = {removeItem} register = {register} /> 
-            : <FormFieldBuilder key = {item.id} order = {index} role = {role} removeItem = {removeItem} register = {register} />
+            ? <FormHeadingBuilder key = {item.uuid} order = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.content || ""} /> 
+            : <FormFieldBuilder key = {item.uuid} order = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.question || ""} />
         }
     )
 
@@ -35,7 +21,7 @@ export default function RoleFormSection({role, items, appendItem, removeItem, re
                 
                 <div className={styles.sectionButtons}>
                     <button className={styles.addHeadingButton} type="button" onClick = {() => appendItem({
-                        id: crypto.randomUUID(),
+                        uuid: crypto.randomUUID(),
                         order: items.length, 
                         type: "heading", 
                         content: "",
@@ -44,7 +30,7 @@ export default function RoleFormSection({role, items, appendItem, removeItem, re
                     </button>
 
                     <button className={styles.addFieldButton} type="button" onClick = {() => appendItem({
-                        id: crypto.randomUUID(),
+                        uuid: crypto.randomUUID(),
                         order: items.length, 
                         type: "field", 
                         question: "", 

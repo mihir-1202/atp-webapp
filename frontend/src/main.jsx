@@ -2,6 +2,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import CreateATPPage from './pages/CreateATPPage/CreateATPPage.jsx'
 import HomePage from './pages/HomePage/HomePage.jsx'
+import UpdateATPPage from './pages/UpdateATPPage/UpdateATPPage.jsx'
+import SelectATPPage from './pages/SelectATPPage/SelectATPPage.jsx'
 
 //import FillATPPage from './pages/FillATPPage/FillATPPage.jsx'
 //import ReviewATPPage from './pages/ReviewATPPage/ReviewATPPage.jsx'
@@ -21,6 +23,16 @@ const router = createBrowserRouter([
   {
     path: "/create-atp",
     element: <CreateATPPage />
+  },
+
+  {
+    path: "/update-atp/:atpFormId",
+    element: <UpdateATPPage />
+  },
+
+  {
+    path: "/select-atp",
+    element: <SelectATPPage />
   },
 
   {

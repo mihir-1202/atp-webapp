@@ -1,5 +1,5 @@
 import React from 'react';
-import ATPCardsContainer from './ATPCardsContainer';
+import ATPCardsContainer from '../../components/ATPCardsContainer/ATPCardsContainer';
 import ActionsButtons from './ActionsButtons';
 import styles from './MainContent.module.css';
 

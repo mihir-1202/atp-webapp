@@ -19,6 +19,28 @@ async def create_form_template(
     inserted_document = atp_forms.insert_one(form_template_data)
     return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
 
+@router.put("/{atp_form_id}")
+async def update_form_template(
+    atp_form_id: str, 
+    form_template: Annotated[schemas.FormTemplate, Body()], 
+    atp_forms: Collection = Depends(get_atp_forms_collection)
+):
+    query = {'_id': ObjectId(atp_form_id)}
+    atp_form_document = atp_forms.find_one(query)
+    if not atp_form_document:
+        return {"error": "ATP form not found and cannot be updated"}
+    
+    # Convert Pydantic model to dictionary
+    form_template_data = form_template.model_dump()
+    # Update the document
+    result = atp_forms.update_one(query, {'$set': form_template_data})
+    
+    if result.matched_count == 0:
+        return {"error": "ATP form not found and cannot be updated"}
+    if result.modified_count == 0:
+        return {"error": "ATP form was not modified"}
+    return {"message": "ATP form updated successfully"}
+
 @router.get("/")
 async def get_form_templates(atp_forms: Collection = Depends(get_atp_forms_collection)):
     #TODO: only return the metadata of the form templates instead of the entire document

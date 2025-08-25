@@ -1,7 +1,7 @@
 import React from 'react';
 import {useState, useEffect} from 'react';
-import ATPCard from './ATPCard';
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import ATPCard from '../ATPCard/ATPCard';
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import styles from './ATPCardsContainer.module.css';
 
 export default function ATPCardsContainer()

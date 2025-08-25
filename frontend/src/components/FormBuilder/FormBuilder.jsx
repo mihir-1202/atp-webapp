@@ -5,64 +5,18 @@ import CreateFormActions from '../CreateFormActions/CreateFormActions';
 import {useForm, useFieldArray} from 'react-hook-form';
 import styles from './FormBuilder.module.css';
 
-export default function FormBuilder()
+export default function FormBuilder({defaultMetadata, defaultTechnicianItems, defaultEngineerItems, onSubmit})
 {
     const {register, control, handleSubmit} = useForm(
         {
             defaultValues:
             {
-                metadata:
-                {
-                    title: "this is a test title",
-                    description: "this is a test description",
-                    createdBy: "someone@upwingenergy.com"
-                },
+                metadata: defaultMetadata,
 
                 sections:
                 {
-                    technician:
-                    {
-                        items: 
-                        [
-                            {
-                                id: crypto.randomUUID(),
-                                order: 0,
-                                type: "heading",
-                                content: "This is a technician heading",
-                            },
-
-                            {
-                                id: crypto.randomUUID(),
-                                order: 1,
-                                type: "field",
-                                question: "This is a technician question",
-                                answerFormat: "text",
-                                spreadsheetCell: "A2"
-                            }
-                        ]
-                    },
-
-                    engineer:
-                    {
-                        items: 
-                        [
-                            {
-                                id: crypto.randomUUID(),
-                                order: 0,
-                                type: "heading",
-                                content: "This is a engineer heading",
-                            },
-
-                            {
-                                id: crypto.randomUUID(),
-                                order: 1,
-                                type: "field",
-                                question: "This is a engineer question",
-                                answerFormat: "text",
-                                spreadsheetCell: "B2"
-                            }
-                        ]
-                    }
+                    technician: {items: defaultTechnicianItems},
+                    engineer: {items: defaultEngineerItems}
                 }
             }
         }
@@ -78,44 +32,26 @@ export default function FormBuilder()
         name: "sections.engineer.items"
     });
 
-    function onSubmit(formData) 
-    {
+    // Default onSubmit function that handles UUID assignment
+    const handleFormSubmit = (formData) => {
         console.log("Frontend sending:", formData);
 
-        //Generate a random UUID for each item (heading or field) in the formData
-        formData.sections.technician.items.forEach(item => {
-            item.uuid = crypto.randomUUID();
+        // Use the UUIDs from useFieldArray fields (they contain the uuid property)
+        formData.sections.technician.items.forEach((item, index) => {
+            // Get the uuid from the technicianItems array from useFieldArray
+            item.uuid = technicianItems[index].uuid;
         });
 
-        formData.sections.engineer.items.forEach(item => {
-            item.uuid = crypto.randomUUID();
+        formData.sections.engineer.items.forEach((item, index) => {
+            // Get the uuid from the engineerItems array from useFieldArray
+            item.uuid = engineerItems[index].uuid;
         });
-      
-        fetch("http://localhost:8000/atp-forms/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(formData)
-        })
-        .then(async response => {
-          if (response.ok) 
-            return response.json();
-          else 
-          {
-            const errorData = await response.json();
-            throw new Error(errorData.errors);
-          }
-        })
-        .then(data => {
-          console.log("Backend response:", data);
-          alert("Successfully created form template!");
-        })
-        .catch(error => {
-          alert(`Error: ${error.message}`);
-        });
-    }
-      
+
+        // Call the provided onSubmit function or use default
+        if (onSubmit) {
+            onSubmit(formData);
+        }
+    };
 
     return(
         <main>
@@ -127,7 +63,7 @@ export default function FormBuilder()
 
             <div className={styles.formContainer}>
                 <h1 className={styles.formTitle}>Create New ATP Form</h1>
-                <form className="atp-form" onSubmit = {handleSubmit(onSubmit)}> 
+                <form className="atp-form" onSubmit = {handleSubmit(handleFormSubmit)}> 
                     <FormMetadata register = {register}/>
 
                     <hr className="divider" />

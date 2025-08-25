@@ -1,0 +1,19 @@
+/* SelectATPPage CSS Module */
+
+.selectATPPage {
+    width: 100%;
+    min-height: 100vh;
+    background: rgb(248, 249, 250);
+    font-family: "Inter", "Roboto", sans-serif;
+    padding-top: 100px;
+}
+
+.mainContent {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+}
+
+/* You can add more specific styles for the SelectATPPage here */

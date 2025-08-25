@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './FormFieldBuilder.module.css';
 
-export default function FormFieldBuilder({order, role, removeItem, defaultValue = "", register})
+export default function FormFieldBuilder({order, role, id, removeItem, defaultValue = "", register})
 {
     return(
         <li className={styles.fieldItem}>
@@ -26,7 +26,8 @@ export default function FormFieldBuilder({order, role, removeItem, defaultValue 
                 <div className={styles.inputGroup} id={styles.answerFormatInputGroup}>
                     <label htmlFor={`${role}-answer-format-${order}`} className={styles.inputLabel}>Answer Format</label>
                     <select 
-                        id={`${role}-answer-format-${order}`} 
+                        key={id} 
+                        id = {id}
                         required
                         className="answer-format-input" 
                         {...register(`sections.${role}.items.${order}.answerFormat`)}
@@ -45,7 +46,8 @@ export default function FormFieldBuilder({order, role, removeItem, defaultValue 
                             Spreadsheet Cell ID
                         </label>
                         <input 
-                            id={`${role}-cell-${order}`} 
+                            key={id} 
+                            id = {id}
                             className={styles.cellInput} 
                             type="text" 
                             placeholder="e.g., A1, B5, C10" 
