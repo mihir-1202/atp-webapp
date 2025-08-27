@@ -9,7 +9,8 @@ import ManageATPsPage from './pages/ManageATPsPage/ManageATPsPage.jsx'
 //import FillATPPage from './pages/FillATPPage/FillATPPage.jsx'
 //import ReviewATPPage from './pages/ReviewATPPage/ReviewATPPage.jsx'
 //import CompletedATPPage from './pages/CompletedATPPage/CompletedATPPage.jsx'
-import ATPUI from './components/ATPUI/ATPUI.jsx'
+import ReadOnlyATPUI from './components/ReadOnlyATPUI/ReadOnlyATPUI.jsx'
+import EditableATPUI from './components/EditableATPUI/EditableATPUI.jsx'
 
 import PendingATPSPage from './pages/PendingATPSPage/PendingATPSPage.jsx'
 import AllATPSPage from './pages/AllATPSPage/AllATPSPage.jsx'
@@ -38,17 +39,17 @@ const router = createBrowserRouter([
 
   {
     path: "/fill-atp/:atpFormGroupId",
-    element: <ATPUI />
+    element: <EditableATPUI />
   },
 
   {
     path: "/review-atp/:atpFormGroupId/:prevSubmissionId",
-    element: <ATPUI />
+    element: <EditableATPUI />
   },
 
   {
-    path: "/completed-atp/:atpFormGroupId/:atpFormId/:prevSubmissionId",
-    element: <ATPUI />
+    path: "/completed-atp/:atpFormId/:prevSubmissionId",
+    element: <ReadOnlyATPUI />
   },
 
   {

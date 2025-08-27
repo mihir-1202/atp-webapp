@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import ManageATPCard from './ManageATPCard';
 import styles from './ManageATPsPage.module.css';
 
 //Path: /manage-atps
@@ -11,7 +12,7 @@ export default function ManageATPsPage() {
     const [isLoading, setIsLoading] = React.useState(true);
 
     React.useEffect(() => {
-        fetch('http://localhost:8000/atp-forms/')
+        fetch('http://localhost:8000/atp-forms/active')
             .then(response => response.json())
             .then(data => {
                 setATPForms(data);
@@ -23,14 +24,14 @@ export default function ManageATPsPage() {
             });
     }, []);
 
-    function handleUpdate(atpId) {
-        navigate(`/update-atp/${atpId}`);
+    function handleUpdate(atpFormGroupId) {
+        navigate(`/update-atp/${atpFormGroupId}`);
     }
 
-    async function handleDelete(atpId) {
+    async function handleDelete(atpFormGroupId) {
         if (window.confirm('Are you sure you want to delete this ATP form and all associated submissions? This action cannot be undone.')) {
             try {
-                const response = await fetch(`http://localhost:8000/atp-forms/${atpId}`, {
+                const response = await fetch(`http://localhost:8000/atp-forms/${atpFormGroupId}`, {
                     method: "DELETE",
                     headers: {
                         "Content-Type": "application/json"
@@ -58,30 +59,14 @@ export default function ManageATPsPage() {
     //atp cards JSX to be displayed
     const atpCardsJSX = atpForms.map((atpForm) => {
         return (
-        <div key={atpForm._id} className={styles.manageATPCard}>
-            <div className={styles.atpInfoContainer}>
-                <div className={styles.atpTitle}>{atpForm.metadata.title}</div>
-                <div className={styles.atpDescription}>{atpForm.metadata.description}</div>
-            </div>
-            
-            <div className={styles.actionButtons}>
-                <button 
-                    className={styles.updateButton}
-                    onClick={() => handleUpdate(atpForm._id)}
-                >
-                    Update
-                </button>
-
-                <button 
-                    className={styles.deleteButton}
-                    onClick={() => handleDelete(atpForm._id)}
-                >
-                    Delete
-                </button>
-
-            </div>
-        </div>
-    )})
+            <ManageATPCard
+                key={atpForm.metadata.formGroupID}
+                atpForm={atpForm}
+                onUpdate={handleUpdate}
+                onDelete={handleDelete}
+            />
+        );
+    });
 
     //logic to display the page
     return(

@@ -17,6 +17,8 @@ export default function ATPInputSection({register, role, showButtons, atpTemplat
     //Iterate through the items in the form template and get their corresponding responses from their previous responses array
     let formItemsJSX = formItems.map(item => {
         
+
+        
         //If in the pending review page, prevTechnicianResponses is not null -> if the InputSection is for the technician we want to populate the inputs with the previous responses
         const previousResponse = getResponseByUUID(item.uuid);
         const previousValue = previousResponse ? previousResponse.answer : '';
@@ -32,7 +34,7 @@ export default function ATPInputSection({register, role, showButtons, atpTemplat
             key = {item.uuid} 
             order = {item.order}
             questionUUID = {item.uuid} 
-            questionText = {item.content} 
+            questionText = {item.question} 
             answerFormat = {item.answerFormat} 
             register = {register} 
             defaultValue = {previousValue} 

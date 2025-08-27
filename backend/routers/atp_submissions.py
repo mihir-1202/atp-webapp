@@ -62,7 +62,8 @@ async def get_pending_atp_submission(atp_submissions: Collection = Depends(get_a
     form_metadata_dict = {
         str(form['_id']): {
             'formTitle': form['metadata']['title'], 
-            'formDescription': form['metadata']['description']
+            'formDescription': form['metadata']['description'],
+            'formGroupId': form['metadata']['formGroupID']  # Get formGroupId from form template
         } 
         for form in atp_forms_cursor
     }
@@ -73,6 +74,7 @@ async def get_pending_atp_submission(atp_submissions: Collection = Depends(get_a
         submission_data = {
             'submissionId': str(atp_submission['_id']),
             'formId': form_id,
+            'formGroupId': form_metadata_dict[form_id]['formGroupId'],  # Use formGroupId from form template
             'submittedBy': atp_submission['submittedBy'],
             'submittedAt': atp_submission['submittedAt'],
             'formTitle': form_metadata_dict[form_id]['formTitle'],
@@ -100,7 +102,8 @@ async def get_atp_submission_metadata(atp_submissions: Collection = Depends(get_
     form_metadata_dict = {
         str(form['_id']): {
             'formTitle': form['metadata']['title'], 
-            'formDescription': form['metadata']['description']
+            'formDescription': form['metadata']['description'],
+            'formGroupId': form['metadata'].get('formGroupID', '')  # Get formGroupId from form template
         } 
         for form in atp_forms_cursor
     }
@@ -112,6 +115,7 @@ async def get_atp_submission_metadata(atp_submissions: Collection = Depends(get_
             submission_data = {
                 'submissionId': str(atp_submission['_id']),
                 'formId': form_id,
+                'formGroupId': form_metadata_dict[form_id]['formGroupId'],  # Use formGroupId from form template
                 'formTitle': form_metadata_dict[form_id]['formTitle'],
                 'formDescription': form_metadata_dict[form_id]['formDescription'],
                 'submittedBy': atp_submission['submittedBy'],
@@ -124,6 +128,7 @@ async def get_atp_submission_metadata(atp_submissions: Collection = Depends(get_
             submission_data = {
                 'submissionId': str(atp_submission['_id']),
                 'formId': form_id,
+                'formGroupId': form_metadata_dict[form_id]['formGroupId'],  # Use formGroupId from form template
                 'formTitle': form_metadata_dict[form_id]['formTitle'],
                 'formDescription': form_metadata_dict[form_id]['formDescription'],
                 'submittedBy': atp_submission['submittedBy'],

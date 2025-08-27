@@ -30,6 +30,7 @@ export default function SubmissionCardsContainer({pending = false, approved = fa
             
             //used for routing
             atpFormId = {atpSubmission.formId}
+            atpFormGroupId = {atpSubmission.formGroupId}
             atpSubmissionId = {atpSubmission.submissionId}
             
             atpFormTitle = {atpSubmission.formTitle}

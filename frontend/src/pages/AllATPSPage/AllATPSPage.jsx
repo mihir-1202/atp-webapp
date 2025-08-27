@@ -5,8 +5,8 @@ import styles from './AllATPSPage.module.css';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import FilterSelector from '../AllATPSPage/FilterSelector'
 
-//Path: /reviewed-atps
-export default function PendingATPSPage()
+//Path: /all-atps
+export default function AllATPSPage()
 {
     const [allSubmissions, setAllSubmissions] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
@@ -38,7 +38,6 @@ export default function PendingATPSPage()
                     approved = {filter.approved} 
                     rejected = {filter.rejected} 
                     submissions = {allSubmissions} 
-                    atpFormId = {atpFormId}
                 />
             </main>
         </div>

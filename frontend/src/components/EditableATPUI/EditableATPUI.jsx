@@ -2,53 +2,99 @@ import React from 'react'
 import {useParams, useNavigate} from 'react-router-dom'
 import {useForm} from 'react-hook-form'
 import {useLocation} from 'react-router-dom'
-import Navbar from '../../components/Navbar/Navbar'
-import ATPInputSection from '../../components/ATPInputSection/ATPInputSection'
-import FormHeader from '../../components/FormHeader/FormHeader'
-import styles from './ATPUI.module.css'
+import Navbar from '../Navbar/Navbar'
+import ATPInputSection from '../ATPInputSection/ATPInputSection'
+import FormHeader from '../FormHeader/FormHeader'
+import styles from './EditableATPUI.module.css'
 import StatusSelector from './StatusSelector'
-import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner'
+import LoadingSpinner from '../LoadingSpinner/LoadingSpinner'
 
 //Path: /review-atp/:atpFormGroupId/:prevSubmissionId
 
 //TODO: avoid repeated logic in this page (ReviewATPPage) and FillATPPage
-export default function ATPUI()
+export default function EditableATPUI()
 {
     const navigate = useNavigate();
     const location = useLocation().pathname.split('/')[1];
-    const {atpFormGroupId, atpFormId, prevSubmissionId} = useParams();
+    const {atpFormGroupId, prevSubmissionId} = useParams();
+
 
     let defaultValues;
-    if (location === 'fill-atp')
-        defaultValues = {defaultValues: {formGroupId: atpFormGroupId, formId: atpFormId, submittedBy: 'technician@upwingenergy.com'}};
-    else
-        defaultValues = {defaultValues: {formGroupId: atpFormGroupId, formId: atpFormId, reviewedBy: 'engineer@upwingenergy.com'}};
+    //formId will be NULL at first since it is not in the path parameter
+    if(location === 'fill-atp')
+        defaultValues = {defaultValues: 
+            {formGroupId: atpFormGroupId, 
+            formId: null, 
+            submittedBy: 'technician@upwingenergy.com'}};
+
+    else if (location === 'review-atp')
+        defaultValues = {defaultValues: 
+            {formGroupId: atpFormGroupId, 
+            formId: null, 
+            reviewedBy: 'engineer@upwingenergy.com'}};
+    
     
     const {register, handleSubmit, reset} = useForm(defaultValues);
 
     const [atpTemplateData, setATPTemplateData] = React.useState(null);
-    const [prevTechnicianResponses, setPrevTechnicianResponses] = React.useState(null);
-    const [prevEngineerResponses, setPrevEngineerResponses] = React.useState(null);
+    const [submissionData, setSubmissionData] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(true);
 
-    React.useEffect(() => {loadAllData();}, [atpFormGroupId, atpFormId, prevSubmissionId]);
+    React.useEffect(() => {loadAllData();}, [atpFormGroupId, prevSubmissionId]);
+
+    //atpTemplateData becomes available -> setAtpTemplateData() is called -> re-render the component -> useEffect runs and resets the form
+    /*
+    CANNOT do await getATPTemplateData(); await getPrevResponses('technician'); 
+    because the re-render is triggered onlyafter the component function is fully executed/rendered -> setPrevTechnicianResponses(null) -> setPrevTechnicianResponses won't be called again after re-render
+    */
+    React.useEffect(() => {
+        if (atpTemplateData && location === 'review-atp' && prevSubmissionId && submissionData) {
+            console.log('resetting form with template data');
+            reset({
+                formGroupId: atpFormGroupId, 
+                formId: atpTemplateData._id,
+                reviewedBy: 'engineer@upwingenergy.com', 
+                submittedBy: submissionData.submittedBy, 
+                submittedAt: submissionData.submittedAt, 
+                submissionId: prevSubmissionId
+            }); 
+        }
+    }, [atpTemplateData, location, prevSubmissionId, submissionData]);
 
     //Get the atp template data from the database
     async function getATPTemplateData()
     {
         try {
             let data = null;
-            if (location === 'completed-atp')
-                data = await fetch(`http://localhost:8000/atp-forms/${atpFormId}`);
-            else
+            if (location === 'review-atp' || location === 'fill-atp')
                 data = await fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`);
-            
+
             data = await data.json();
             console.log(data);
             setATPTemplateData(data);
+            if(location === 'review-atp')
+            {
+                console.log('data._id', data._id);
+                reset(
+                    {formGroupId: atpFormGroupId, 
+                    formId: data._id,
+                    reviewedBy: 'engineer@upwingenergy.com' //populate reviewedBy field with the current engineer logged in to prepare for submission
+                    }); 
+            }
+            else if(location === 'fill-atp')
+            {
+                console.log('data._id', data._id);
+                reset(
+                    {formGroupId: atpFormGroupId, 
+                    formId: data._id,
+                    submittedBy: 'technician@upwingenergy.com', //populate submittedBy field with the current technician logged in to prepare for submission
+                    });
+            }
+
         }
         catch(error) {
             console.error('Error fetching form data:', error);
+            setATPTemplateData(null);
         }
     }
 
@@ -59,22 +105,15 @@ export default function ATPUI()
         {
             try
             {
-                let data = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`);
-                data = await data.json();
-                setPrevTechnicianResponses(data.technicianResponses);
-                setPrevEngineerResponses(data.engineerResponses);
+                const response = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 
-                
-                //insert the submittedAt to the form data once the data from the api is fetched
-                if (location === 'review-atp')
-                    reset({formGroupId: atpFormGroupId, formId: atpFormId,
-                            reviewedBy: 'engineer@upwingenergy.com', 
-                            submittedBy: data.submittedBy, 
-                            submittedAt: data.submittedAt, 
-                            submissionId: prevSubmissionId
-                        }); 
-                    
-                
+                const data = await response.json();
+                setSubmissionData(data); // Store the entire submission data
+                //When submissionData becomes available after the function is fully executed and the re-render happens, 
+                //useEffect will reset the form (it inserts the submittedAt data to the form data)   
             }
             
             catch(error)
@@ -85,7 +124,7 @@ export default function ATPUI()
         }
     }
 
-    //Load all the data from the database
+    //Load previous responses from the database (does not apply to fill-atp since there are no previous responses)
     async function loadAllData()
     {
         if (atpFormGroupId)
@@ -94,8 +133,13 @@ export default function ATPUI()
             if (location !== 'fill-atp')
             {
                 await getPrevResponses('technician');
-                await getPrevResponses('engineer');
+                await getPrevResponses('engineer'); //will be null for review-atp since the engineer hasnt submitted responses yet
             }
+            setIsLoading(false);
+        }
+        else
+        {
+            console.error('atpFormGroupId is undefined, cannot load data');
             setIsLoading(false);
         }
     }
@@ -175,10 +219,10 @@ export default function ATPUI()
         }
         data['technicianResponses'] = formattedTechnicianResponses;
 
-        
-
-
+    
         let formattedEngineerResponses = [];
+        console.log('engineerResponses', data.engineerResponses);
+        console.log('data.engineerResponses', data.engineerResponses);
         if (data.engineerResponses)
         {
             for (let questionUUID in data.engineerResponses)
@@ -200,11 +244,17 @@ export default function ATPUI()
 
         
         console.log('TRANSFORMED DATA (for backend):', data);
+        console.log('data.formId', data.formId);
+
+        console.log('data.formGroupId', data.formGroupId);
+        console.log('data.submittedBy', data.submittedBy);
+        console.log('data.submittedAt', data.submittedAt);
+        console.log('data.reviewedBy', data.reviewedBy);
+        console.log('data.technicianResponses', data.technicianResponses);
+        console.log('data.engineerResponses', data.engineerResponses);
         console.log('prevSubmissionId', prevSubmissionId);
         console.log('atpFormGroupId', atpFormGroupId);
 
-       
-       
         if (location === 'fill-atp')
         {
             fetch('http://localhost:8000/atp-submissions/', {
@@ -229,9 +279,7 @@ export default function ATPUI()
             .then(() => {alert('ATP submitted successfully'); navigate('/');});
         }
 
-
-
-        if (location === 'review-atp')
+        else if (location === 'review-atp')
         {
             fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`, {
                 method: 'PUT',
@@ -253,7 +301,6 @@ export default function ATPUI()
                 alert('Failed to update submission. Check console for details.');
             });
         }
-        
     }
 
     if (isLoading) {
@@ -276,26 +323,26 @@ export default function ATPUI()
             <div className={styles.formContainer}>
                 <form className="atp-form" id="submissionForm" onSubmit={handleSubmit(onSubmit)}>
             
-                    <ATPInputSection 
-                        register = {register}
-                        role = {"technician"} 
-                        atpTemplateData = {atpTemplateData} 
-                        prevResponses = {prevTechnicianResponses} 
-                        showButtons = {location === 'fill-atp'}
-                        readOnly = {location === 'completed-atp'}
-                    />
-                    
-                    {
-                    (location != 'fill-atp') &&
-                    <ATPInputSection 
-                        register = {register}
-                        role = {"engineer"} 
-                        atpTemplateData = {atpTemplateData} 
-                        prevResponses = {prevEngineerResponses}
-                        showButtons = {location === 'review-atp'}
-                        readOnly = {location === 'completed-atp'}
-                    />
-                    }
+                                         <ATPInputSection 
+                         register = {register}
+                         role = {"technician"} 
+                         atpTemplateData = {atpTemplateData} 
+                         prevResponses = {submissionData?.technicianResponses} 
+                         showButtons = {location === 'fill-atp'}
+                         readOnly = {location === 'completed-atp'}
+                     />
+                     
+                     {
+                     (location != 'fill-atp') &&
+                     <ATPInputSection 
+                         register = {register}
+                         role = {"engineer"} 
+                         atpTemplateData = {atpTemplateData} 
+                         prevResponses = {submissionData?.engineerResponses}
+                         showButtons = {location === 'review-atp'}
+                         readOnly = {location === 'completed-atp'}
+                     />
+                     }
 
                     {location === 'review-atp' && <StatusSelector register = {register} />}
                 </form>

@@ -2,7 +2,7 @@ import {useNavigate} from 'react-router-dom';
 import arrowIcon from '../../images/arrow-icon.png';
 import styles from './SubmissionCard.module.css';
 
-export default function SubmissionCard({atpFormId, atpSubmissionId, atpFormTitle, atpFormDesc, submittedBy, submittedAt, status, reviewedBy = null, reviewedAt = null})
+export default function SubmissionCard({atpFormId, atpFormGroupId, atpSubmissionId, atpFormTitle, atpFormDesc, submittedBy, submittedAt, status, reviewedBy = null, reviewedAt = null})
 {
     const navigate = useNavigate();
     
@@ -26,10 +26,10 @@ export default function SubmissionCard({atpFormId, atpSubmissionId, atpFormTitle
         }
     };
 
-    let onClick = () =>
+    function onClick()
     {
         if (status === 'pending')
-            navigate(`/review-atp/${atpFormId}/${atpSubmissionId}`);
+            navigate(`/review-atp/${atpFormGroupId}/${atpSubmissionId}`);
         else
             navigate(`/completed-atp/${atpFormId}/${atpSubmissionId}`);
     }
