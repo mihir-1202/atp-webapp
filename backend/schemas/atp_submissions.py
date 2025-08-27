@@ -79,6 +79,7 @@ class ATPReviewSubmission(BaseModel):
     formId: Annotated[str, Field(min_length = 1, example = "674a1b2c3d4e5f6789012345")]
     formGroupId: Annotated[str, Field(min_length = 1, example = "454afdslighjdfihg9012345")]
     reviewedBy: Annotated[EmailStr, Field(min_length = 1, example = "engineer@upwing.com")]
+    reviewedAt: Annotated[str, Field(min_length = 1, example = "2024-01-15T10:30:00Z")]
     technicianResponses: Annotated[List[Responses], Field(min_items = 1, example = [{"questionUUID": "123e4567-e89b-12d3-a456-426614174000", "questionOrder": 3, "spreadsheetCell": "A1", "answer": "1.0652", "answerFormat": "number"}])]
     engineerResponses: Annotated[List[Responses], Field(min_items = 1, example = [{"questionUUID": "54321e4567-d43b-14e3-b743-346432704654", "questionOrder": 7, "spreadsheetCell": "C10", "answer": "Sample answer", "answerFormat": "textarea"}])] 
     submittedBy: Annotated[EmailStr, Field(min_length = 1, example = "technician@upwing.com")]

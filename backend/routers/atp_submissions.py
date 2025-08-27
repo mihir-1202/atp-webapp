@@ -4,11 +4,11 @@ from typing import Annotated, Dict, Any
 from pymongo.collection import Collection
 from bson import ObjectId
 from dependencies import get_atp_submissions_collection, get_atp_forms_collection
-from schemas import atp_submissions as schemas
+from schemas import atp_submissions as schemas, atp_submissions_responses as responses
 
 router = APIRouter()
 
-@router.post("/")
+@router.post("/", response_model = responses.ATPSubmissionCreationResponse)
 async def create_atp_submission(
     atp_submission: Annotated[schemas.ATPTechnicianSubmission, Body()],
     atp_submissions: Collection = Depends(get_atp_submissions_collection)
@@ -19,7 +19,7 @@ async def create_atp_submission(
     inserted_document = atp_submissions.insert_one(atp_submission_data)
     return {'message': 'Submitted ATP succesfully', 'submissionId': str(inserted_document.inserted_id)}
    
-@router.put("/{atp_submission_id}")
+@router.put("/{atp_submission_id}", response_model = responses.ATPReviewSubmissionResponse)
 async def update_atp_submission(atp_submission_id: str, 
                                 atp_submission: Annotated[schemas.ATPReviewSubmission, Body()], 
                                 atp_submissions: Collection = Depends(get_atp_submissions_collection)):
@@ -43,8 +43,11 @@ async def update_atp_submission(atp_submission_id: str,
     
     return {'message': 'ATP submission updated successfully', 'submissionId': atp_submission_id}
 
-@router.get("/pending/metadata")
-async def get_pending_atp_submission(atp_submissions: Collection = Depends(get_atp_submissions_collection), atp_forms: Collection = Depends(get_atp_forms_collection)):
+@router.get("/pending/metadata", response_model = responses.ATPAllPendingSubmissionsMetadata)
+async def get_pending_atp_submission(
+    atp_submissions: Collection = Depends(get_atp_submissions_collection), 
+    atp_forms: Collection = Depends(get_atp_forms_collection)
+    ):
 
     pending_submissions = list(atp_submissions.find({'status': 'pending'}))
     
@@ -84,8 +87,11 @@ async def get_pending_atp_submission(atp_submissions: Collection = Depends(get_a
         result.append(submission_data)
     return result
 
-@router.get("/metadata")
-async def get_atp_submission_metadata(atp_submissions: Collection = Depends(get_atp_submissions_collection), atp_forms: Collection = Depends(get_atp_forms_collection)):
+@router.get("/metadata", response_model = responses.ATPAllSubmissionsMetadata)
+async def get_atp_submission_metadata(
+    atp_submissions: Collection = Depends(get_atp_submissions_collection), 
+    atp_forms: Collection = Depends(get_atp_forms_collection)
+    ):
     #TODO: add error handling when a form is submitted but the form template metadata is deleted/not found
     all_submissions = list(atp_submissions.find())
     if not all_submissions:
@@ -141,16 +147,16 @@ async def get_atp_submission_metadata(atp_submissions: Collection = Depends(get_
     return result
 
 
-@router.get("/")
-async def get_all_atp_submissions(atp_submissions: Collection = Depends(get_atp_submissions_collection)):
-    all_submissions = [{**doc, '_id': str(doc['_id'])} for doc in atp_submissions.find()]
-    return all_submissions
+
 
 #FastAPI checks routes based on the order they are defined -> most specific routes should be defined first
 #This route is the least specific because it matches to anything
 #TODO: add engineer submission data to the response if applicable (so the frontend can display it)
-@router.get("/{atp_submission_id}")
-async def get_technician_submission(atp_submission_id: str, atp_submissions: Collection = Depends(get_atp_submissions_collection)):
+@router.get("/{atp_submission_id}", response_model = responses.ATPSpecifiedSubmissionResponse)
+async def get_technician_submission(
+    atp_submission_id: str, 
+    atp_submissions: Collection = Depends(get_atp_submissions_collection)
+    ):
     query = {'_id': ObjectId(atp_submission_id)}
     #projection = {'_id': 1,'technicianResponses': 1, 'engineerResponses': 1, 'formId': 1, 'submittedBy': 1, 'submittedAt': 1, 'status': 1, 'reviewedBy': 1, 'reviewedAt': 1}
     #atp_submission_document = atp_submissions.find_one(query, projection)

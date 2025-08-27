@@ -4,11 +4,12 @@ from typing import Annotated
 from pymongo.collection import Collection
 from bson import ObjectId
 from dependencies import get_atp_forms_collection, get_atp_submissions_collection   
-from schemas import atp_forms as schemas
+from schemas import atp_forms as schemas, atp_forms_responses as responses
 
 router = APIRouter()
 
-@router.post("/")
+#FastAPI coerces the return value to the response model as a JSON
+@router.post("/", response_model = responses.ATPNewFormCreationResponse)
 async def create_form_template(
     form_template: Annotated[schemas.FormTemplate, Body()],
     atp_forms: Collection = Depends(get_atp_forms_collection),
@@ -30,37 +31,9 @@ async def create_form_template(
     inserted_document = atp_forms.insert_one(form_template_data)
     return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
 
-#TODO: update the http method to something more appropriate for updating the version of the form template and archiving the old version
-@router.put("/{atp_form_id}")
-async def update_form_template(
-    atp_form_id: Annotated[str, Path(description = "The ID of the ATP form to update", example = "674a1b2c3d4e5f6789012345")], 
-    form_template: Annotated[schemas.FormTemplate, Body()], 
-    atp_forms: Collection = Depends(get_atp_forms_collection)
-):
-    query = {'_id': ObjectId(atp_form_id), 'metadata.status': 'active'}
-    atp_form_document = atp_forms.find_one(query)
-    if not atp_form_document:
-        return {"error": "ATP form not found and cannot be updated"}
-    
-    # Convert Pydantic model to dictionary
-    new_form_template_data = form_template.model_dump()
-    # Update the document
-    result = atp_forms.update_one(query, {'$set': {'metadata.status': 'inactive'}})
-    
-    if result.matched_count == 0:
-        return {"error": "ATP form not found and cannot be updated"}
-    if result.modified_count == 0:
-        return {"error": "ATP form was not modified"}
-    else:
-        new_form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
-        new_form_template_data['metadata']['status'] = 'active'
-        new_form_template_data['metadata']['version'] = atp_form_document['metadata']['version'] + 1
-        new_form_template_data['metadata']['formGroupID'] = atp_form_document['metadata']['formGroupID']
-        result = atp_forms.insert_one(new_form_template_data)
-        
-    return {"message": "ATP form updated successfully"}
 
-@router.get("/active")
+
+@router.get("/active", response_model = responses.ATPAllActiveForms)
 async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_forms_collection)):
     """
     Get all ATP form templates that are currently active.
@@ -74,7 +47,7 @@ async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_form
         form_templates.append(document)
     return form_templates
 
-@router.get("/active/{atp_form_group_id}")
+@router.get("/active/{atp_form_group_id}", response_model = responses.ATPSpecifiedForm)
 async def get_active_form_template(atp_form_group_id: Annotated[str, Path(description = "The ID of the ATP form group to get", example = "674a1b2c3d4e5f6789012345")], atp_forms: Collection = Depends(get_atp_forms_collection)):
     """
     Get an active ATP form template by its form group ID.
@@ -88,7 +61,7 @@ async def get_active_form_template(atp_form_group_id: Annotated[str, Path(descri
     atp_form_document['_id'] = str(atp_form_document['_id'])
     return atp_form_document
 
-@router.put("/active/{atp_form_group_id}")
+@router.put("/active/{atp_form_group_id}", response_model = responses.ATPFormUpdateResponse)
 async def update_form_template_by_group_id(
     atp_form_group_id: Annotated[str, Path(description = "The ID of the ATP form group to update", example = "674a1b2c3d4e5f6789012345")],
     form_template: Annotated[schemas.FormTemplate, Body()],
@@ -118,35 +91,12 @@ async def update_form_template_by_group_id(
 
 
 
-#TODO: instead of /all just change to the base path
-@router.get("/all")
-async def get_all_form_templates(atp_forms: Collection = Depends(get_atp_forms_collection)):
-    """
-    Get all ATP form templates, regardless of their status.
-    """
-    #TODO: only return the metadata of the form templates instead of the entire document
-    cursor = atp_forms.find()
-    form_templates = []
-    for document in cursor:
-        #convert ObjectId to a string before appending the document to the list
-        document['_id'] = str(document['_id'])
-        form_templates.append(document)
-    return form_templates
-
-@router.get("/{atp_form_id}/metadata")
-async def get_atp_form_metadata(atp_form_id: Annotated[str, Path(description = "The ID of the ATP form to get the metadata of", example = "674a1b2c3d4e5f6789012345")], atp_forms: Collection = Depends(get_atp_forms_collection)):
-    """
-    Get the metadata of an ATP form.
-    """
-    query = {'_id': ObjectId(atp_form_id)}
-    atp_form_document = atp_forms.find_one(query)
-    if not atp_form_document:
-        return {"error": "ATP form not found"}
-    atp_form_document['_id'] = str(atp_form_document['_id'])
-    return atp_form_document['metadata']
 
 
-@router.get("/{atp_form_id}")
+
+
+
+@router.get("/{atp_form_id}", response_model = responses.ATPSpecifiedForm)
 async def get_atp_form(atp_form_id: Annotated[str, Path(description = "The ID of the ATP form to get", example = "674a1b2c3d4e5f6789012345")], atp_forms: Collection = Depends(get_atp_forms_collection)):
     """
     Get an ATP form.
@@ -160,7 +110,7 @@ async def get_atp_form(atp_form_id: Annotated[str, Path(description = "The ID of
     return atp_form_document
 
 
-@router.delete("/{atp_form_group_id}")
+@router.delete("/{atp_form_group_id}", response_model = responses.ATPFormDeleteResponse)
 async def delete_form_template(
     atp_form_group_id: Annotated[str, Path(description = "The ID of the ATP form group to delete", example = "674a1b2c3d4e5f6789012345")], 
     atp_forms: Collection = Depends(get_atp_forms_collection),
