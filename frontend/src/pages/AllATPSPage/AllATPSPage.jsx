@@ -33,7 +33,13 @@ export default function PendingATPSPage()
             <Navbar title = "All ATPs" />
             <FilterSelector setFilter = {setFilter} />
             <main className={styles.mainContent}>
-                <SubmissionCardsContainer pending = {filter.pending} approved = {filter.approved} rejected = {filter.rejected} submissions = {allSubmissions} />
+                <SubmissionCardsContainer 
+                    pending = {filter.pending} 
+                    approved = {filter.approved} 
+                    rejected = {filter.rejected} 
+                    submissions = {allSubmissions} 
+                    atpFormId = {atpFormId}
+                />
             </main>
         </div>
     )

@@ -7,24 +7,25 @@ import styles from '../CreateATPPage/CreateATPPage.module.css';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import { useParams } from 'react-router-dom';
 
-
-//Path: /update-atp/atpFormId
+//TODO: fix the path to the update ATP page
+//Path: /update-atp/atpFormGroupId
 export default function UpdateATPPage()
 {
-    const {atpFormId} = useParams();
+    const {atpFormGroupId} = useParams();
     const [atpFormData, setATPFormData] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(true);
 
     React.useEffect(() => {
-        fetch(`http://localhost:8000/atp-forms/${atpFormId}`)
+        fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`)
         .then(response => response.json())
         .then(data => setATPFormData(data))
         .then(() => setIsLoading(false));
-    }, [atpFormId]);
+    }, [atpFormGroupId]);
 
     function handleSubmit(formData)
     {
-        fetch(`http://localhost:8000/atp-forms/${atpFormId}`, {
+        //TODO: fix the path to update the ATP form
+        fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"

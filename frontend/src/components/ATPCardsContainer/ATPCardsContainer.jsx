@@ -10,7 +10,7 @@ export default function ATPCardsContainer()
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        fetch('http://localhost:8000/atp-forms')
+        fetch('http://localhost:8000/atp-forms/active')
         .then(response => response.json())
         .then(data => setATPCards(data))
         .then(() => setIsLoading(false))
@@ -40,11 +40,12 @@ export default function ATPCardsContainer()
         );
     }
 
-    const atpCardsList = atpCards.map((atpCard) => 
+    const atpCardsJSX = atpCards.map((atpCard) => 
     {
         return <ATPCard 
             key = {atpCard._id} 
-            atpId = {atpCard._id}
+            atpFormGroupId = {atpCard.metadata.formGroupID}
+            atpFormId = {atpCard._id}
             atpTitle = {atpCard.metadata.title} 
             atpDescription = {atpCard.metadata.description}
         />
@@ -52,7 +53,7 @@ export default function ATPCardsContainer()
 
     return(
         <ul className={styles.atpCardsContainer}>
-            {atpCardsList}
+            {atpCardsJSX}
         </ul>
     )
 }

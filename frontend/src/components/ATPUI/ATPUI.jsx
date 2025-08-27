@@ -9,20 +9,21 @@ import styles from './ATPUI.module.css'
 import StatusSelector from './StatusSelector'
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner'
 
-//Path: /review-atp/:atpFormId/:prevSubmissionId
+//Path: /review-atp/:atpFormGroupId/:prevSubmissionId
 
 //TODO: avoid repeated logic in this page (ReviewATPPage) and FillATPPage
 export default function ATPUI()
 {
     const navigate = useNavigate();
     const location = useLocation().pathname.split('/')[1];
-    const {atpFormId, prevSubmissionId} = useParams();
+    const {atpFormGroupId, atpFormId, prevSubmissionId} = useParams();
 
     let defaultValues;
     if (location === 'fill-atp')
-        defaultValues = {defaultValues: {formId: atpFormId, submittedBy: 'technician@upwingenergy.com'}};
+        defaultValues = {defaultValues: {formGroupId: atpFormGroupId, formId: atpFormId, submittedBy: 'technician@upwingenergy.com'}};
     else
-        defaultValues = {defaultValues: {formId: atpFormId, reviewedBy: 'engineer@upwingenergy.com'}};
+        defaultValues = {defaultValues: {formGroupId: atpFormGroupId, formId: atpFormId, reviewedBy: 'engineer@upwingenergy.com'}};
+    
     const {register, handleSubmit, reset} = useForm(defaultValues);
 
     const [atpTemplateData, setATPTemplateData] = React.useState(null);
@@ -30,12 +31,18 @@ export default function ATPUI()
     const [prevEngineerResponses, setPrevEngineerResponses] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(true);
 
-    React.useEffect(() => {loadAllData();}, [atpFormId, prevSubmissionId]);
+    React.useEffect(() => {loadAllData();}, [atpFormGroupId, atpFormId, prevSubmissionId]);
 
+    //Get the atp template data from the database
     async function getATPTemplateData()
     {
         try {
-            let data = await fetch(`http://localhost:8000/atp-forms/${atpFormId}`);
+            let data = null;
+            if (location === 'completed-atp')
+                data = await fetch(`http://localhost:8000/atp-forms/${atpFormId}`);
+            else
+                data = await fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`);
+            
             data = await data.json();
             console.log(data);
             setATPTemplateData(data);
@@ -45,6 +52,7 @@ export default function ATPUI()
         }
     }
 
+    //Get the previous responses from the database
     async function getPrevResponses(role)
     {
         if(prevSubmissionId)
@@ -56,14 +64,16 @@ export default function ATPUI()
                 setPrevTechnicianResponses(data.technicianResponses);
                 setPrevEngineerResponses(data.engineerResponses);
                 
+                
+                //insert the submittedAt to the form data once the data from the api is fetched
                 if (location === 'review-atp')
-                    reset({formId: atpFormId, 
+                    reset({formGroupId: atpFormGroupId, formId: atpFormId,
                             reviewedBy: 'engineer@upwingenergy.com', 
                             submittedBy: data.submittedBy, 
                             submittedAt: data.submittedAt, 
                             submissionId: prevSubmissionId
                         }); 
-                    //insert the submittedAt to the form data once the data from the api is fetched
+                    
                 
             }
             
@@ -75,9 +85,10 @@ export default function ATPUI()
         }
     }
 
+    //Load all the data from the database
     async function loadAllData()
     {
-        if (atpFormId)
+        if (atpFormGroupId)
         { 
             await getATPTemplateData();
             if (location !== 'fill-atp')
@@ -89,6 +100,7 @@ export default function ATPUI()
         }
     }
 
+    //Get the question metadata from the atp template data
     function getQuestionMetadataByUUID(role, questionUUID)
     {
         //iterates through the items in the atpTemplateData.sections.technician.items array and returns the item which has the same uuid as the argument
@@ -96,13 +108,14 @@ export default function ATPUI()
         return question;
     }
 
+    //Format the data for the backend
     function onSubmit(data)
     {
 
         /*
         ORIGINAL FORM DATA (from react-hook-form):
         {
-            formId: "68a354881d8bf3c326340621",
+            formGroupId: "68a354881d8bf3c326340621",
             submittedBy: "technician@upwingenergy.com", 
             technicianResponses: {
                 "question1_uuid": "Motor tested and operational",                       
@@ -114,7 +127,7 @@ export default function ATPUI()
         
         WHAT THE BACKEND EXPECTS:
         {
-            formId: "68a354881d8bf3c326340621",
+            formGroupId: "68a354881d8bf3c326340621",
             submittedBy: "technician@upwingenergy.com",
             technicianResponses: [
                 {
@@ -188,6 +201,7 @@ export default function ATPUI()
         
         console.log('TRANSFORMED DATA (for backend):', data);
         console.log('prevSubmissionId', prevSubmissionId);
+        console.log('atpFormGroupId', atpFormGroupId);
 
        
        

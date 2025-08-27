@@ -47,11 +47,11 @@ def is_date(value):
         return False
 
 class Responses(BaseModel):
-    questionUUID: Annotated[str, Field(min_length = 1)]
-    questionOrder: Annotated[int, Field(ge = 0)]
-    spreadsheetCell: Annotated[str, Field(pattern=r'^[A-Z]{1,3}[1-9]\d{0,6}$', description="Cell reference in format A1, B5, AA10, etc.")]
-    answer: Annotated[str, Field(min_length = 1)]
-    answerFormat: Annotated[str, Field(min_length = 1)]
+    questionUUID: Annotated[str, Field(min_length = 1, example = "123e4567-e89b-12d3-a456-426614174000")]
+    questionOrder: Annotated[int, Field(ge = 0, example = 3)]
+    spreadsheetCell: Annotated[str, Field(pattern=r'^[A-Z]{1,3}[1-9]\d{0,6}$', description="Cell reference in format A1, B5, AA10, etc.", example = "A1")]
+    answer: Annotated[str, Field(min_length = 1, example = "1.0652")]
+    answerFormat: Annotated[str, Field(min_length = 1, example = "number")]
     
     @model_validator(mode = 'after')
     def validate_fields(self) -> 'Responses':
@@ -64,9 +64,10 @@ class Responses(BaseModel):
         return self
 
 class ATPTechnicianSubmission(BaseModel):
-    formId: Annotated[str, Field(min_length = 1)]
-    submittedBy: Annotated[EmailStr, Field(min_length = 1)]
-    technicianResponses: Annotated[List[Responses], Field(min_items = 1)]
+    formId: Annotated[str, Field(min_length = 1, example = "674a1b2c3d4e5f6789012345")]
+    formGroupId: Annotated[str, Field(min_length = 1, example = "454afdslighjdfihg9012345")]
+    submittedBy: Annotated[EmailStr, Field(min_length = 1, example = "technician@upwing.com")]
+    technicianResponses: Annotated[List[Responses], Field(min_items = 1, example = [{"questionUUID": "123e4567-e89b-12d3-a456-426614174000", "questionOrder": 3, "spreadsheetCell": "A1", "answer": "1.0652", "answerFormat": "number"}])]
     
     @model_validator(mode='after')
     def validate_all_questions_answered(self) -> 'ATPTechnicianSubmission':
@@ -75,13 +76,14 @@ class ATPTechnicianSubmission(BaseModel):
     
 
 class ATPReviewSubmission(BaseModel):
-    formId: Annotated[str, Field(min_length = 1)]
-    reviewedBy: Annotated[EmailStr, Field(min_length = 1)]
-    technicianResponses: Annotated[List[Responses], Field(min_items = 1)]
-    engineerResponses: Annotated[List[Responses], Field(min_items = 1)] 
-    submittedBy: Annotated[EmailStr, Field(min_length = 1)]
-    submittedAt: Annotated[str, Field(min_length = 1)]
-    status: Annotated[Literal['approved', 'rejected'], Field(min_length = 1)]
+    formId: Annotated[str, Field(min_length = 1, example = "674a1b2c3d4e5f6789012345")]
+    formGroupId: Annotated[str, Field(min_length = 1, example = "454afdslighjdfihg9012345")]
+    reviewedBy: Annotated[EmailStr, Field(min_length = 1, example = "engineer@upwing.com")]
+    technicianResponses: Annotated[List[Responses], Field(min_items = 1, example = [{"questionUUID": "123e4567-e89b-12d3-a456-426614174000", "questionOrder": 3, "spreadsheetCell": "A1", "answer": "1.0652", "answerFormat": "number"}])]
+    engineerResponses: Annotated[List[Responses], Field(min_items = 1, example = [{"questionUUID": "54321e4567-d43b-14e3-b743-346432704654", "questionOrder": 7, "spreadsheetCell": "C10", "answer": "Sample answer", "answerFormat": "textarea"}])] 
+    submittedBy: Annotated[EmailStr, Field(min_length = 1, example = "technician@upwing.com")]
+    submittedAt: Annotated[str, Field(min_length = 1, example = "2024-01-15T10:30:00Z")]
+    status: Annotated[Literal['approved', 'rejected'], Field(min_length = 1, example = "approved")]
     
     @model_validator(mode='after')
     def validate_all_questions_answered(self) -> 'ATPReviewSubmission':

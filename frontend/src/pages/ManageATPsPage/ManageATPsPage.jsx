@@ -28,7 +28,7 @@ export default function ManageATPsPage() {
     }
 
     async function handleDelete(atpId) {
-        if (window.confirm('Are you sure you want to delete this ATP form? This action cannot be undone.')) {
+        if (window.confirm('Are you sure you want to delete this ATP form and all associated submissions? This action cannot be undone.')) {
             try {
                 const response = await fetch(`http://localhost:8000/atp-forms/${atpId}`, {
                     method: "DELETE",

@@ -6,23 +6,25 @@ from typing import Annotated, Literal, Union, Self
 # and then instantiates an object where those values are assigned to the corresponding classattributes.
 
 class Metadata(BaseModel):
-    title: Annotated[str, Field(min_length = 1)]
-    description: Annotated[str, Field(min_length = 1)]
-    createdBy: Annotated[EmailStr, Field(min_length = 1)]
+    title: Annotated[str, Field(min_length = 1, description = "The title of the ATP form", example = "ATP 03")]
+    description: Annotated[str, Field(min_length = 1, description = "The description of the ATP form", example = "This is a description of the ATP form")]
+    createdBy: Annotated[EmailStr, Field(min_length = 1, description = "The email of the user who created the ATP form", example = "admin@upwingenergy.com")]
+    #version: Annotated[int, Field(ge = 1, example = 1)]
+    #status: Annotated[Literal['active', 'inactive'], Field(min_length = 1, example = 'active)]
 
 class HeadingItem(BaseModel):
-    uuid: Annotated[str, Field(min_length = 1)]
-    order: Annotated[int, Field(ge = 0)]
-    type: Literal['heading'] #type can only be a literal string 'heading'
-    content: Annotated[str, Field(min_length = 1)]
+    uuid: Annotated[str, Field(min_length = 1, description = "The UUID of the heading item", example = "123e4567-e89b-12d3-a456-426614174000")]
+    order: Annotated[int, Field(ge = 0, description = "The order of the heading item", example = 3)]
+    type: Annotated[Literal['heading'], Field(description = "The type of the heading item", example = "heading")] #type can only be a literal string 'heading'
+    content: Annotated[str, Field(min_length = 1, description = "The content of the heading item", example = "This is a heading")]
     
 class FieldItem(BaseModel):
-    uuid: Annotated[str, Field(min_length = 1)]
-    order: Annotated[int, Field(ge = 0)]
-    type: Literal['field']
-    question: Annotated[str, Field(min_length = 1)]
-    answerFormat: Annotated[str, Field(min_length = 1)]
-    spreadsheetCell: Annotated[str, Field(pattern=r'^[A-Z]{1,3}[1-9]\d{0,6}$', description="Cell reference in format A1, B5, AA10, etc.")]
+    uuid: Annotated[str, Field(min_length = 1, description = "The UUID of the field item", example = "123e4567-e89b-12d3-a456-426614174000")]
+    order: Annotated[int, Field(ge = 0, description = "The order of the field item", example = 3)]
+    type: Annotated[Literal['field'], Field(description = "The type of the field item", example = "field")]
+    question: Annotated[str, Field(min_length = 1, description = "The question of the field item", example = "What is the motor speed?")]
+    answerFormat: Annotated[str, Field(min_length = 1, description = "The answer format of the field item", example = "number")]
+    spreadsheetCell: Annotated[str, Field(pattern=r'^[A-Z]{1,3}[1-9]\d{0,6}$', description="Cell reference in format A1, B5, AA10, etc.", example = "A1")]
     
     
 """
@@ -37,7 +39,7 @@ Item = Annotated[Union[HeadingItem, FieldItem], Field(discriminator = "type")]
 
 
 class Section(BaseModel):
-    items: Annotated[list[Item], Field(min_length = 1)]
+    items: Annotated[list[Item], Field(min_length = 1, example = [{"uuid": "123e4567-e89b-12d3-a456-426614174000", "order": 2, "type": "heading", "content": "This is a heading"}, {"uuid": "123e4567-e89b-12d3-a456-426614174000", "order": 3, "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1"}])]
     
     #Whatever returns from the root_validator becomes the "final" set of field values used to instantiate the model
     @model_validator(mode = "after")
@@ -48,8 +50,26 @@ class Section(BaseModel):
         return self
 
 class FormTemplate(BaseModel):
-    metadata: Metadata
-    sections: Annotated[dict[str, Section], Field(min_length = 1)]
+    metadata: Annotated[Metadata, Field(description = "The metadata of the ATP form")]
+    sections: Annotated[dict[str, Section], Field(
+        min_length = 2,
+        max_length = 2,
+        description = "A dictionary of named sections, where each section contains form items",
+        example = {
+            "technician": {
+                "items": [
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "order": 2, "type": "heading", "content": "This is a heading"},
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174001", "order": 3, "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1"}
+                ]
+            },
+            "engineer": {
+                "items": [
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174002", "order": 2, "type": "heading", "content": "Another heading"},
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174003", "order": 3, "type": "field", "question": "What is the temperature?", "answerFormat": "number", "spreadsheetCell": "B1"}
+                ]
+            }
+        }
+    )]
     
     class Config:
         extra = "forbid"

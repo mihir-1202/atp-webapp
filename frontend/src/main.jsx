@@ -27,7 +27,7 @@ const router = createBrowserRouter([
   },
 
   {
-    path: "/update-atp/:atpFormId",
+    path: "/update-atp/:atpFormGroupId",
     element: <UpdateATPPage />
   },
 
@@ -37,17 +37,17 @@ const router = createBrowserRouter([
   },
 
   {
-    path: "/fill-atp/:atpFormId",
+    path: "/fill-atp/:atpFormGroupId",
     element: <ATPUI />
   },
 
   {
-    path: "/review-atp/:atpFormId/:prevSubmissionId",
+    path: "/review-atp/:atpFormGroupId/:prevSubmissionId",
     element: <ATPUI />
   },
 
   {
-    path: "/completed-atp/:atpFormId/:prevSubmissionId",
+    path: "/completed-atp/:atpFormGroupId/:atpFormId/:prevSubmissionId",
     element: <ATPUI />
   },
 
