@@ -55,11 +55,14 @@ async def get_pending_atp_submission(
         return []
     
     # Extract unique form IDs from the submissions and convert to ObjectId
-    form_ids = set(str(sub['formId']) for sub in pending_submissions)
-    form_object_ids = [ObjectId(form_id) for form_id in form_ids]
+    submission_form_ids = set(str(sub['formId']) for sub in pending_submissions)
+    form_object_ids = [ObjectId(form_id) for form_id in submission_form_ids]
     
     # Get form metadata for all relevant forms
     atp_forms_cursor = atp_forms.find({'_id': {'$in': form_object_ids}})
+    
+    if not atp_forms_cursor:
+        return []
     
     #Create a dictionary of form metadata for all relevant forms where the key is the form id and the value is the form metadata
     form_metadata_dict = {
@@ -74,17 +77,20 @@ async def get_pending_atp_submission(
     result = []
     for atp_submission in pending_submissions:
         form_id = str(atp_submission['formId'])
-        submission_data = {
+        submission_data = {}
+        if form_metadata_dict.get(form_id, {}).get('formGroupId', '') != '':
+            submission_data = {
             'submissionId': str(atp_submission['_id']),
             'formId': form_id,
-            'formGroupId': form_metadata_dict[form_id]['formGroupId'],  # Use formGroupId from form template
+            'formGroupId': form_metadata_dict.get(form_id, {}).get('formGroupId', ''),  # Use formGroupId from form template
             'submittedBy': atp_submission['submittedBy'],
             'submittedAt': atp_submission['submittedAt'],
-            'formTitle': form_metadata_dict[form_id]['formTitle'],
-            'formDescription': form_metadata_dict[form_id]['formDescription'],
+            'formTitle': form_metadata_dict.get(form_id, {}).get('formTitle', ''),
+            'formDescription': form_metadata_dict.get(form_id, {}).get('formDescription', ''),
             'status': atp_submission['status']
         }
-        result.append(submission_data)
+        if submission_data:
+            result.append(submission_data)
     return result
 
 @router.get("/metadata", response_model = responses.ATPAllSubmissionsMetadata)
@@ -98,13 +104,16 @@ async def get_atp_submission_metadata(
         return []
     
     # Extract unique form IDs from the submissions and convert to ObjectId
-    form_ids = set(str(sub['formId']) for sub in all_submissions)
-    form_object_ids = [ObjectId(form_id) for form_id in form_ids]
+    submission_form_ids = set(str(sub['formId']) for sub in all_submissions)
+    form_object_ids = [ObjectId(form_id) for form_id in submission_form_ids]
     
     # Get form metadata for all relevant forms
     atp_forms_cursor = atp_forms.find({'_id': {'$in': form_object_ids}})
     
-    #Create a dictionary of form metadata for all relevant forms where the key is the form id and the value is the form metadata
+    if not atp_forms_cursor:
+        return []
+    
+    #Create a dictionary of form metadata for all relevant forms where the key is the form id and the value is the form metadata dictionary
     form_metadata_dict = {
         str(form['_id']): {
             'formTitle': form['metadata']['title'], 
@@ -116,34 +125,36 @@ async def get_atp_submission_metadata(
     
     result = []
     for atp_submission in all_submissions:
+        submission_data = {}
         form_id = str(atp_submission['formId'])
-        if atp_submission['status'] == 'pending':
+        if atp_submission['status'] == 'pending' and form_metadata_dict.get(form_id, {}).get('formGroupId', '') != '':
             submission_data = {
                 'submissionId': str(atp_submission['_id']),
                 'formId': form_id,
-                'formGroupId': form_metadata_dict[form_id]['formGroupId'],  # Use formGroupId from form template
-                'formTitle': form_metadata_dict[form_id]['formTitle'],
-                'formDescription': form_metadata_dict[form_id]['formDescription'],
+                'formGroupId': form_metadata_dict.get(form_id, {}).get('formGroupId', ''),  # Use formGroupId from form template
+                'formTitle': form_metadata_dict.get(form_id, {}).get('formTitle', ''),
+                'formDescription': form_metadata_dict.get(form_id, {}).get('formDescription', ''),
                 'submittedBy': atp_submission['submittedBy'],
                 'submittedAt': atp_submission['submittedAt'],
                 'reviewedBy': None,
                 'reviewedAt': None,
                 'status': atp_submission['status']
             }
-        else:
+        elif atp_submission['status'] in ['approved', 'rejected'] and form_metadata_dict.get(form_id, {}).get('formGroupId', '') != '':
             submission_data = {
                 'submissionId': str(atp_submission['_id']),
                 'formId': form_id,
-                'formGroupId': form_metadata_dict[form_id]['formGroupId'],  # Use formGroupId from form template
-                'formTitle': form_metadata_dict[form_id]['formTitle'],
-                'formDescription': form_metadata_dict[form_id]['formDescription'],
+                'formGroupId': form_metadata_dict.get(form_id, {}).get('formGroupId', ''),  # Use formGroupId from form template
+                'formTitle': form_metadata_dict.get(form_id, {}).get('formTitle', ''),
+                'formDescription': form_metadata_dict.get(form_id, {}).get('formDescription', ''),
                 'submittedBy': atp_submission['submittedBy'],
                 'submittedAt': atp_submission['submittedAt'],
                 'reviewedBy': atp_submission['reviewedBy'],
                 'reviewedAt': atp_submission['reviewedAt'],
                 'status': atp_submission['status']
             }
-        result.append(submission_data)
+        if submission_data:
+            result.append(submission_data)
     return result
 
 
