@@ -157,9 +157,6 @@ async def get_atp_submission_metadata(
             result.append(submission_data)
     return result
 
-
-
-
 #FastAPI checks routes based on the order they are defined -> most specific routes should be defined first
 #This route is the least specific because it matches to anything
 #TODO: add engineer submission data to the response if applicable (so the frontend can display it)
@@ -169,11 +166,22 @@ async def get_technician_submission(
     atp_submissions: Collection = Depends(get_atp_submissions_collection)
     ):
     query = {'_id': ObjectId(atp_submission_id)}
-    #projection = {'_id': 1,'technicianResponses': 1, 'engineerResponses': 1, 'formId': 1, 'submittedBy': 1, 'submittedAt': 1, 'status': 1, 'reviewedBy': 1, 'reviewedAt': 1}
-    #atp_submission_document = atp_submissions.find_one(query, projection)
+   
     atp_submission_document = atp_submissions.find_one(query)
     if not atp_submission_document:
         return {'error': 'ATP submission not found'}
+    
+    # Ensure required fields are present for the response model
     atp_submission_document['_id'] = str(atp_submission_document['_id'])
+    
+    # Add missing optional fields if they don't exist
+    #fill-atp doesn't use these fields since they are only used to reset the default values of the form if the location is review-atp
+    if 'reviewedAt' not in atp_submission_document:
+        atp_submission_document['reviewedAt'] = None
+    if 'reviewedBy' not in atp_submission_document:
+        atp_submission_document['reviewedBy'] = None
+    if 'engineerResponses' not in atp_submission_document:
+        atp_submission_document['engineerResponses'] = None
+    
     return atp_submission_document
    

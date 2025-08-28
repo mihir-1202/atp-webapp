@@ -10,6 +10,7 @@ class ATPReviewSubmissionResponse(BaseModel):
     message: Annotated[str, Field(description = "The message of the ATP review submission response", example = "ATP submission updated successfully")]
     submissionId: Annotated[str, Field(description = "The ID of the ATP submission", example = "68af89b21334801ed14d5fc9")]
     
+#Optional fields means that the field can have a value of None; It does NOT mean that the field is not required
 class ATPSpecifiedSubmissionResponse(BaseModel):
   id: Annotated[str, Field(alias = "_id", description = "The ID of the ATP submission", example = "68af963fac20ad3b06788848")]
   formId: Annotated[str, Field(description = "The ID of the ATP form", example = "68af9632ac20ad3b06788847")]
