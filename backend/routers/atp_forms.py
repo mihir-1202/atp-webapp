@@ -62,7 +62,7 @@ async def get_active_form_template(atp_form_group_id: Annotated[str, Path(descri
     return atp_form_document
 
 @router.put("/active/{atp_form_group_id}", response_model = responses.ATPFormUpdateResponse)
-async def update_form_template_by_group_id(
+async def update_active_form_template(
     atp_form_group_id: Annotated[str, Path(description = "The ID of the ATP form group to update", example = "674a1b2c3d4e5f6789012345")],
     form_template: Annotated[schemas.FormTemplate, Body()],
     atp_forms: Collection = Depends(get_atp_forms_collection)
@@ -97,7 +97,7 @@ async def update_form_template_by_group_id(
 
 
 @router.get("/{atp_form_id}", response_model = responses.ATPSpecifiedForm)
-async def get_atp_form(atp_form_id: Annotated[str, Path(description = "The ID of the ATP form to get", example = "674a1b2c3d4e5f6789012345")], atp_forms: Collection = Depends(get_atp_forms_collection)):
+async def get_form_template(atp_form_id: Annotated[str, Path(description = "The ID of the ATP form to get", example = "674a1b2c3d4e5f6789012345")], atp_forms: Collection = Depends(get_atp_forms_collection)):
     """
     Get an ATP form.
     """

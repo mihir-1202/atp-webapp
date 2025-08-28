@@ -44,7 +44,7 @@ async def update_atp_submission(atp_submission_id: str,
     return {'message': 'ATP submission updated successfully', 'submissionId': atp_submission_id}
 
 @router.get("/pending/metadata", response_model = responses.ATPAllPendingSubmissionsMetadata)
-async def get_pending_atp_submission(
+async def get_all_pending_submissions_metadata(
     atp_submissions: Collection = Depends(get_atp_submissions_collection), 
     atp_forms: Collection = Depends(get_atp_forms_collection)
     ):
@@ -94,7 +94,7 @@ async def get_pending_atp_submission(
     return result
 
 @router.get("/metadata", response_model = responses.ATPAllSubmissionsMetadata)
-async def get_atp_submission_metadata(
+async def get_all_atp_submissions_metadata(
     atp_submissions: Collection = Depends(get_atp_submissions_collection), 
     atp_forms: Collection = Depends(get_atp_forms_collection)
     ):
@@ -161,7 +161,7 @@ async def get_atp_submission_metadata(
 #This route is the least specific because it matches to anything
 #TODO: add engineer submission data to the response if applicable (so the frontend can display it)
 @router.get("/{atp_submission_id}", response_model = responses.ATPSpecifiedSubmissionResponse)
-async def get_technician_submission(
+async def get_submission(
     atp_submission_id: str, 
     atp_submissions: Collection = Depends(get_atp_submissions_collection)
     ):
