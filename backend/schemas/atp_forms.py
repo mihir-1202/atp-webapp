@@ -54,7 +54,8 @@ class Section(BaseModel):
         return self
 
 class FormTemplate(BaseModel):
-    spreadsheetTemplate: Annotated[UploadFile, Field(description = "The spreadsheet template of the ATP form")] #UploadFile is a FastAPI class that represents FormData.File[0]
+    #When creating a form for the first time, the spreadsheetTemplate is required, but when updating a form, it is not required
+    spreadsheetTemplate: Annotated[Optional[UploadFile], Field(description = "The spreadsheet template of the ATP form")] #UploadFile is a FastAPI class that represents FormData.File[0]
     metadata: Annotated[Metadata, Field(description = "The metadata of the ATP form")]
     sections: Annotated[dict[str, Section], Field(
         min_length = 2,

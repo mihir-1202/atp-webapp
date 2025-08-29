@@ -25,12 +25,16 @@ export default function UpdateATPPage()
     function handleSubmit(formData)
     {
         //TODO: fix the path to update the ATP form
+        const spreadsheetTemplate = formData.spreadsheetTemplate[0] ? formData.spreadsheetTemplate[0] : null;
+        
+        const processedFormData = new FormData();
+        processedFormData.append('spreadsheetTemplate', spreadsheetTemplate);
+        processedFormData.append('metadata', JSON.stringify(formData.metadata));
+        processedFormData.append('sections', JSON.stringify(formData.sections));
+
         fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`, {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(formData)
+            body: processedFormData
         })
         .then(async response => {
             if (response.ok) 

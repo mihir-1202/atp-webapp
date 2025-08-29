@@ -3,10 +3,12 @@ from datetime import datetime
 from typing import Annotated
 from pymongo.collection import Collection
 from bson import ObjectId
-from dependencies import get_atp_forms_collection, get_atp_submissions_collection   
+from pymongo.common import validate
+from dependencies import get_atp_forms_collection, get_atp_submissions_collection, get_blob_service_client
 from schemas import atp_forms as schemas, atp_forms_responses as responses
 from azure.storage.blob import BlobServiceClient
-from dependencies import get_blob_service_client, get_client
+from dependencies import get_client, get_blob_handler
+from typing import Callable
 from pymongo.mongo_client import MongoClient
 import json
 
@@ -20,7 +22,7 @@ async def create_form_template(
     sections: Annotated[str, Form()],
     client: MongoClient = Depends(get_client),
     atp_forms: Collection = Depends(get_atp_forms_collection),
-    blob_service_client: BlobServiceClient = Depends(get_blob_service_client)
+    blob_handler: Callable = Depends(get_blob_handler)
 ):
     """
     Create a new ATP form template for the first time.
@@ -33,42 +35,38 @@ async def create_form_template(
             metadata_obj = json.loads(metadata)
             sections_obj = json.loads(sections)
             
-            # Create the form template data structure
-            form_template_data = {
-                'metadata': metadata_obj,
-                'sections': sections_obj
-            }
+            # Validate the data using Pydantic
+            validated_request_body = schemas.FormTemplate(
+                spreadsheetTemplate=spreadsheetTemplate,
+                metadata=schemas.Metadata(**metadata_obj),
+                sections=sections_obj
+            )
             
+            if not validated_request_body.spreadsheetTemplate:
+                raise ValueError("Spreadsheet template is required")
+            
+            new_form_template_data = validated_request_body.model_dump()
+            # Remove the UploadFile object as it can't be stored in MongoDB
+            new_form_template_data.pop('spreadsheetTemplate', None)
+
             # Add server-generated fields
             form_group_id = str(ObjectId())
-            form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
-            form_template_data['metadata']['status'] = 'active'
-            form_template_data['metadata']['version'] = 1
-            form_template_data['metadata']['formGroupID'] = form_group_id
+            new_form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
+            new_form_template_data['metadata']['status'] = 'active'
+            new_form_template_data['metadata']['version'] = 1
+            new_form_template_data['metadata']['formGroupID'] = form_group_id
             
-            # Validate the data using Pydantic
-            validated_form = schemas.FormTemplate(
-                spreadsheetTemplate=spreadsheetTemplate,
-                metadata=schemas.Metadata(**form_template_data['metadata']),
-                sections=form_template_data['sections']
-            )
             
             # Start transaction
             session.start_transaction()
             
             # Insert into MongoDB
-            inserted_document = atp_forms.insert_one(form_template_data, session=session)
+            inserted_document = atp_forms.insert_one(new_form_template_data, session=session)
             new_form_id = inserted_document.inserted_id
             
             # Upload to Azure Blob Storage
-            blob_path = f'{form_group_id}/active-form/{new_form_id}.xlsx'
-            blob_client = blob_service_client.get_blob_client(
-                container = 'spreadsheets',
-                blob = blob_path
-            )
-            blob_client.upload_blob(spreadsheetTemplate.file)
-            
-            # Commit transaction only if both operations succeed
+            container_name, blob_path = 'spreadsheets', f'{form_group_id}/active-form/{new_form_id}.xlsx'
+            blob_handler.upload_blob(container_name, blob_path, spreadsheetTemplate.file)
             session.commit_transaction()
             
             return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
@@ -77,6 +75,80 @@ async def create_form_template(
             # Abort transaction if anything fails
             session.abort_transaction()
             raise e
+
+
+
+@router.put("/active/{atp_form_group_id}", response_model = responses.ATPFormUpdateResponse)
+async def update_active_form_template(
+    atp_form_group_id: Annotated[str, Path()],
+    spreadsheetTemplate: Annotated[UploadFile, File()],
+    metadata: Annotated[str, Form()],
+    sections: Annotated[str, Form()],
+    client: MongoClient = Depends(get_client),
+    atp_forms: Collection = Depends(get_atp_forms_collection),
+    blob_handler: Callable = Depends(get_blob_handler)
+):
+    
+    with client.start_session() as session:
+        try:
+            metadata_obj = json.loads(metadata)
+            sections_obj = json.loads(sections)
+            
+            validated_request_body = schemas.FormTemplate(
+                spreadsheetTemplate = spreadsheetTemplate,
+                metadata = schemas.Metadata(**metadata_obj),
+                sections = sections_obj
+            )
+        
+            new_form_template_data = validated_request_body.model_dump()
+            # Remove the UploadFile object as it can't be stored in MongoDB
+            new_form_template_data.pop('spreadsheetTemplate', None)
+            
+            # Find the current active form template
+            query = {'metadata.formGroupID': atp_form_group_id, 'metadata.status': 'active'}
+            current_form = atp_forms.find_one(query)
+            if not current_form:
+                return {"error": "ATP form group not found"}
+            
+            # Update metadata with server-generated fields
+            new_form_template_data['metadata']['formGroupID'] = atp_form_group_id
+            new_form_template_data['metadata']['version'] = current_form['metadata']['version'] + 1
+            new_form_template_data['metadata']['status'] = 'active'
+            new_form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
+            
+            session.start_transaction()
+            
+            # Make the old template inactive
+            atp_forms.update_one(query, {'$set': {'metadata.status': 'inactive'}}, session=session)
+            # Insert the new template
+            inserted_document = atp_forms.insert_one(new_form_template_data, session=session)
+            new_form_id = inserted_document.inserted_id
+            
+            # Upload new spreadsheet to Azure Blob Storage
+            blob_path = f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
+            blob_handler.upload_blob('spreadsheets', blob_path, spreadsheetTemplate.file)
+            
+            # Archive the old spreadsheet if it exists
+            old_blob_path = f'{atp_form_group_id}/active-form/{current_form["_id"]}.xlsx'
+            try:
+                blob_handler.move_blob(
+                    from_container_name='spreadsheets',
+                    blob_path=old_blob_path,
+                    to_container_name='spreadsheets',
+                    to_blob_path=f'{atp_form_group_id}/archived-forms/{current_form["_id"]}.xlsx'
+                )
+            except Exception as e:
+                # If the old blob doesn't exist, just continue (this might be the first version)
+                print(f"Warning: Could not archive old excel template blob {old_blob_path}: {str(e)}. The blob may not exist")
+                
+            session.commit_transaction()
+          
+        except Exception as e:
+            return {"error": str(e)}
+        
+    return {"message": "ATP form template updated successfully"}
+
+
 
 @router.get("/active", response_model = responses.ATPAllActiveForms)
 async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_forms_collection)):
@@ -106,41 +178,6 @@ async def get_active_form_template(atp_form_group_id: Annotated[str, Path(descri
     atp_form_document['_id'] = str(atp_form_document['_id'])
     return atp_form_document
 
-@router.put("/active/{atp_form_group_id}", response_model = responses.ATPFormUpdateResponse)
-async def update_active_form_template(
-    atp_form_group_id: Annotated[str, Path(description = "The ID of the ATP form group to update", example = "674a1b2c3d4e5f6789012345")],
-    form_template: Annotated[schemas.FormTemplate, Body()],
-    atp_forms: Collection = Depends(get_atp_forms_collection)
-):
-    """
-    Update an ATP form template by form group ID (creates a new version).
-    """
-    query = {'metadata.formGroupID': atp_form_group_id, 'metadata.status': 'active'}
-    atp_form_document = atp_forms.find_one(query)
-    if not atp_form_document:
-        return {"error": "ATP form group not found"}
-    
-    # Convert Pydantic model to dictionary
-    new_form_template_data = form_template.model_dump()
-    new_form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
-    new_form_template_data['metadata']['status'] = 'active'
-    new_form_template_data['metadata']['version'] = atp_form_document['metadata']['version'] + 1
-    new_form_template_data['metadata']['formGroupID'] = atp_form_document['metadata']['formGroupID']
-    
-    # Make the old template inactive
-    atp_forms.update_one(query, {'$set': {'metadata.status': 'inactive'}})
-    # Insert the new template
-    atp_forms.insert_one(new_form_template_data)
-    
-    return {"message": "ATP form template updated successfully"}
-
-
-
-
-
-
-
-
 @router.get("/{atp_form_id}", response_model = responses.ATPSpecifiedForm)
 async def get_form_template(atp_form_id: Annotated[str, Path(description = "The ID of the ATP form to get", example = "674a1b2c3d4e5f6789012345")], atp_forms: Collection = Depends(get_atp_forms_collection)):
     """
@@ -159,25 +196,31 @@ async def get_form_template(atp_form_id: Annotated[str, Path(description = "The 
 async def delete_form_template(
     atp_form_group_id: Annotated[str, Path(description = "The ID of the ATP form group to delete", example = "674a1b2c3d4e5f6789012345")], 
     atp_forms: Collection = Depends(get_atp_forms_collection),
-    atp_submissions: Collection = Depends(get_atp_submissions_collection)
+    atp_submissions: Collection = Depends(get_atp_submissions_collection),
+    client: MongoClient = Depends(get_client),
+    blob_handler: Callable = Depends(get_blob_handler)
 ):
     """
     Delete an ATP form.
     """
-    try:
-        # Validate ObjectId format
-        object_id = ObjectId(atp_form_group_id)
-    except Exception:
-        return {"error": "Invalid ATP form ID format"}
-    
-    query = {'metadata.formGroupID': atp_form_group_id}
-    result = atp_forms.delete_many(query)
-    
-    if result.deleted_count == 0:
-        return {"error": "ATP form not found"}
-    
-    #delete all submissions associated with the ATP form
-    atp_submissions.delete_many({'formGroupId': atp_form_group_id})
+    with client.start_session() as session:
+        session.start_transaction()
+        try:
+            # Validate ObjectId format
+            object_id = ObjectId(atp_form_group_id)
+        except Exception:
+            return {"error": "Invalid ATP form ID format"}
+        
+        query = {'metadata.formGroupID': atp_form_group_id}
+        result = atp_forms.delete_many(query)
+        
+        if result.deleted_count == 0:
+            return {"error": "ATP form not found"}
+        
+        #delete all submissions associated with the ATP form
+        atp_submissions.delete_many({'formGroupId': atp_form_group_id})
+        blob_handler.delete_blobs('spreadsheets', virtual_directory = f'{atp_form_group_id}')
+        session.commit_transaction()
     
     return {"message": "ATP form and corresponding submissions deleted successfully"}
 

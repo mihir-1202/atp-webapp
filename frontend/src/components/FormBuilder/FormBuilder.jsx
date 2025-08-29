@@ -3,10 +3,13 @@ import FormMetadata from '../FormMetadata/FormMetadata';
 import RoleFormSection from '../RoleFormSection/RoleFormSection';
 import CreateFormActions from '../CreateFormActions/CreateFormActions';
 import {useForm, useFieldArray} from 'react-hook-form';
+import {useLocation} from 'react-router-dom';
 import styles from './FormBuilder.module.css';
 
 export default function FormBuilder({defaultMetadata, defaultTechnicianItems, defaultEngineerItems, onSubmit})
 {
+    const location = useLocation().pathname.split('/')[1];
+    
     const {register, control, handleSubmit} = useForm(
         {
             defaultValues:
@@ -57,7 +60,7 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
         <main>
 
             <div className={styles.formContainer}>
-                <h1 className={styles.formTitle}>Create New ATP Form</h1>
+                <h1 className={styles.formTitle}>{location === "create-atp" ? "Create New ATP Form" : "Update ATP Form"}</h1>
                 <form className="atp-form" onSubmit = {handleSubmit(handleFormSubmit)}> 
                     
                     <label style = {{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: "20px"}}>
@@ -66,7 +69,7 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
                             accept=".xlsx,.xls"
                             {...register("spreadsheetTemplate")}
                         />
-                        <span>Upload ATP Excel Spreadsheet Template</span>
+                        <span>{location === "create-atp" ? "Import ATP Excel Spreadsheet Template" : "Replace ATP Excel Spreadsheet Template"}</span>
                     </label>
                     
                     <FormMetadata register = {register}/>
