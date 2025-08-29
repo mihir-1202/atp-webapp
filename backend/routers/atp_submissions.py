@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Body, Depends
 from datetime import datetime
-from typing import Annotated, Dict, Any
+from typing import Annotated, Dict, Any, Callable
+from openpyxl.worksheet import cell_range
 from pymongo.collection import Collection
+from pymongo.mongo_client import MongoClient
 from bson import ObjectId
-from dependencies import get_atp_submissions_collection, get_atp_forms_collection
+from dependencies import get_atp_submissions_collection, get_atp_forms_collection, get_blob_handler, get_mongo_client, get_atp_spreadsheet_manager, ATPSpreadsheetManager
 from schemas import atp_submissions as schemas, atp_submissions_responses as responses
 
 router = APIRouter()
 
+#Technician submission
 @router.post("/", response_model = responses.ATPSubmissionCreationResponse)
 async def create_atp_submission(
     atp_submission: Annotated[schemas.ATPTechnicianSubmission, Body()],
@@ -19,28 +22,48 @@ async def create_atp_submission(
     inserted_document = atp_submissions.insert_one(atp_submission_data)
     return {'message': 'Submitted ATP succesfully', 'submissionId': str(inserted_document.inserted_id)}
    
+#Engineer review submission
 @router.put("/{atp_submission_id}", response_model = responses.ATPReviewSubmissionResponse)
 async def update_atp_submission(atp_submission_id: str, 
                                 atp_submission: Annotated[schemas.ATPReviewSubmission, Body()], 
-                                atp_submissions: Collection = Depends(get_atp_submissions_collection)):
-    try:
-        # Validate ObjectId format
-        object_id = ObjectId(atp_submission_id)
-    except Exception:
-        return {'error': 'Invalid submission ID format', 'submissionId': None}
+                                atp_submissions: Collection = Depends(get_atp_submissions_collection),
+                                client: MongoClient = Depends(get_mongo_client),
+                                atp_spreadsheet_manager: ATPSpreadsheetManager = Depends(get_atp_spreadsheet_manager),
+                                blob_handler: Callable = Depends(get_blob_handler)
+                                ):
     
-    atp_review_data = atp_submission.model_dump()
-    atp_review_data['reviewedAt'] = datetime.now().isoformat()
-    
-    # Check if the submission exists and update it
-    result = atp_submissions.update_one({'_id': object_id}, {'$set': atp_review_data})
-    
-    if result.matched_count == 0:
-        return {'error': 'ATP submission not found', 'submissionId': None}
-    
-    if result.modified_count == 0:
-        return {'error': 'ATP submission was not modified', 'submissionId': atp_submission_id}
-    
+    with client.start_session() as session:
+        try:
+            # Validate ObjectId format
+            object_id = ObjectId(atp_submission_id)
+        except Exception:
+            return {'error': 'Invalid submission ID format', 'submissionId': None}
+        
+        atp_review_data = atp_submission.model_dump()
+        atp_review_data['reviewedAt'] = datetime.now().isoformat()
+        
+        # Check if the submission exists and update it
+        result = atp_submissions.update_one({'_id': object_id}, {'$set': atp_review_data})
+        
+        if result.matched_count == 0:
+            return {'error': 'ATP submission not found', 'submissionId': None}
+        
+        if result.modified_count == 0:
+            return {'error': 'ATP submission was not modified', 'submissionId': atp_submission_id}
+        
+        spreadsheet_path = blob_handler.download_blob(container_name = 'spreadsheets', blob_path = f'{atp_review_data["formGroupId"]}/active-form/{atp_review_data["formId"]}.xlsx')
+        with atp_spreadsheet_manager.register_workbook(spreadsheet_path):
+            cell_to_response_mappings = {}
+            for response in atp_review_data['technicianResponses']:
+                cell_to_response_mappings[response['spreadsheetCell']] = response['answer']
+            for response in atp_review_data['engineerResponses']:
+                cell_to_response_mappings[response['spreadsheetCell']] = response['answer']
+            atp_spreadsheet_manager.populate_cells_with_responses(cell_to_response_mappings)
+            upload_path = f'{atp_review_data["formGroupId"]}/submissions/{atp_review_data["formId"]}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+            with open(spreadsheet_path, 'rb') as file_stream:
+                blob_handler.upload_blob(container_name = 'spreadsheets', blob_path = upload_path, file_stream = file_stream)
+            blob_handler.cleanup_temp_files(spreadsheet_path)
+        
     return {'message': 'ATP submission updated successfully', 'submissionId': atp_submission_id}
 
 @router.get("/pending/metadata", response_model = responses.ATPAllPendingSubmissionsMetadata)

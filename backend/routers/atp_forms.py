@@ -1,13 +1,11 @@
 from fastapi import APIRouter, Body, Depends, Path, Form, File, UploadFile
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Optional, Union, Literal
 from pymongo.collection import Collection
 from bson import ObjectId
-from pymongo.common import validate
-from dependencies import get_atp_forms_collection, get_atp_submissions_collection, get_blob_service_client
+from dependencies import get_atp_forms_collection, get_atp_submissions_collection
 from schemas import atp_forms as schemas, atp_forms_responses as responses
-from azure.storage.blob import BlobServiceClient
-from dependencies import get_client, get_blob_handler
+from dependencies import get_mongo_client, get_blob_handler
 from typing import Callable
 from pymongo.mongo_client import MongoClient
 import json
@@ -20,7 +18,7 @@ async def create_form_template(
     spreadsheetTemplate: Annotated[UploadFile, File()], #File() implies that spreadsheetTemplate is of type Form()/FormData, and it will be converted into an UploadFile obejct
     metadata: Annotated[str, Form()],
     sections: Annotated[str, Form()],
-    client: MongoClient = Depends(get_client),
+    client: MongoClient = Depends(get_mongo_client),
     atp_forms: Collection = Depends(get_atp_forms_collection),
     blob_handler: Callable = Depends(get_blob_handler)
 ):
@@ -81,10 +79,10 @@ async def create_form_template(
 @router.put("/active/{atp_form_group_id}", response_model = responses.ATPFormUpdateResponse)
 async def update_active_form_template(
     atp_form_group_id: Annotated[str, Path()],
-    spreadsheetTemplate: Annotated[UploadFile, File()],
     metadata: Annotated[str, Form()],
     sections: Annotated[str, Form()],
-    client: MongoClient = Depends(get_client),
+    spreadsheetTemplate: Annotated[Union[UploadFile, Literal['']], File()],
+    client: MongoClient = Depends(get_mongo_client),
     atp_forms: Collection = Depends(get_atp_forms_collection),
     blob_handler: Callable = Depends(get_blob_handler)
 ):
@@ -124,22 +122,23 @@ async def update_active_form_template(
             inserted_document = atp_forms.insert_one(new_form_template_data, session=session)
             new_form_id = inserted_document.inserted_id
             
-            # Upload new spreadsheet to Azure Blob Storage
-            blob_path = f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
-            blob_handler.upload_blob('spreadsheets', blob_path, spreadsheetTemplate.file)
+            # Upload new spreadsheet to Azure Blob Storage if a replacement was provided
+            if isinstance(spreadsheetTemplate, UploadFile):
+                blob_path = f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
+                blob_handler.upload_blob('spreadsheets', blob_path, spreadsheetTemplate.file)
             
-            # Archive the old spreadsheet if it exists
-            old_blob_path = f'{atp_form_group_id}/active-form/{current_form["_id"]}.xlsx'
-            try:
-                blob_handler.move_blob(
-                    from_container_name='spreadsheets',
-                    blob_path=old_blob_path,
-                    to_container_name='spreadsheets',
-                    to_blob_path=f'{atp_form_group_id}/archived-forms/{current_form["_id"]}.xlsx'
-                )
-            except Exception as e:
-                # If the old blob doesn't exist, just continue (this might be the first version)
-                print(f"Warning: Could not archive old excel template blob {old_blob_path}: {str(e)}. The blob may not exist")
+                # Archive the old spreadsheet if it exists
+                old_blob_path = f'{atp_form_group_id}/active-form/{current_form["_id"]}.xlsx'
+                try:
+                    blob_handler.move_blob(
+                        from_container_name='spreadsheets',
+                        blob_path=old_blob_path,
+                        to_container_name='spreadsheets',
+                        to_blob_path=f'{atp_form_group_id}/archived-forms/{current_form["_id"]}.xlsx'
+                    )
+                except Exception as e:
+                    # If the old blob doesn't exist, just continue (this might be the first version)
+                    print(f"Warning: Could not archive old excel template blob {old_blob_path}: {str(e)}. The blob may not exist")
                 
             session.commit_transaction()
           
@@ -197,7 +196,7 @@ async def delete_form_template(
     atp_form_group_id: Annotated[str, Path(description = "The ID of the ATP form group to delete", example = "674a1b2c3d4e5f6789012345")], 
     atp_forms: Collection = Depends(get_atp_forms_collection),
     atp_submissions: Collection = Depends(get_atp_submissions_collection),
-    client: MongoClient = Depends(get_client),
+    client: MongoClient = Depends(get_mongo_client),
     blob_handler: Callable = Depends(get_blob_handler)
 ):
     """

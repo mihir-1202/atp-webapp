@@ -1,50 +1,20 @@
 from dotenv import load_dotenv
 import os
-from pymongo import MongoClient
 from azure.storage.blob import BlobServiceClient
 import tempfile
 from azure.core.exceptions import AzureError
-from pathlib import Path
+from typing import Annotated, BinaryIO
+from fastapi import File
 
-#TODO: implement asynchronous code in the dependencies
-
-# Load environment variables from .env file
 load_dotenv() 
-MONGO_URI = os.getenv("MONGO_URI")
 AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-
-"""=====MONGO DB DEPENDENCIES====="""
-client = MongoClient(MONGO_URI)
-db = client['atp-webapp-database']  # Database name
-
-# Collections
-atp_forms_collection = db['atp-forms']  # Collection name
-atp_submissions_collection = db['atp-submissions']
-
-# Dependency functions
-def get_client():
-    return client
-
-def get_database():
-    """Dependency function to get database instance"""
-    return db
-
-def get_atp_forms_collection():
-    """Dependency function to get ATP forms collection"""
-    return atp_forms_collection
-
-def get_atp_submissions_collection():
-    return atp_submissions_collection
 
 """=====BLOB SERVICE CLIENT====="""
 blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
 
-def get_blob_service_client():
-    return blob_service_client
-
 class BlobHandler:
     @staticmethod
-    def upload_blob(container_name: str, blob_path: str, file_stream) -> None:
+    def upload_blob(container_name: str, blob_path: str, file_stream: Annotated[BinaryIO, File()]) -> None:
         try:
             blob_client = blob_service_client.get_blob_client(
                 container=container_name,
@@ -55,7 +25,7 @@ class BlobHandler:
             raise AzureError(f"Failed to upload blob {blob_path} to container {container_name}: {str(e)}")
         
     @staticmethod
-    def download_blob(container_name: str, blob_path: str) -> Path:
+    def download_blob(container_name: str, blob_path: str) -> str:
         try:
             blob_client = blob_service_client.get_blob_client(
                 container=container_name,
@@ -78,14 +48,14 @@ class BlobHandler:
         except AzureError as e:
             raise IOError(f"Failed to download blob {blob_path}: {str(e)}")
         
-        return Path(temp_file.name)
+        return temp_file.name
 
     @staticmethod
-    def cleanup_temp_files(*file_paths: Path) -> None:
+    def cleanup_temp_files(*file_paths: str) -> None:
         for file_path in file_paths:
             try:
-                if file_path.exists():
-                    file_path.unlink()
+                if os.path.exists(file_path):
+                    os.remove(file_path)
             except Exception as e:
                 raise IOError(f"Failed to cleanup temp file {file_path}: {str(e)}")
             
@@ -130,6 +100,7 @@ class BlobHandler:
         except AzureError as e:
             raise AzureError(f"Failed to delete blob {blob_path} from container {container_name}: {str(e)}")
 
+#Dependency function to get the blob handler
 def get_blob_handler():
     return BlobHandler()        
 

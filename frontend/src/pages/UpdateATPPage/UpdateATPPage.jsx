@@ -24,8 +24,8 @@ export default function UpdateATPPage()
 
     function handleSubmit(formData)
     {
-        //TODO: fix the path to update the ATP form
-        const spreadsheetTemplate = formData.spreadsheetTemplate[0] ? formData.spreadsheetTemplate[0] : null;
+        //Set spreadsheetTemplate to an empty string if not provided -> if we set it to null, it's value will be converted to the string 'null' on the backend due to Form Data
+        const spreadsheetTemplate = formData.spreadsheetTemplate[0] ? formData.spreadsheetTemplate[0] : '';
         
         const processedFormData = new FormData();
         processedFormData.append('spreadsheetTemplate', spreadsheetTemplate);

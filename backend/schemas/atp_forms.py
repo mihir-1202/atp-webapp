@@ -55,7 +55,9 @@ class Section(BaseModel):
 
 class FormTemplate(BaseModel):
     #When creating a form for the first time, the spreadsheetTemplate is required, but when updating a form, it is not required
-    spreadsheetTemplate: Annotated[Optional[UploadFile], Field(description = "The spreadsheet template of the ATP form")] #UploadFile is a FastAPI class that represents FormData.File[0]
+    #Since spreadsheetTemplate still needs to be sent as a key value pair in the Form Data request body, it will be an empty string if not provided
+    #spreadsheetTemplate: Annotated[Optional[UploadFile], Field(description = "The spreadsheet template of the ATP form")] #UploadFile is a FastAPI class that represents FormData.File[0]
+    spreadsheetTemplate: Annotated[Optional[Union[UploadFile, Literal['']]], Field(description = "The spreadsheet template of the ATP form")] #UploadFile is a FastAPI class that represents FormData.File[0]
     metadata: Annotated[Metadata, Field(description = "The metadata of the ATP form")]
     sections: Annotated[dict[str, Section], Field(
         min_length = 2,
