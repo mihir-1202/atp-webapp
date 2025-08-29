@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends, Path
+from fastapi import APIRouter, Body, Depends, Path, Form, File, UploadFile
 from datetime import datetime
 from typing import Annotated
 from pymongo.collection import Collection
@@ -8,13 +8,16 @@ from schemas import atp_forms as schemas, atp_forms_responses as responses
 from azure.storage.blob import BlobServiceClient
 from dependencies import get_blob_service_client, get_client
 from pymongo.mongo_client import MongoClient
+import json
 
 router = APIRouter()
 
 #FastAPI coerces the return value to the response model as a JSON
 @router.post("/", response_model = responses.ATPNewFormCreationResponse)
 async def create_form_template(
-    form_template: Annotated[schemas.FormTemplate, Body()],
+    spreadsheetTemplate: Annotated[UploadFile, File()], #File() implies that spreadsheetTemplate is of type Form()/FormData, and it will be converted into an UploadFile obejct
+    metadata: Annotated[str, Form()],
+    sections: Annotated[str, Form()],
     client: MongoClient = Depends(get_client),
     atp_forms: Collection = Depends(get_atp_forms_collection),
     blob_service_client: BlobServiceClient = Depends(get_blob_service_client)
@@ -26,29 +29,54 @@ async def create_form_template(
     """
     with client.start_session() as session:
         try:
-            #Upload the spreadsheet template data to MongoDB
-            form_group_id = str(ObjectId())
-            form_template_data = form_template.model_dump()
+            # Parse JSON strings back to objects
+            metadata_obj = json.loads(metadata)
+            sections_obj = json.loads(sections)
             
+            # Create the form template data structure
+            form_template_data = {
+                'metadata': metadata_obj,
+                'sections': sections_obj
+            }
+            
+            # Add server-generated fields
+            form_group_id = str(ObjectId())
             form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
             form_template_data['metadata']['status'] = 'active'
             form_template_data['metadata']['version'] = 1
             form_template_data['metadata']['formGroupID'] = form_group_id
-            inserted_document = atp_forms.insert_one(form_template_data)
+            
+            # Validate the data using Pydantic
+            validated_form = schemas.FormTemplate(
+                spreadsheetTemplate=spreadsheetTemplate,
+                metadata=schemas.Metadata(**form_template_data['metadata']),
+                sections=form_template_data['sections']
+            )
+            
+            # Start transaction
+            session.start_transaction()
+            
+            # Insert into MongoDB
+            inserted_document = atp_forms.insert_one(form_template_data, session=session)
             new_form_id = inserted_document.inserted_id
             
-            #Upload the spreadsheet template to Azure Blob Storage
+            # Upload to Azure Blob Storage
             blob_path = f'{form_group_id}/active-form/{new_form_id}.xlsx'
             blob_client = blob_service_client.get_blob_client(
-                container = 'atpspreadsheets',
+                container = 'spreadsheets',
                 blob = blob_path
             )
-            blob_client.upload_blob(form_template.spreadsheetTemplate.file)
+            blob_client.upload_blob(spreadsheetTemplate.file)
+            
+            # Commit transaction only if both operations succeed
             session.commit_transaction()
+            
+            return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
+            
         except Exception as e:
+            # Abort transaction if anything fails
             session.abort_transaction()
             raise e
-        return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
 
 @router.get("/active", response_model = responses.ATPAllActiveForms)
 async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_forms_collection)):

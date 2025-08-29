@@ -77,9 +77,6 @@ export default function CreateATPPage()
         
         fetch("http://localhost:8000/atp-forms/", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
             body: processedFormData
         })
         .then(async response => {
