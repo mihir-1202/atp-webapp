@@ -6,6 +6,8 @@ import styles from './RoleFormSection.module.css';
 export default function RoleFormSection({role, items, appendItem, removeItem, register})
 {
  
+    
+    
     let formItemsJSX = items.map((item, index) => 
         {
             return (item.type === "heading") 

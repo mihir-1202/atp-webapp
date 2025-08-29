@@ -32,4 +32,4 @@ app.include_router(atp_forms_router, prefix = "/atp-forms", tags = ['ATP Forms']
 app.include_router(atp_submissions_router, prefix = "/atp-submissions", tags = ['ATP Submissions'])
     
 if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run('main:app', host="localhost", port=8000, reload=True)

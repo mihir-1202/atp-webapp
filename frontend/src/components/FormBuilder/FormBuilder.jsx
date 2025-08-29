@@ -55,15 +55,20 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
 
     return(
         <main>
-            <label style = {{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: "20px"}}>
-                <input type = "file" />
-                {/* will not get submitted with the form because it is not wrapped in the form element */}
-                <span>Upload ATP Excel Spreadsheet Template</span>
-            </label>
 
             <div className={styles.formContainer}>
                 <h1 className={styles.formTitle}>Create New ATP Form</h1>
                 <form className="atp-form" onSubmit = {handleSubmit(handleFormSubmit)}> 
+                    
+                    <label style = {{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: "20px"}}>
+                        <input 
+                            type = "file" 
+                            accept=".xlsx,.xls"
+                            {...register("spreadsheetTemplate")}
+                        />
+                        <span>Upload ATP Excel Spreadsheet Template</span>
+                    </label>
+                    
                     <FormMetadata register = {register}/>
 
                     <hr className="divider" />

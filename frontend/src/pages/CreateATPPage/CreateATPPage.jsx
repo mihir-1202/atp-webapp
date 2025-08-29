@@ -55,12 +55,32 @@ export default function CreateATPPage()
 
     function handleSubmit(formData)
     {
+        /*
+        react hook formData: values are objects (need to JSON.stringify the body before sending http request)
+        browser formData: values must be strings (use JSON.stringify to convert from react form data)
+        */
+        const spreadsheetTemplate = formData.spreadsheetTemplate[0];
+        if (!spreadsheetTemplate)
+        {
+            alert("Please select an Excel file to upload");
+            return;
+        }
+        
+        // Create FormData for file upload
+        const processedFormData = new FormData();
+        processedFormData.append('spreadsheetTemplate', spreadsheetTemplate);  // Parameter name must match backend expectation
+        
+        // Add other form fields to FormData
+        processedFormData.append('metadata', JSON.stringify(formData.metadata));
+        processedFormData.append('sections', JSON.stringify(formData.sections));
+
+        
         fetch("http://localhost:8000/atp-forms/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(formData)
+            body: processedFormData
         })
         .then(async response => {
             if (response.ok) 

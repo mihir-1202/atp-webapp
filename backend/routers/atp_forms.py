@@ -5,6 +5,9 @@ from pymongo.collection import Collection
 from bson import ObjectId
 from dependencies import get_atp_forms_collection, get_atp_submissions_collection   
 from schemas import atp_forms as schemas, atp_forms_responses as responses
+from azure.storage.blob import BlobServiceClient
+from dependencies import get_blob_service_client, get_client
+from pymongo.mongo_client import MongoClient
 
 router = APIRouter()
 
@@ -12,26 +15,40 @@ router = APIRouter()
 @router.post("/", response_model = responses.ATPNewFormCreationResponse)
 async def create_form_template(
     form_template: Annotated[schemas.FormTemplate, Body()],
+    client: MongoClient = Depends(get_client),
     atp_forms: Collection = Depends(get_atp_forms_collection),
+    blob_service_client: BlobServiceClient = Depends(get_blob_service_client)
 ):
     """
     Create a new ATP form template for the first time.
 
     - **form_template**: The ATP form template JSON object to create
     """
-
-    form_template_data = form_template.model_dump()
-    
-    form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
-    form_template_data['metadata']['status'] = 'active'
-    form_template_data['metadata']['version'] = 1
-    form_template_data['metadata']['formGroupID'] = str(ObjectId())
-    
-    print("Validated form template:", form_template_data)
-    inserted_document = atp_forms.insert_one(form_template_data)
-    return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
-
-
+    with client.start_session() as session:
+        try:
+            #Upload the spreadsheet template data to MongoDB
+            form_group_id = str(ObjectId())
+            form_template_data = form_template.model_dump()
+            
+            form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
+            form_template_data['metadata']['status'] = 'active'
+            form_template_data['metadata']['version'] = 1
+            form_template_data['metadata']['formGroupID'] = form_group_id
+            inserted_document = atp_forms.insert_one(form_template_data)
+            new_form_id = inserted_document.inserted_id
+            
+            #Upload the spreadsheet template to Azure Blob Storage
+            blob_path = f'{form_group_id}/active-form/{new_form_id}.xlsx'
+            blob_client = blob_service_client.get_blob_client(
+                container = 'atpspreadsheets',
+                blob = blob_path
+            )
+            blob_client.upload_blob(form_template.spreadsheetTemplate.file)
+            session.commit_transaction()
+        except Exception as e:
+            session.abort_transaction()
+            raise e
+        return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
 
 @router.get("/active", response_model = responses.ATPAllActiveForms)
 async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_forms_collection)):
