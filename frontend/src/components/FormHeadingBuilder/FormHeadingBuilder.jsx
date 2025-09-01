@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import styles from './FormHeadingBuilder.module.css';
 
-export default function FormHeadingBuilder({index, role, removeItem, defaultValue = "", register})
+export default function FormHeadingBuilder({index, role, removeItem, defaultValue = "", register, setLastClicked})
 {
-    const [headingInput, setHeadingInput] = useState("");
-
-    function handleHeadingInputChange(event)
+    function handleClick()
     {
-        setHeadingInput(event.target.value);
+        setLastClicked({index: index, role: role});
     }
 
     return(
-        <li className={styles.headingItem} data-role={role}>
+        <li className={styles.headingItem} data-role={role} onClick = {handleClick}>
             <div className={styles.itemBoxHeader}>
                 <h3>Heading</h3>
                 <button className={styles.removeItemButton} type="button" onClick = {() => removeItem(index)}>−</button>

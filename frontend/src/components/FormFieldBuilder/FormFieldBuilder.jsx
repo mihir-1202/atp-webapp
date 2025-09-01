@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import styles from './FormFieldBuilder.module.css';
 
-export default function FormFieldBuilder({index, role, id, removeItem, defaultValue = "", register})
+export default function FormFieldBuilder({index, role, id, removeItem, defaultValue = "", register, setLastClicked})
 {
+    function handleClick()
+    {
+        setLastClicked({index: index, role: role});
+    }
+    
+    
     return(
-        <li className={styles.fieldItem}>
+        <li className={styles.fieldItem} onClick = {handleClick}>
             <div className={styles.itemBoxHeader}>
                 <h3>Field</h3>
                 <button className={styles.removeItemButton} type="button" onClick={() => removeItem(index)}>−</button>
@@ -43,15 +49,24 @@ export default function FormFieldBuilder({index, role, id, removeItem, defaultVa
 
                 <div className={styles.inputGroup} id={styles.spreadsheetCellInputGroup}>
                         <label htmlFor={`${role}-cell-${index}`} className={styles.inputLabel}>
-                            Spreadsheet Cell ID
+                            Spreadsheet Cell ID *
                         </label>
                         <input 
                             key={id} 
-                            id = {id}
+                            id={`${role}-cell-${index}`}
                             className={styles.cellInput} 
                             type="text" 
                             placeholder="e.g., A1, B5, C10" 
-                            {...register(`sections.${role}.items.${index}.spreadsheetCell`)}
+                            required
+                            pattern="^[A-Z]{1,3}[1-9]\d{0,6}$" //html validation
+                            title="Must be a valid Excel cell reference (e.g., A1, B5, AA10)"
+                            {...register(`sections.${role}.items.${index}.spreadsheetCell`, {
+                                required: "Spreadsheet cell is required",
+                                pattern: {
+                                    value: /^[A-Z]{1,3}[1-9]\d{0,6}$/, //react validation
+                                    message: "Must be a valid Excel cell reference (e.g., A1, B5, AA10)" //the error message that is displayed in the input group
+                                }
+                            })}
                         />
                 </div>
 

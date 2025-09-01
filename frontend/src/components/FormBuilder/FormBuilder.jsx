@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 import FormMetadata from '../FormMetadata/FormMetadata';
 import RoleFormSection from '../RoleFormSection/RoleFormSection';
 import CreateFormActions from '../CreateFormActions/CreateFormActions';
@@ -9,6 +10,8 @@ import styles from './FormBuilder.module.css';
 export default function FormBuilder({defaultMetadata, defaultTechnicianItems, defaultEngineerItems, onSubmit})
 {
     const location = useLocation().pathname.split('/')[1];
+
+    const [lastClicked, setLastClicked] = useState({index: null, role: null});
     
     const {register, control, handleSubmit} = useForm(
         {
@@ -25,12 +28,16 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
         }
     );
 
-    const {fields: technicianItems, append: appendTechnicianItem, remove: removeTechnicianItem} = useFieldArray({
+    /*
+    fields represents the current state of the array
+    append, remove, and insert are used to manipulate the array
+    */
+    const {fields: technicianItems, append: appendTechnicianItem, remove: removeTechnicianItem, insert: insertTechnicianItem} = useFieldArray({
         control,
         name: "sections.technician.items"
     });
 
-    const {fields: engineerItems, append: appendEngineerItem, remove: removeEngineerItem} = useFieldArray({
+    const {fields: engineerItems, append: appendEngineerItem, remove: removeEngineerItem, insert: insertEngineerItem} = useFieldArray({
         control,
         name: "sections.engineer.items"
     });
@@ -76,11 +83,29 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
 
                     <hr className="divider" />
 
-                    <RoleFormSection role = "technician" items = {technicianItems} appendItem = {appendTechnicianItem} removeItem = {removeTechnicianItem} register = {register}/>
+                    <RoleFormSection 
+                        role = "technician" 
+                        items = {technicianItems} 
+                        appendItem = {appendTechnicianItem} 
+                        removeItem = {removeTechnicianItem} 
+                        insertItem = {insertTechnicianItem}
+                        register = {register}
+                        lastClicked = {lastClicked}
+                        setLastClicked = {setLastClicked}
+                    />
 
                     <hr className="divider" />
 
-                    <RoleFormSection role = "engineer" items = {engineerItems} appendItem = {appendEngineerItem} removeItem = {removeEngineerItem} register = {register}/>
+                    <RoleFormSection 
+                        role = "engineer" 
+                        items = {engineerItems} 
+                        appendItem = {appendEngineerItem} 
+                        removeItem = {removeEngineerItem} 
+                        insertItem = {insertEngineerItem}
+                        register = {register}
+                        lastClicked = {lastClicked}
+                        setLastClicked = {setLastClicked}
+                    />
 
                     <hr className="divider" />
 

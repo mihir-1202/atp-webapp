@@ -3,18 +3,59 @@ import FormHeadingBuilder from '../FormHeadingBuilder/FormHeadingBuilder';
 import FormFieldBuilder from '../FormFieldBuilder/FormFieldBuilder';
 import styles from './RoleFormSection.module.css';
 
-export default function RoleFormSection({role, items, appendItem, removeItem, register})
+export default function RoleFormSection({role, items, appendItem, removeItem, insertItem, register, lastClicked, setLastClicked})
 {
- 
-    
-    
-            let formItemsJSX = items.map((item, index) => 
+    const formItemsJSX = items.map((item, index) => 
         {
             return (item.type === "heading") 
-            ? <FormHeadingBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.content || ""} /> 
-            : <FormFieldBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.question || ""} />
+            ? <FormHeadingBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.content || ""} lastClicked = {lastClicked} setLastClicked = {setLastClicked} /> 
+            : <FormFieldBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.question || ""} lastClicked = {lastClicked} setLastClicked = {setLastClicked} />
         }
     )
+
+    function addNewItem(type)
+    {
+        if (lastClicked.index === null)
+        {
+            type === "heading" ? 
+            appendItem({
+                uuid: crypto.randomUUID(),
+                index: items.length,
+                type: type,
+                content: "",
+            })
+            :
+            appendItem({
+                uuid: crypto.randomUUID(),
+                index: items.length,
+                type: type,
+                question: "",
+                answerFormat: "text",
+                spreadsheetCell: ""
+            })
+        }
+
+        else
+        {
+            type === "heading" ? 
+            insertItem(lastClicked.index + 1, {
+                uuid: crypto.randomUUID(),
+                index: lastClicked.index,
+                type: type,
+                content: "",
+            })
+            :
+            insertItem(lastClicked.index + 1, {
+                uuid: crypto.randomUUID(),
+                index: lastClicked.index,
+                type: type,
+                question: "",
+                answerFormat: "text",
+                spreadsheetCell: ""
+            })
+        }
+
+    }
 
     return(
         <section className={role === "technician" ? styles.technicianFormSection : styles.engineerFormSection}>
@@ -22,23 +63,11 @@ export default function RoleFormSection({role, items, appendItem, removeItem, re
                 <h2 className={styles.sectionTitle}>{role.charAt(0).toUpperCase() + role.slice(1)} Form</h2>
                 
                 <div className={styles.sectionButtons}>
-                    <button className={styles.addHeadingButton} type="button" onClick = {() => appendItem({
-                        uuid: crypto.randomUUID(),
-                        index: items.length, 
-                        type: "heading", 
-                        content: "",
-                    })}>
+                    <button className={styles.addHeadingButton} type="button" onClick = {() => addNewItem("heading")}>
                         Add Heading
                     </button>
 
-                    <button className={styles.addFieldButton} type="button" onClick = {() => appendItem({
-                        uuid: crypto.randomUUID(),
-                        index: items.length, 
-                        type: "field", 
-                        question: "", 
-                        answerFormat: "text",
-                        spreadsheetCell: ""
-                    })}>
+                    <button className={styles.addFieldButton} type="button" onClick = {() => addNewItem("field")}>
                         Add New Field
                     </button>
                 </div>
