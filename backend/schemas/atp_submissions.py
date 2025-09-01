@@ -9,9 +9,9 @@ Initial Form Data:
   formId: "674a1b2c3d4e5f6789012345",
   submittedBy: "technician@upwing.com",
   technicianResponses: {
-    "1": "Motor tested and operational",  // From input registration
-    "2": "Pass",
-    "5": "Approved for operation"
+    "0": "Motor tested and operational",  // From input registration
+    "1": "Pass",
+    "2": "Approved for operation"
   }
 }
 
@@ -22,7 +22,7 @@ API Post Request Body structure:
   "submittedAt": "2024-01-15T10:30:00Z",
   "technicianResponses": 
     [
-        {questionOrder: "1", answerFormat: "text", response: "Motor tested and operational"},
+        {questionIndex: "0", answerFormat: "text", response: "Motor tested and operational"},
     ],
   "status": "submitted"
 }
@@ -48,7 +48,7 @@ def is_date(value):
 
 class Responses(BaseModel):
     questionUUID: Annotated[str, Field(min_length = 1, example = "123e4567-e89b-12d3-a456-426614174000")]
-    questionOrder: Annotated[int, Field(ge = 0, example = 3)]
+    questionIndex: Annotated[int, Field(ge = 0, example = 0)]
     spreadsheetCell: Annotated[str, Field(pattern=r'^[A-Z]{1,3}[1-9]\d{0,6}$', description="Cell reference in format A1, B5, AA10, etc.", example = "A1")]
     answer: Annotated[str, Field(min_length = 1, example = "1.0652")]
     answerFormat: Annotated[str, Field(min_length = 1, example = "number")]
@@ -67,7 +67,7 @@ class ATPTechnicianSubmission(BaseModel):
     formId: Annotated[str, Field(min_length = 1, example = "674a1b2c3d4e5f6789012345")]
     formGroupId: Annotated[str, Field(min_length = 1, example = "454afdslighjdfihg9012345")]
     submittedBy: Annotated[EmailStr, Field(min_length = 1, example = "technician@upwing.com")]
-    technicianResponses: Annotated[List[Responses], Field(min_items = 1, example = [{"questionUUID": "123e4567-e89b-12d3-a456-426614174000", "questionOrder": 3, "spreadsheetCell": "A1", "answer": "1.0652", "answerFormat": "number"}])]
+    technicianResponses: Annotated[List[Responses], Field(min_items = 1, example = [{"questionUUID": "123e4567-e89b-12d3-a456-426614174000", "questionIndex": 0, "spreadsheetCell": "A1", "answer": "1.0652", "answerFormat": "number"}])]
     
     @model_validator(mode='after')
     def validate_all_questions_answered(self) -> 'ATPTechnicianSubmission':
@@ -80,8 +80,8 @@ class ATPReviewSubmission(BaseModel):
     formGroupId: Annotated[str, Field(min_length = 1, example = "454afdslighjdfihg9012345")]
     reviewedBy: Annotated[EmailStr, Field(min_length = 1, example = "engineer@upwing.com")]
     submissionId: Annotated[str, Field(min_length = 1, example = "674a1b2c3d4e5f6789012345")]
-    technicianResponses: Annotated[List[Responses], Field(min_items = 1, example = [{"questionUUID": "123e4567-e89b-12d3-a456-426614174000", "questionOrder": 3, "spreadsheetCell": "A1", "answer": "1.0652", "answerFormat": "number"}])]
-    engineerResponses: Annotated[List[Responses], Field(min_items = 1, example = [{"questionUUID": "54321e4567-d43b-14e3-b743-346432704654", "questionOrder": 7, "spreadsheetCell": "C10", "answer": "Sample answer", "answerFormat": "textarea"}])] 
+    technicianResponses: Annotated[List[Responses], Field(min_items = 1, example = [{"questionUUID": "123e4567-e89b-12d3-a456-426614174000", "questionIndex": 0, "spreadsheetCell": "A1", "answer": "1.0652", "answerFormat": "number"}])]
+    engineerResponses: Annotated[List[Responses], Field(min_items = 1, example = [{"questionUUID": "54321e4567-d43b-14e3-b743-346432704654", "questionIndex": 0, "spreadsheetCell": "C10", "answer": "Sample answer", "answerFormat": "textarea"}])] 
     submittedBy: Annotated[EmailStr, Field(min_length = 1, example = "technician@upwing.com")]
     submittedAt: Annotated[str, Field(min_length = 1, example = "2024-01-15T10:30:00Z")]
     status: Annotated[Literal['approved', 'rejected'], Field(min_length = 1, example = "approved")]

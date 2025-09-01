@@ -175,7 +175,7 @@ export default function EditableATPUI()
             submittedBy: "technician@upwingenergy.com",
             technicianResponses: [
                 {
-                    questionOrder: 1,                  
+                    questionIndex: 0,                  
                     answer: "Motor tested and operational",
                     answerFormat: "text",
                     spreadsheetCell: "A1"
@@ -183,7 +183,7 @@ export default function EditableATPUI()
             ],
             engineerResponses: [
                 {
-                    questionOrder: 4,
+                    questionIndex: 1,
                     answer: "2024-01-15",
                     answerFormat: "date",
                     spreadsheetCell: "B1"
@@ -202,18 +202,18 @@ export default function EditableATPUI()
             //JS arrays are objects under the hood so they can have missing keys -> even though technicianResponses will be an array instead of an object, for in will skip over the missing keys
             for (let questionUUID in data.technicianResponses) {
                 const question = getQuestionMetadataByUUID("technician", questionUUID);
-                const {answerFormat, spreadsheetCell, order} = question;
+                const {answerFormat, spreadsheetCell, index} = question;
                 const answer = data.technicianResponses[questionUUID];
                 
                 // Only add if we found the question and answer exists
-                if (answerFormat && spreadsheetCell && order && answer !== undefined && answer !== '') {
-                    formattedTechnicianResponses.push({
-                        questionUUID: questionUUID,
-                        questionOrder: typeof order === 'number' ? order : parseInt(order),
-                        spreadsheetCell: spreadsheetCell,
-                        answer: answer,
-                        answerFormat: answerFormat
-                    });
+                if (answerFormat && spreadsheetCell && index && answer !== undefined && answer !== '') {
+                                    formattedTechnicianResponses.push({
+                    questionUUID: questionUUID,
+                    questionIndex: typeof index === 'number' ? index : parseInt(index),
+                    spreadsheetCell: spreadsheetCell,
+                    answer: answer,
+                    answerFormat: answerFormat
+                });
                 }
             }
         }
@@ -232,7 +232,7 @@ export default function EditableATPUI()
                 let answer = data.engineerResponses[questionUUID];
                 formattedEngineerResponses.push({
                     questionUUID: questionUUID,
-                    questionOrder: question.order, 
+                    questionIndex: question.index, 
                     spreadsheetCell: spreadsheetCell, 
                     answer: answer, 
                     answerFormat: answerFormat});

@@ -8,11 +8,11 @@ export default function RoleFormSection({role, items, appendItem, removeItem, re
  
     
     
-    let formItemsJSX = items.map((item, index) => 
+            let formItemsJSX = items.map((item, index) => 
         {
             return (item.type === "heading") 
-            ? <FormHeadingBuilder key = {item.uuid} order = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.content || ""} /> 
-            : <FormFieldBuilder key = {item.uuid} order = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.question || ""} />
+            ? <FormHeadingBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.content || ""} /> 
+            : <FormFieldBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.question || ""} />
         }
     )
 
@@ -24,7 +24,7 @@ export default function RoleFormSection({role, items, appendItem, removeItem, re
                 <div className={styles.sectionButtons}>
                     <button className={styles.addHeadingButton} type="button" onClick = {() => appendItem({
                         uuid: crypto.randomUUID(),
-                        order: items.length, 
+                        index: items.length, 
                         type: "heading", 
                         content: "",
                     })}>
@@ -33,7 +33,7 @@ export default function RoleFormSection({role, items, appendItem, removeItem, re
 
                     <button className={styles.addFieldButton} type="button" onClick = {() => appendItem({
                         uuid: crypto.randomUUID(),
-                        order: items.length, 
+                        index: items.length, 
                         type: "field", 
                         question: "", 
                         answerFormat: "text",

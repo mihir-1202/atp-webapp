@@ -12,13 +12,13 @@ metadata:
                         items: 
                         [
                             {
-                                order: 0,
+                                index: 0,
                                 type: "heading",
                                 content: "This is a technician heading"
                             },
 
                             {
-                                order: 1,
+                                index: 1,
                                 type: "field",
                                 question: "This is a technician question",
                                 answerFormat: "text"

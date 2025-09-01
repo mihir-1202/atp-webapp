@@ -26,13 +26,13 @@ export default function ATPInputSection({register, role, showButtons, atpTemplat
         return item.type === 'heading' ? 
         <HeadingItem 
             key = {item.uuid} 
-            order = {item.order}
+            index = {item.index}
             headingText = {item.content} 
         />
         :
         <FieldItem 
             key = {item.uuid} 
-            order = {item.order}
+            index = {item.index}
             questionUUID = {item.uuid} 
             questionText = {item.question} 
             answerFormat = {item.answerFormat} 

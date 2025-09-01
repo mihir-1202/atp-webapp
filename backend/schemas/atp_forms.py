@@ -18,13 +18,13 @@ class Metadata(BaseModel):
 
 class HeadingItem(BaseModel):
     uuid: Annotated[str, Field(min_length = 1, description = "The UUID of the heading item", example = "123e4567-e89b-12d3-a456-426614174000")]
-    order: Annotated[int, Field(ge = 0, description = "The order of the heading item", example = 3)]
+    index: Annotated[int, Field(ge = 0, description = "The index of the heading item", example = 0)]
     type: Annotated[Literal['heading'], Field(description = "The type of the heading item", example = "heading")] #type can only be a literal string 'heading'
     content: Annotated[str, Field(min_length = 1, description = "The content of the heading item", example = "This is a heading")]
     
 class FieldItem(BaseModel):
     uuid: Annotated[str, Field(min_length = 1, description = "The UUID of the field item", example = "123e4567-e89b-12d3-a456-426614174000")]
-    order: Annotated[int, Field(ge = 0, description = "The order of the field item", example = 3)]
+    index: Annotated[int, Field(ge = 0, description = "The index of the field item", example = 0)]
     type: Annotated[Literal['field'], Field(description = "The type of the field item", example = "field")]
     question: Annotated[str, Field(min_length = 1, description = "The question of the field item", example = "What is the motor speed?")]
     answerFormat: Annotated[str, Field(min_length = 1, description = "The answer format of the field item", example = "number")]
@@ -43,7 +43,7 @@ Item = Annotated[Union[HeadingItem, FieldItem], Field(discriminator = "type")]
 
 
 class Section(BaseModel):
-    items: Annotated[list[Item], Field(min_length = 1, example = [{"uuid": "123e4567-e89b-12d3-a456-426614174000", "order": 2, "type": "heading", "content": "This is a heading"}, {"uuid": "123e4567-e89b-12d3-a456-426614174000", "order": 3, "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1"}])]
+    items: Annotated[list[Item], Field(min_length = 1, example = [{"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 0, "type": "heading", "content": "This is a heading"}, {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 1, "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1"}])]
     
     #Whatever returns from the root_validator becomes the "final" set of field values used to instantiate the model
     @model_validator(mode = "after")
@@ -66,14 +66,14 @@ class FormTemplate(BaseModel):
         example = {
             "technician": {
                 "items": [
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "order": 2, "type": "heading", "content": "This is a heading"},
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174001", "order": 3, "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1"}
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 0, "type": "heading", "content": "This is a heading"},
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 1, "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1"}
                 ]
             },
             "engineer": {
                 "items": [
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174002", "order": 2, "type": "heading", "content": "Another heading"},
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174003", "order": 3, "type": "field", "question": "What is the temperature?", "answerFormat": "number", "spreadsheetCell": "B1"}
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 0, "type": "heading", "content": "Another heading"},
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 1, "type": "field", "question": "What is the temperature?", "answerFormat": "number", "spreadsheetCell": "B1"}
                 ]
             }
         }

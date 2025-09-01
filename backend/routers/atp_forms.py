@@ -107,6 +107,7 @@ async def update_active_form_template(
             current_form = atp_forms.find_one(query)
             if not current_form:
                 return {"error": "ATP form group not found"}
+            old_form_id = current_form['_id']
             
             # Update metadata with server-generated fields
             new_form_template_data['metadata']['formGroupID'] = atp_form_group_id
@@ -123,7 +124,7 @@ async def update_active_form_template(
             new_form_id = inserted_document.inserted_id
             
             # Upload new spreadsheet to Azure Blob Storage if a replacement was provided
-            if isinstance(spreadsheetTemplate, UploadFile):
+            if hasattr(spreadsheetTemplate, 'file') and hasattr(spreadsheetTemplate, 'filename'):
                 blob_path = f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
                 blob_handler.upload_blob('spreadsheets', blob_path, spreadsheetTemplate.file)
             
@@ -139,10 +140,22 @@ async def update_active_form_template(
                 except Exception as e:
                     # If the old blob doesn't exist, just continue (this might be the first version)
                     print(f"Warning: Could not archive old excel template blob {old_blob_path}: {str(e)}. The blob may not exist")
-                
+
+            #Update the spreadsheet template name in Blob Storage with the new form id
+            else:
+                blob_handler.move_blob(
+                    from_container_name='spreadsheets',
+                    blob_path=f'{atp_form_group_id}/active-form/{old_form_id}.xlsx',
+                    to_container_name='spreadsheets',
+                    to_blob_path=f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
+                )
+            
+            # Commit the transaction
             session.commit_transaction()
-          
+                
         except Exception as e:
+            # Rollback the transaction on error
+            session.abort_transaction()
             return {"error": str(e)}
         
     return {"message": "ATP form template updated successfully"}
