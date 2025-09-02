@@ -3,16 +3,17 @@ import FormHeadingBuilder from '../FormHeadingBuilder/FormHeadingBuilder';
 import FormFieldBuilder from '../FormFieldBuilder/FormFieldBuilder';
 import styles from './RoleFormSection.module.css';
 
-export default function RoleFormSection({role, items, appendItem, removeItem, insertItem, register, lastClicked, setLastClicked})
+export default function RoleFormSection({role, items, appendItem, removeItem, insertItem, register, lastClicked, setLastClicked, resetField, setValue})
 {
     const formItemsJSX = items.map((item, index) => 
         {
             return (item.type === "heading") 
-            ? <FormHeadingBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.content || ""} lastClicked = {lastClicked} setLastClicked = {setLastClicked} /> 
-            : <FormFieldBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.question || ""} lastClicked = {lastClicked} setLastClicked = {setLastClicked} />
+            ? <FormHeadingBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.content || ""} lastClicked = {lastClicked} setLastClicked = {setLastClicked} resetField = {resetField} setValue = {setValue} /> 
+            : <FormFieldBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.question || ""} lastClicked = {lastClicked} setLastClicked = {setLastClicked} resetField = {resetField} setValue = {setValue} />
         }
     )
 
+    //TODO: if we add a new item, we need to set the image to null (the correct value)
     function addNewItem(type)
     {
         if (lastClicked.index === null)

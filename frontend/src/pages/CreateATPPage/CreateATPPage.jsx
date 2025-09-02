@@ -21,6 +21,7 @@ export default function CreateATPPage()
             index: 0,
             type: "heading",
             content: "This is a technician heading",
+            image: null
         },
 
         {
@@ -29,7 +30,8 @@ export default function CreateATPPage()
             type: "field",
             question: "This is a technician question",
             answerFormat: "text",
-            spreadsheetCell: "A2"
+            spreadsheetCell: "A2",
+            image: null
         }
     ]
 
@@ -39,6 +41,7 @@ export default function CreateATPPage()
             index: 0,
             type: "heading",
             content: "This is not a engineer heading",
+            image: null
         },
 
         {
@@ -47,7 +50,8 @@ export default function CreateATPPage()
             type: "field",
             question: "This is a engineer question",
             answerFormat: "text",
-            spreadsheetCell: "B2"
+            spreadsheetCell: "B2",
+            image: null
         }
     ]
 
@@ -55,6 +59,18 @@ export default function CreateATPPage()
 
     function handleSubmit(formData)
     {
+        const isValidURL = (string) => {
+            try{
+                new URL(string);
+                return true;
+            }
+            catch(error){
+                return false;
+            }
+        }
+        
+        const processedFormData = new FormData();
+        
         /*
         react hook formData: values are objects (need to JSON.stringify the body before sending http request)
         browser formData: values must be strings (use JSON.stringify to convert from react form data)
@@ -65,16 +81,61 @@ export default function CreateATPPage()
             alert("Please select an Excel file to upload");
             return;
         }
+
+        const sectionsWithoutImages = {
+            technician: {
+                items: formData.sections.technician.items.map((item, index) => {
+                    const {image, ...rest} = item;
+                    
+                    // Check if image is valid (File object or valid URL)
+                    const hasValidImage = (image instanceof File || isValidURL(image));
+                    
+                    if (hasValidImage) {
+                        processedFormData.append('technicianImages', image);
+                        processedFormData.append('technicianImageIndices', index);
+                    }
+                    
+                    return {
+                        ...rest,
+                        hasImage: hasValidImage
+                    }
+                }),
+            },
+
+            engineer: {
+                items: formData.sections.engineer.items.map((item, index) => {
+                    const {image, ...rest} = item;
+                    
+                    // Check if image is valid (File object or valid URL)
+                    const hasValidImage = (image instanceof File || isValidURL(image));
+                    
+                    if (hasValidImage) {
+                        processedFormData.append('engineerImages', image);
+                        processedFormData.append('engineerImageIndices', index);
+                    }
+                    
+                    return {
+                        ...rest,
+                        hasImage: hasValidImage
+                    }
+                })
+            }
+        }
         
         // Create FormData for file upload
-        const processedFormData = new FormData();
         processedFormData.append('spreadsheetTemplate', spreadsheetTemplate);  // Parameter name must match backend expectation
         
         // Add other form fields to FormData
         processedFormData.append('metadata', JSON.stringify(formData.metadata));
-        processedFormData.append('sections', JSON.stringify(formData.sections));
+        processedFormData.append('sections', JSON.stringify(sectionsWithoutImages));
+        
+        for (const [key, value] of processedFormData.entries())
+        {
+            console.log(key, value);
+        }
 
         
+        /*
         fetch("http://localhost:8000/atp-forms/", {
             method: "POST",
             body: processedFormData
@@ -95,6 +156,7 @@ export default function CreateATPPage()
         .catch(error => {
             alert(`Error: ${error.message}`);
         });
+        */
     };
 
     return(

@@ -13,7 +13,7 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
 
     const [lastClicked, setLastClicked] = useState({index: null, role: null});
     
-    const {register, control, handleSubmit} = useForm(
+    const {register, control, handleSubmit, resetField, setValue} = useForm(
         {
             defaultValues:
             {
@@ -92,6 +92,8 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
                         register = {register}
                         lastClicked = {lastClicked}
                         setLastClicked = {setLastClicked}
+                        resetField = {resetField}
+                        setValue = {setValue}
                     />
 
                     <hr className="divider" />
@@ -105,6 +107,8 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
                         register = {register}
                         lastClicked = {lastClicked}
                         setLastClicked = {setLastClicked}
+                        resetField = {resetField}
+                        setValue = {setValue}
                     />
 
                     <hr className="divider" />
