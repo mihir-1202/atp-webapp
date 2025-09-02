@@ -3,6 +3,7 @@ from typing import Annotated, Literal, Union, Self, Optional, List
 from pydantic import AnyUrl
 from fastapi import UploadFile, Form, File
 
+
 # BaseModel takes json input data, extracts the values for each key, 
 # validates and converts them to the types you defined in the model, 
 # and then instantiates an object where those values are assigned to the corresponding classattributes.
@@ -22,7 +23,9 @@ class HeadingItem(BaseModel):
     index: Annotated[int, Field(ge = 0, description = "The index of the heading item", example = 0)]
     type: Annotated[Literal['heading'], Field(description = "The type of the heading item", example = "heading")] #type can only be a literal string 'heading'
     content: Annotated[str, Field(min_length = 1, description = "The content of the heading item", example = "This is a heading")]
-    
+    image: Annotated[Optional[AnyUrl], Field(default=None, description = "The image of the heading item", example = "image.png")]
+    hasImage: Annotated[Optional[bool], Field(default=None, description = "Whether the heading item has an image", example = True)]
+
 class FieldItem(BaseModel):
     uuid: Annotated[str, Field(min_length = 1, description = "The UUID of the field item", example = "123e4567-e89b-12d3-a456-426614174000")]
     index: Annotated[int, Field(ge = 0, description = "The index of the field item", example = 0)]
@@ -30,7 +33,8 @@ class FieldItem(BaseModel):
     question: Annotated[str, Field(min_length = 1, description = "The question of the field item", example = "What is the motor speed?")]
     answerFormat: Annotated[str, Field(min_length = 1, description = "The answer format of the field item", example = "number")]
     spreadsheetCell: Annotated[str, Field(pattern=r'^[A-Z]{1,3}[1-9]\d{0,6}$', description="Cell reference in format A1, B5, AA10, etc.", example = "A1")]
-    
+    image: Annotated[Optional[AnyUrl], Field(default=None, description = "The image of the field item", example = "https://atpspreadsheetstorage.blob.core.windows.net/images/68b72db06411bd1e9b0ac74b/technician/0.png?se=2025-09-02T19%3A06%3A34Z&sp=r&sv=2025-07-05&sr=b&sig=lPzhecKwbFYl/f2rUWs6p7gLUTC1UV062r6eQV6Mbtk%3D")]
+    hasImage: Annotated[Optional[bool], Field(default=None, description = "Whether the field item has an image", example = True)]
     
 """
 With Field(discriminator="type"):
@@ -77,14 +81,14 @@ class FormTemplate(BaseModel):
         example = {
             "technician": {
                 "items": [
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 0, "type": "heading", "content": "This is a heading"},
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 1, "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1"}
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 0, "type": "heading", "content": "This is a heading", "image": "image.png", "hasImage": True},
+                    {"uuid": "123e4567-e89b-426614174000", "index": 1, "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1", "image": "image.png", "hasImage": True}
                 ]
             },
             "engineer": {
                 "items": [
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 0, "type": "heading", "content": "Another heading"},
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 1, "type": "field", "question": "What is the temperature?", "answerFormat": "number", "spreadsheetCell": "B1"}
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 0, "type": "heading", "content": "Another heading", "image": "image.png", "hasImage": True},
+                    {"uuid": "123e4567-e89b-426614174000", "index": 1, "type": "field", "question": "What is the temperature?", "answerFormat": "number", "spreadsheetCell": "B1", "image": "image.png", "hasImage": True}
                 ]
             }
         }

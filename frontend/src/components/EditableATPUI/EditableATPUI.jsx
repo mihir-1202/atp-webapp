@@ -323,7 +323,7 @@ export default function EditableATPUI()
             <div className={styles.formContainer}>
                 <form className="atp-form" id="submissionForm" onSubmit={handleSubmit(onSubmit)}>
             
-                                         <ATPInputSection 
+                    <ATPInputSection 
                          register = {register}
                          role = {"technician"} 
                          atpTemplateData = {atpTemplateData} 

@@ -16,7 +16,7 @@ function getPlaceholder(answerFormat)
     }
 }
 
-export default function FieldItem({questionUUID, questionText, answerFormat, register, role, readOnly = false, defaultValue = "" })
+export default function FieldItem({questionUUID, questionText, answerFormat, register, role, readOnly = false, defaultValue = "", image = null })
 {
     // Subtle styling for empty readonly fields to make them visible
     const emptyReadonlyStyle = readOnly && !defaultValue ? {
@@ -32,6 +32,13 @@ export default function FieldItem({questionUUID, questionText, answerFormat, reg
                 {questionText}
                 {readOnly && !defaultValue && <span style={{color: '#6c757d', fontSize: '0.9em'}}> (No response)</span>}
             </label>
+
+            {image && (
+                <div>
+                    <img src = {image} style = {{width: '50%', height: '50%', objectFit: 'contain'}} alt = "Heading Image" />
+                </div>
+            )}
+
             {answerFormat !== 'textarea' ? 
                 //JS object keys are always strings
                 //Since order becomes the key, it will be converted to a string so we need to parse it back into a number later
@@ -56,6 +63,8 @@ export default function FieldItem({questionUUID, questionText, answerFormat, reg
                     readOnly={readOnly}
                 />
             }
+
+            
         </div>
 
     )

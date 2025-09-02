@@ -1,10 +1,11 @@
 from dotenv import load_dotenv
 import os
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, BlobSasPermissions, generate_blob_sas
 import tempfile
 from azure.core.exceptions import AzureError
 from typing import Annotated, BinaryIO
 from fastapi import File
+from datetime import datetime, timedelta
 
 load_dotenv() 
 AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
@@ -99,6 +100,25 @@ class BlobHandler:
                 
         except AzureError as e:
             raise AzureError(f"Failed to delete blob {blob_path} from container {container_name}: {str(e)}")
+        
+    @staticmethod
+    def get_blob_url(container_name: str, blob_name: str, expiry_hours: int = 1):
+        account_name = os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
+        account_key = os.getenv("AZURE_STORAGE_ACCOUNT_KEY")
+
+        # Generate SAS token
+        sas_token = generate_blob_sas(
+            account_name=account_name,
+            container_name=container_name,
+            blob_name=blob_name,
+            account_key=account_key,
+            permission=BlobSasPermissions(read=True),
+            expiry=datetime.utcnow() + timedelta(hours=expiry_hours)
+        )
+
+        # Construct full URL with SAS token
+        return f"https://{account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
+
 
 #Dependency function to get the blob handler
 def get_blob_handler():

@@ -23,11 +23,13 @@ export default function ATPInputSection({register, role, showButtons, atpTemplat
         const previousResponse = getResponseByUUID(item.uuid);
         const previousValue = previousResponse ? previousResponse.answer : '';
         
+        console.log('Full item:', item);
         return item.type === 'heading' ? 
         <HeadingItem 
             key = {item.uuid} 
             index = {item.index}
-            headingText = {item.content} 
+            headingText = {item.content}
+            image = {item.image} 
         />
         :
         <FieldItem 
@@ -40,6 +42,7 @@ export default function ATPInputSection({register, role, showButtons, atpTemplat
             defaultValue = {previousValue} 
             role = {role}
             readOnly = {readOnly}
+            image = {item.image} 
         />
     });
 

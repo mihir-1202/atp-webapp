@@ -268,7 +268,7 @@ async def update_active_form_template(
 
 
 @router.get("/active", response_model = responses.ATPAllActiveForms)
-async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_forms_collection)):
+async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_forms_collection), blob_handler: Callable = Depends(get_blob_handler)):
     """
     Get all ATP form templates that are currently active.
     """
@@ -278,14 +278,21 @@ async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_form
     for document in cursor:
         #convert ObjectId to a string before appending the document to the list
         document['_id'] = str(document['_id'])
+        for item in document['sections']['technician']['items']:
+            item['image'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('image')) if item.get('hasImage') else None
+
+        for item in document['sections']['engineer']['items']:
+            item['image'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('image')) if item.get('hasImage') else None
+        
         form_templates.append(document)
     return form_templates
 
 @router.get("/active/{atp_form_group_id}", response_model = responses.ATPSpecifiedForm)
-async def get_active_form_template(atp_form_group_id: Annotated[str, Path(description = "The ID of the ATP form group to get", example = "674a1b2c3d4e5f6789012345")], atp_forms: Collection = Depends(get_atp_forms_collection)):
+async def get_active_form_template(atp_form_group_id: Annotated[str, Path(description="The ID of the ATP form group to get", example="674a1b2c3d4e5f6789012345")], atp_forms: Collection = Depends(get_atp_forms_collection), blob_handler: Callable = Depends(get_blob_handler)):
     """
     Get an active ATP form template by its form group ID.
     """
+    print('in getATPTemplateData')
     query = {'metadata.formGroupID': atp_form_group_id, 'metadata.status': 'active'}
     atp_form_document = atp_forms.find_one(query)
     
@@ -293,6 +300,16 @@ async def get_active_form_template(atp_form_group_id: Annotated[str, Path(descri
         return {"error": "ATP form group not found"}
     
     atp_form_document['_id'] = str(atp_form_document['_id'])
+    
+    for item in atp_form_document['sections']['technician']['items']:
+        item['image'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('image')) if item.get('hasImage') else None
+        
+        
+    for item in atp_form_document['sections']['engineer']['items']:
+        item['image'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('image')) if item.get('hasImage') else None
+        
+       
+    print('Final response data:', atp_form_document)
     return atp_form_document
 
 @router.get("/{atp_form_id}", response_model = responses.ATPSpecifiedForm)
