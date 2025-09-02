@@ -19,6 +19,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    missing_fields = []
+    for error in exc.errors():
+        if error["type"] == "value_error.missing":
+            # loc may be like ['body', 'field_name']
+            field_path = ".".join(str(l) for l in error["loc"][1:])
+            missing_fields.append(field_path)
+    print("Missing fields:", missing_fields)  # prints to console for debugging
+
+    return JSONResponse(
+        status_code=422,
+        content={
+            "message": "Validation error",
+            "missing_fields": missing_fields,
+            "details": exc.errors()  # full FastAPI error details
+        }
+    )
+
+"""
 # Add global exception handler
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -27,6 +47,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code = 422,
         content = {"errors": '\n'.join(error_messages)}
     )
+"""
 
 app.include_router(atp_forms_router, prefix = "/atp-forms", tags = ['ATP Forms'])
 app.include_router(atp_submissions_router, prefix = "/atp-submissions", tags = ['ATP Submissions'])

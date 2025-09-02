@@ -5,13 +5,109 @@ from pymongo.collection import Collection
 from bson import ObjectId
 from dependencies import get_atp_forms_collection, get_atp_submissions_collection
 from schemas import atp_forms as schemas, atp_forms_responses as responses
-from dependencies import get_mongo_client, get_blob_handler
+from dependencies import parse_technician_image_data, parse_engineer_image_data, get_mongo_client, get_blob_handler
 from typing import Callable
 from pymongo.mongo_client import MongoClient
 import json
 
 router = APIRouter()
 
+#New endpoint
+@router.post("/", response_model = responses.ATPNewFormCreationResponse)
+async def create_form_template(
+    spreadsheetTemplate: Annotated[UploadFile, File()], #File() implies that spreadsheetTemplate is of type Form()/FormData, and it will be converted into an UploadFile obejct
+    metadata: Annotated[str, Form()],
+    sections: Annotated[str, Form()],
+    technicianImageData: dict = Depends(parse_technician_image_data),
+    engineerImageData: dict = Depends(parse_engineer_image_data),
+    client: MongoClient = Depends(get_mongo_client),
+    atp_forms: Collection = Depends(get_atp_forms_collection),
+    blob_handler: Callable = Depends(get_blob_handler)
+):
+    """
+    Create a new ATP form template for the first time.
+
+    - **form_template**: The ATP form template JSON object to create
+    """
+    with client.start_session() as session:
+        try:
+            # Parse JSON strings back to objects
+            metadata_obj = json.loads(metadata)
+            sections_obj = json.loads(sections)
+            
+            # Validate the data using Pydantic
+            validated_request_body = schemas.FormTemplate(
+                spreadsheetTemplate=spreadsheetTemplate,
+                metadata=schemas.Metadata(**metadata_obj),
+                sections=sections_obj
+            )
+            
+            if not validated_request_body.spreadsheetTemplate:
+                raise ValueError("Spreadsheet template is required")
+            
+            
+            new_form_template_data = validated_request_body.model_dump()
+            # Remove the UploadFile object as it can't be stored in MongoDB
+            new_form_template_data.pop('spreadsheetTemplate', None)
+
+            # Add server-generated fields
+            form_group_id = str(ObjectId())
+            new_form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
+            new_form_template_data['metadata']['status'] = 'active'
+            new_form_template_data['metadata']['version'] = 1
+            new_form_template_data['metadata']['formGroupID'] = form_group_id
+
+            #Upload images to Azure Blob Storage
+            for index, image in technicianImageData.items():
+                container_name, blob_path = 'images', f'{form_group_id}/technician/{index}.png'
+                # Support both uploaded files and remote URLs
+                
+                print(type(image))
+                if hasattr(image, 'file') and hasattr(image, 'filename'):
+                    data = image.file  # file-like
+                else:
+                    print(f'{image} is not an UploadFile')
+                    continue
+                
+                blob_handler.upload_blob(container_name, blob_path, data)
+                new_form_template_data['sections']['technician']['items'][index]['image'] = blob_path
+                new_form_template_data['sections']['technician']['items'][index]['hasImage'] = True
+                
+            
+            for index, image in engineerImageData.items():
+                container_name, blob_path = 'images', f'{form_group_id}/engineer/{index}.png'
+                
+                print(type(image))
+                if hasattr(image, 'file') and hasattr(image, 'filename'):
+                    data = image.file
+                else:
+                    print(f'{image} is not an UploadFile')
+                    continue
+                blob_handler.upload_blob(container_name, blob_path, data)
+                new_form_template_data['sections']['engineer']['items'][index]['image'] = blob_path
+                new_form_template_data['sections']['engineer']['items'][index]['hasImage'] = True
+                
+            
+            # Start transaction
+            session.start_transaction()
+            
+            # Insert into MongoDB
+            inserted_document = atp_forms.insert_one(new_form_template_data, session=session)
+            new_form_id = inserted_document.inserted_id
+            
+            # Upload excel spreadsheet to Azure Blob Storage
+            container_name, blob_path = 'spreadsheets', f'{form_group_id}/active-form/{new_form_id}.xlsx'
+            blob_handler.upload_blob(container_name, blob_path, spreadsheetTemplate.file)
+            session.commit_transaction()
+            
+            return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
+            
+        except Exception as e:
+            # Abort transaction if anything fails
+            session.abort_transaction()
+            raise e
+
+"""
 #FastAPI coerces the return value to the response model as a JSON
 @router.post("/", response_model = responses.ATPNewFormCreationResponse)
 async def create_form_template(
@@ -22,11 +118,11 @@ async def create_form_template(
     atp_forms: Collection = Depends(get_atp_forms_collection),
     blob_handler: Callable = Depends(get_blob_handler)
 ):
-    """
-    Create a new ATP form template for the first time.
+    
+    #Create a new ATP form template for the first time.
 
-    - **form_template**: The ATP form template JSON object to create
-    """
+    # **form_template**: The ATP form template JSON object to create
+    
     with client.start_session() as session:
         try:
             # Parse JSON strings back to objects
@@ -73,7 +169,7 @@ async def create_form_template(
             # Abort transaction if anything fails
             session.abort_transaction()
             raise e
-
+"""
 
 
 @router.put("/active/{atp_form_group_id}", response_model = responses.ATPFormUpdateResponse)

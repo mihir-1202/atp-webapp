@@ -88,17 +88,25 @@ export default function CreateATPPage()
                     const {image, ...rest} = item;
                     
                     // Check if image is valid (File object or valid URL)
+                    console.log(image);
                     const hasValidImage = (image instanceof File || isValidURL(image));
                     
-                    if (hasValidImage) {
-                        processedFormData.append('technicianImages', image);
-                        processedFormData.append('technicianImageIndices', index);
+                    if (hasValidImage) 
+                    {
+                        if (image instanceof File)
+                        {
+                            processedFormData.append('technicianUploadedImages', image);
+                            processedFormData.append('technicianUploadedImageIndices', index);
+                        }
+
+                        else
+                        {
+                            processedFormData.append('technicianRemoteImages', image);
+                            processedFormData.append('technicianRemoteImageIndices', index);
+                        }
                     }
                     
-                    return {
-                        ...rest,
-                        hasImage: hasValidImage
-                    }
+                    return {...rest}
                 }),
             },
 
@@ -107,17 +115,25 @@ export default function CreateATPPage()
                     const {image, ...rest} = item;
                     
                     // Check if image is valid (File object or valid URL)
+                    console.log(image);
                     const hasValidImage = (image instanceof File || isValidURL(image));
                     
-                    if (hasValidImage) {
-                        processedFormData.append('engineerImages', image);
-                        processedFormData.append('engineerImageIndices', index);
+                    if (hasValidImage) 
+                    {
+                        if (image instanceof File)
+                        {
+                            processedFormData.append('engineerUploadedImages', image);
+                            processedFormData.append('engineerUploadedImageIndices', index);
+                        }
+
+                        else
+                        {
+                            processedFormData.append('engineerRemoteImages', image);
+                            processedFormData.append('engineerRemoteImageIndices', index);
+                        }
                     }
                     
-                    return {
-                        ...rest,
-                        hasImage: hasValidImage
-                    }
+                    return {...rest}
                 })
             }
         }
@@ -135,7 +151,7 @@ export default function CreateATPPage()
         }
 
         
-        /*
+        
         fetch("http://localhost:8000/atp-forms/", {
             method: "POST",
             body: processedFormData
@@ -156,7 +172,7 @@ export default function CreateATPPage()
         .catch(error => {
             alert(`Error: ${error.message}`);
         });
-        */
+        
     };
 
     return(

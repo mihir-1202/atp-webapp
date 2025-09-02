@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, model_validator, ValidationError
-from typing import Annotated, Literal, Union, Self, Optional
-from fastapi import UploadFile
+from typing import Annotated, Literal, Union, Self, Optional, List
+from pydantic import AnyUrl
+from fastapi import UploadFile, Form, File
 
 # BaseModel takes json input data, extracts the values for each key, 
 # validates and converts them to the types you defined in the model, 
@@ -40,6 +41,16 @@ FastAPI tries to validate the input against each model in the union one by one, 
 """
 #Item = Annotated[HeadingItem | FieldItem, Field(discriminator = "type")] 
 Item = Annotated[Union[HeadingItem, FieldItem], Field(discriminator = "type")]
+
+class TechnicianImageData(BaseModel):
+    technicianUploadedImages: Annotated[List[UploadFile], File()]
+    technicianRemoteImages: Annotated[Optional[List[AnyUrl]], Form()]
+    technicianImageIndices: Annotated[List[int], Form()]
+
+class EngineerImageData(BaseModel):
+    engineerUploadedImages: Annotated[List[UploadFile], File()]
+    engineerRemoteImages: Annotated[Optional[List[AnyUrl]], Form()]
+    engineerImageIndices: Annotated[List[int], Form()]
 
 
 class Section(BaseModel):

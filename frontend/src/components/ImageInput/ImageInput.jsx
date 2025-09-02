@@ -15,6 +15,7 @@ export default function ImageInput({
     const [localImage, setLocalImage] = useState(null);
     const fileInputRef = useRef(null);
 
+
     // Don't register the field automatically - we'll manage it manually
     // const { onChange: defaultOnChange, ...registerWithoutDefaultOnChange } = register(`sections.${role}.items.${index}.image`);
     
@@ -41,7 +42,7 @@ export default function ImageInput({
             setValue(`sections.${role}.items.${index}.image`, null);
         }
 
-
+        //THE FIELD KEY WILL EITHER BE A FILE OBJECT, URL STRING, OR NULL
     };
 
     const handleRemoveImage = () => {
