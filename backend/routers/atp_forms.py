@@ -57,6 +57,15 @@ async def create_form_template(
             new_form_template_data['metadata']['version'] = 1
             new_form_template_data['metadata']['formGroupID'] = form_group_id
 
+            #Initialize the hasImage and image fields for each item in the technician and engineer sections (to be filled later)
+            for item in new_form_template_data['sections']['technician']['items']:
+                item['hasImage'] = False
+                item['image'] = None
+            
+            for item in new_form_template_data['sections']['engineer']['items']:
+                item['hasImage'] = False
+                item['image'] = None
+
             #Upload images to Azure Blob Storage
             for index, image in technicianImageData.items():
                 container_name, blob_path = 'images', f'{form_group_id}/technician/{index}.png'
