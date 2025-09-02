@@ -1,6 +1,34 @@
-from pydantic import BaseModel, Field
-from typing import Annotated, List
-from .atp_forms import Metadata, Section
+from pydantic import BaseModel, Field, AnyUrl
+from typing import Annotated, List, Optional, Literal, Union
+from .atp_forms_common import Metadata
+
+# Response-specific item models that include imageUrl for display
+class ResponseHeadingItem(BaseModel):
+    uuid: Annotated[str, Field(description="The UUID of the heading item", example="123e4567-e89b-12d3-a456-426614174000")]
+    index: Annotated[int, Field(description="The index of the heading item", example=0)]
+    type: Annotated[Literal['heading'], Field(description="The type of the heading item", example="heading")]
+    content: Annotated[str, Field(description="The content of the heading item", example="This is a heading")]
+    hasImage: Annotated[bool, Field(description="Whether the heading item has an image", example=True)]
+    imageBlobPath: Annotated[Optional[str], Field(description="The blob path of the heading item image", example="images/container/path/image.png")]
+    imageUrl: Annotated[Optional[AnyUrl], Field(description="The full URL of the heading item image for display", example="https://storage.blob.core.windows.net/images/container/path/image.png?sv=...")]
+    
+
+class ResponseFieldItem(BaseModel):
+    uuid: Annotated[str, Field(description="The UUID of the field item", example="123e4567-e89b-12d3-a456-426614174000")]
+    index: Annotated[int, Field(description="The index of the field item", example=0)]
+    type: Annotated[Literal['field'], Field(description="The type of the field item", example="field")]
+    question: Annotated[str, Field(description="The question of the field item", example="What is the motor speed?")]
+    answerFormat: Annotated[str, Field(description="The answer format of the field item", example="number")]
+    spreadsheetCell: Annotated[str, Field(description="Cell reference in format A1, B5, AA10, etc.", example="A1")]
+    hasImage: Annotated[Optional[bool], Field(description="Whether the field item has an image", example=True)]
+    imageBlobPath: Annotated[Optional[str], Field(description="The blob path of the field item image", example="images/container/path/image.png")]
+    imageUrl: Annotated[Optional[AnyUrl], Field(description="The full URL of the field item image for display", example="https://storage.blob.core.windows.net/images/container/path/image.png?sv=...")]
+    
+
+ResponseItem = Annotated[Union[ResponseHeadingItem, ResponseFieldItem], Field(discriminator="type")]
+
+class ResponseSection(BaseModel):
+    items: Annotated[List[ResponseItem], Field(description="The items in the section")]
 
 
 class ATPNewFormCreationResponse(BaseModel):
@@ -31,7 +59,7 @@ class ATPSpecifiedForm(BaseModel):
                             "version": 1,
                             "formGroupID": "68af7b2a710b560dffc8741b"
                         })]
-    sections: Annotated[dict[str, Section], 
+    sections: Annotated[dict[str, ResponseSection], 
                         Field(description="The sections of the ATP form",
                         example={
                             "technician": {
@@ -42,7 +70,10 @@ class ATPSpecifiedForm(BaseModel):
                                         "type": "field",
                                         "question": "hello world",
                                         "answerFormat": "textarea",
-                                        "spreadsheetCell": "A2"
+                                        "spreadsheetCell": "A2",
+                                        "imageBlobPath": "images/container/path/image.png",
+                                        "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
+                                        "hasImage": True
                                     }
                                 ]
                             },
@@ -52,7 +83,10 @@ class ATPSpecifiedForm(BaseModel):
                                         "uuid": "15150c1d-f532-4982-a5a4-e9d6395e2697",
                                         "index": 0,
                                         "type": "heading",
-                                        "content": "This is not a engineer heading"
+                                        "content": "This is not a engineer heading",
+                                        "imageBlobPath": "images/container/path/image.png",
+                                        "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
+                                        "hasImage": True
                                     },
                                     {
                                         "uuid": "11056fe7-6551-4bef-abe8-717d515db8be",
@@ -60,7 +94,10 @@ class ATPSpecifiedForm(BaseModel):
                                         "type": "field",
                                         "question": "This is a engineer question",
                                         "answerFormat": "text",
-                                        "spreadsheetCell": "B2"
+                                        "spreadsheetCell": "B2",
+                                        "imageBlobPath": "images/container/path/image.png",
+                                        "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
+                                        "hasImage": True
                                     }
                                 ]
                             }
@@ -91,7 +128,10 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "uuid": "1d220efe-2c00-4b27-8209-b453fa743515",
                                                      "index": 0,
                                                      "type": "heading",
-                                                     "content": "This is a technician heading"
+                                                     "content": "This is a technician heading",
+                                                     "imageBlobPath": "images/container/path/image.png",
+                                                     "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
+                                                     "hasImage": True
                                                  },
                                                  {
                                                      "uuid": "57c55c49-57c4-4a6a-bc25-f0ae838916d5",
@@ -99,7 +139,10 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "type": "field",
                                                      "question": "This is a technician question",
                                                      "answerFormat": "text",
-                                                     "spreadsheetCell": "A2"
+                                                     "spreadsheetCell": "A2",
+                                                     "imageBlobPath": "images/container/path/image.png",
+                                                     "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
+                                                     "hasImage": True
                                                  }
                                              ]
                                          },
@@ -109,7 +152,10 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "uuid": "e1e6bd9a-3803-4022-aa47-8c8196655b07",
                                                      "index": 0,
                                                      "type": "heading",
-                                                     "content": "This is not a engineer heading"
+                                                     "content": "This is not a engineer heading",
+                                                     "image": "images/container/path/image.png",
+                                                     "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
+                                                     "hasImage": True
                                                  },
                                                  {
                                                      "uuid": "3a8a2312-bce3-4479-9ff0-ce2b623632cc",
@@ -117,7 +163,10 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "type": "field",
                                                      "question": "This is a engineer question",
                                                      "answerFormat": "text",
-                                                     "spreadsheetCell": "B2"
+                                                     "spreadsheetCell": "B2",
+                                                     "image": "images/container/path/image.png",
+                                                     "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
+                                                     "hasImage": True
                                                  }
                                              ]
                                          }
@@ -142,7 +191,10 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174002",
                                                      "index": 0,
                                                      "type": "heading",
-                                                     "content": "Another heading"
+                                                     "content": "Another heading",
+                                                     "image": "images/container/path/image.png",
+                                                     "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
+                                                     "hasImage": True
                                                  },
                                                  {
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174003",
@@ -150,7 +202,10 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "type": "field",
                                                      "question": "What is the temperature?",
                                                      "answerFormat": "number",
-                                                     "spreadsheetCell": "B1"
+                                                     "spreadsheetCell": "B1",
+                                                     "image": "images/container/path/image.png",
+                                                     "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
+                                                     "hasImage": True
                                                  }
                                              ]
                                          },
@@ -160,7 +215,10 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174000",
                                                      "index": 0,
                                                      "type": "heading",
-                                                     "content": "This is a heading"
+                                                     "content": "This is a heading",
+                                                     "image": "images/container/path/image.png",
+                                                     "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
+                                                     "hasImage": True
                                                  },
                                                  {
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174001",
@@ -168,7 +226,10 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "type": "field",
                                                      "question": "What is the motor speed?",
                                                      "answerFormat": "number",
-                                                     "spreadsheetCell": "A1"
+                                                     "spreadsheetCell": "A1",
+                                                     "image": "images/container/path/image.png",
+                                                     "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
+                                                     "hasImage": True
                                                  }
                                              ]
                                          }

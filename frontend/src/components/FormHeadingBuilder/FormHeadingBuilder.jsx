@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import styles from './FormHeadingBuilder.module.css';
 import ImageInput from '../ImageInput';
 
-export default function FormHeadingBuilder({index, role, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, remoteImageUrl = null})
+export default function FormHeadingBuilder({index, role, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, imageUrl = null, imageBlobPath = null})
 {
     
 
@@ -44,7 +44,8 @@ export default function FormHeadingBuilder({index, role, removeItem, defaultValu
                 register={register}
                 resetField={resetField}
                 setValue={setValue}
-                remoteImageUrl={remoteImageUrl}
+                imageUrl={imageUrl}
+                imageBlobPath={imageBlobPath}
             />    
         </li>
     )

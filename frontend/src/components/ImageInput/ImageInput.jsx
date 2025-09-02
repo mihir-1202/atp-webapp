@@ -6,12 +6,13 @@ export default function ImageInput({
     label,
     role,
     index,
-    register,
-    resetField,
     setValue,
-    remoteImageUrl = null,
+    imageUrl = null,
+    imageBlobPath = null,
     className = ''
 }) {
+
+    const [usingRemoteImage, setUsingRemoteImage] = useState(imageUrl ? true : false);
     const [localImage, setLocalImage] = useState(null);
     const fileInputRef = useRef(null);
 
@@ -22,25 +23,32 @@ export default function ImageInput({
 
     // Initialize the form field when component mounts
     React.useEffect(() => {
-        // Always initialize the field, either with remote URL or null
-        if (remoteImageUrl) {
-            setValue(`sections.${role}.items.${index}.image`, remoteImageUrl);
-        } else {
-            // Initialize with null if no remote URL
+        if (usingRemoteImage) 
+        {
+            setValue(`sections.${role}.items.${index}.hasImage`, true);
+            setValue(`sections.${role}.items.${index}.image`, imageBlobPath);
+        } 
+        else 
+        {
+            setValue(`sections.${role}.items.${index}.hasImage`, false);
             setValue(`sections.${role}.items.${index}.image`, null);
         }
-    }, [remoteImageUrl, setValue, role, index]);
+    }, [usingRemoteImage, setValue, role, index]);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         setLocalImage(file);
         
         // Extract the file from FileList and set it directly
-        if (file) {
+        if (file) 
+        {
             setValue(`sections.${role}.items.${index}.image`, file);
-        } else {
+        } 
+        else 
+        {
             setValue(`sections.${role}.items.${index}.image`, null);
         }
+        setUsingRemoteImage(false);
 
         //THE FIELD KEY WILL EITHER BE A FILE OBJECT, URL STRING, OR NULL
     };
@@ -49,14 +57,18 @@ export default function ImageInput({
         if (localImage) {
             setLocalImage(null);
         }
+        if (usingRemoteImage) {
+            setUsingRemoteImage(false);
+        }
 
         // Clear the file input value
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
 
-        // Reset the form field
+        // Reset the form fields
         setValue(`sections.${role}.items.${index}.image`, null);
+        setValue(`sections.${role}.items.${index}.hasImage`, false);
     };
 
     return (
@@ -79,7 +91,7 @@ export default function ImageInput({
             />
 
             {/* Remove Image Button */}
-            {(localImage || remoteImageUrl) && (
+            {(localImage || usingRemoteImage) && (
                 <button 
                     type="button" 
                     className={styles.removeButton}
@@ -90,9 +102,9 @@ export default function ImageInput({
             )}
 
             {/* Image Preview */}
-            {(localImage || remoteImageUrl) && (
+            {(localImage || usingRemoteImage) && (
                 <img 
-                    src={localImage ? URL.createObjectURL(localImage) : remoteImageUrl} 
+                    src={localImage ? URL.createObjectURL(localImage) : imageUrl} 
                     className={styles.imagePreview}
                     alt="Image Preview" 
                 />

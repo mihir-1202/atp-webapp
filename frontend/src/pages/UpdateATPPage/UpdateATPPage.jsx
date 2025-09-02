@@ -24,13 +24,84 @@ export default function UpdateATPPage()
 
     function handleSubmit(formData)
     {
+        const isValidURL = (string) => {
+            try{
+                new URL(string);
+                return true;
+            }
+            catch(error){
+                return false;
+            }
+        }
+
+        const processedFormData = new FormData();
+
+        const sectionsWithoutImages = {
+            technician: {
+                items: formData.sections.technician.items.map((item) => {
+                    const {image, ...rest} = item;
+                    const hasValidImage = (image instanceof File || isValidURL(image));
+
+                    if (hasValidImage)
+                    {
+                        if (image instanceof File)
+                        {
+                            processedFormData.append('technicianUploadedImages', image);
+                            processedFormData.append('technicianUploadedImageUUIDs', item.uuid);
+                        }
+                        else
+                        {
+                            processedFormData.append('technicianRemoteImagePaths', image);
+                            processedFormData.append('technicianRemoteImageUUIDs', item.uuid);
+                        }
+                    }
+                    return {...rest}
+                })
+            },
+
+            engineer: {
+                items: formData.sections.engineer.items.map((item) => {
+                    const {image, ...rest} = item;
+                    const hasValidImage = (image instanceof File || isValidURL(image));
+
+                    if (hasValidImage)
+                    {
+                        if (image instanceof File)
+                        {
+                            processedFormData.append('engineerUploadedImages', image);
+                            processedFormData.append('engineerUploadedImageUUIDs', item.uuid);
+                        }
+                        else
+                        {
+                            processedFormData.append('engineerRemoteImagePaths', image);
+                            processedFormData.append('engineerRemoteImageUUIDs', item.uuid);
+                        }
+                    }
+                    return {...rest}
+                })
+            },
+        }
+
+        /*
+        -The frontend adds the 'image' and 'hasImage' fields to each section item
+        -Before the API call, the 'image' field of each section item is removed from the item, and the backend is responsible for
+        adding the 'image' field back to the item after uploading the image to Azure Blob Storage and getting the remote image path
+        */
+        
+        
+        
+        
         //Set spreadsheetTemplate to an empty string if not provided -> if we set it to null, it's value will be converted to the string 'null' on the backend due to Form Data
         const spreadsheetTemplate = formData.spreadsheetTemplate[0] ? formData.spreadsheetTemplate[0] : '';
         
-        const processedFormData = new FormData();
         processedFormData.append('spreadsheetTemplate', spreadsheetTemplate);
         processedFormData.append('metadata', JSON.stringify(formData.metadata));
-        processedFormData.append('sections', JSON.stringify(formData.sections));
+        processedFormData.append('sections', JSON.stringify(sectionsWithoutImages));
+
+        for (const [key, value] of processedFormData.entries())
+        {
+            console.log(key, value);
+        }
 
         fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`, {
             method: "PUT",

@@ -4,7 +4,7 @@ from typing import Annotated, Optional, Union, Literal
 from pymongo.collection import Collection
 from bson import ObjectId
 from dependencies import get_atp_forms_collection, get_atp_submissions_collection
-from schemas import atp_forms as schemas, atp_forms_responses as responses
+from schemas import atp_forms_requests as schemas, atp_forms_responses as responses
 from dependencies import parse_technician_image_data, parse_engineer_image_data, get_mongo_client, get_blob_handler
 from typing import Callable
 from pymongo.mongo_client import MongoClient
@@ -35,8 +35,8 @@ async def create_form_template(
             metadata_obj = json.loads(metadata)
             sections_obj = json.loads(sections)
             
-            # Validate the data using Pydantic
-            validated_request_body = schemas.FormTemplate(
+            #Request body validation (excludes the image data)
+            validated_request_body = schemas.RequestFormTemplate(
                 spreadsheetTemplate=spreadsheetTemplate,
                 metadata=schemas.Metadata(**metadata_obj),
                 sections=sections_obj
@@ -44,6 +44,13 @@ async def create_form_template(
             
             if not validated_request_body.spreadsheetTemplate:
                 raise ValueError("Spreadsheet template is required")
+            
+            # Convert FormData string values in Section back to proper types
+            for section_name in ['technician', 'engineer']:
+                for item in sections_obj[section_name]['items']:
+                    item['hasImage'] = True if item['hasImage'] == 'true' else False
+                    
+                    
             
             
             new_form_template_data = validated_request_body.model_dump()
@@ -56,19 +63,21 @@ async def create_form_template(
             new_form_template_data['metadata']['status'] = 'active'
             new_form_template_data['metadata']['version'] = 1
             new_form_template_data['metadata']['formGroupID'] = form_group_id
+            
+            print('here1')
 
-            #Initialize the hasImage and image fields for each item in the technician and engineer sections (to be filled later)
+            # Initialize all items with default image values
             for item in new_form_template_data['sections']['technician']['items']:
                 item['hasImage'] = False
-                item['image'] = None
+                item['imageBlobPath'] = None
             
             for item in new_form_template_data['sections']['engineer']['items']:
                 item['hasImage'] = False
-                item['image'] = None
+                item['imageBlobPath'] = None
 
-            #Upload images to Azure Blob Storage
-            for index, image in technicianImageData.items():
-                container_name, blob_path = 'images', f'{form_group_id}/technician/{index}.png'
+            #Upload images to Azure Blob Storage and update items if necessary
+            for uuid, image in technicianImageData.items():
+                container_name, blob_path = 'images', f'{form_group_id}/technician/{uuid}.png'
                 # Support both uploaded files and remote URLs
                 
                 print(type(image))
@@ -79,12 +88,17 @@ async def create_form_template(
                     continue
                 
                 blob_handler.upload_blob(container_name, blob_path, data)
-                new_form_template_data['sections']['technician']['items'][index]['image'] = blob_path
-                new_form_template_data['sections']['technician']['items'][index]['hasImage'] = True
+                
+                # Find the item by UUID and update it
+                for item in new_form_template_data['sections']['technician']['items']:
+                    if item['uuid'] == uuid:
+                        item['imageBlobPath'] = blob_path                     
+                        item['hasImage'] = True
+                        break
                 
             
-            for index, image in engineerImageData.items():
-                container_name, blob_path = 'images', f'{form_group_id}/engineer/{index}.png'
+            for uuid, image in engineerImageData.items():
+                container_name, blob_path = 'images', f'{form_group_id}/engineer/{uuid}.png'
                 
                 print(type(image))
                 if hasattr(image, 'file') and hasattr(image, 'filename'):
@@ -93,8 +107,13 @@ async def create_form_template(
                     print(f'{image} is not an UploadFile')
                     continue
                 blob_handler.upload_blob(container_name, blob_path, data)
-                new_form_template_data['sections']['engineer']['items'][index]['image'] = blob_path
-                new_form_template_data['sections']['engineer']['items'][index]['hasImage'] = True
+                
+                # Find the item by UUID and update it
+                for item in new_form_template_data['sections']['engineer']['items']:
+                    if item['uuid'] == uuid:
+                        item['imageBlobPath'] = blob_path
+                        item['hasImage'] = True
+                        break
                 
             
             # Start transaction
@@ -116,77 +135,15 @@ async def create_form_template(
             session.abort_transaction()
             raise e
 
-"""
-#FastAPI coerces the return value to the response model as a JSON
-@router.post("/", response_model = responses.ATPNewFormCreationResponse)
-async def create_form_template(
-    spreadsheetTemplate: Annotated[UploadFile, File()], #File() implies that spreadsheetTemplate is of type Form()/FormData, and it will be converted into an UploadFile obejct
-    metadata: Annotated[str, Form()],
-    sections: Annotated[str, Form()],
-    client: MongoClient = Depends(get_mongo_client),
-    atp_forms: Collection = Depends(get_atp_forms_collection),
-    blob_handler: Callable = Depends(get_blob_handler)
-):
-    
-    #Create a new ATP form template for the first time.
-
-    # **form_template**: The ATP form template JSON object to create
-    
-    with client.start_session() as session:
-        try:
-            # Parse JSON strings back to objects
-            metadata_obj = json.loads(metadata)
-            sections_obj = json.loads(sections)
-            
-            # Validate the data using Pydantic
-            validated_request_body = schemas.FormTemplate(
-                spreadsheetTemplate=spreadsheetTemplate,
-                metadata=schemas.Metadata(**metadata_obj),
-                sections=sections_obj
-            )
-            
-            if not validated_request_body.spreadsheetTemplate:
-                raise ValueError("Spreadsheet template is required")
-            
-            new_form_template_data = validated_request_body.model_dump()
-            # Remove the UploadFile object as it can't be stored in MongoDB
-            new_form_template_data.pop('spreadsheetTemplate', None)
-
-            # Add server-generated fields
-            form_group_id = str(ObjectId())
-            new_form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
-            new_form_template_data['metadata']['status'] = 'active'
-            new_form_template_data['metadata']['version'] = 1
-            new_form_template_data['metadata']['formGroupID'] = form_group_id
-            
-            
-            # Start transaction
-            session.start_transaction()
-            
-            # Insert into MongoDB
-            inserted_document = atp_forms.insert_one(new_form_template_data, session=session)
-            new_form_id = inserted_document.inserted_id
-            
-            # Upload to Azure Blob Storage
-            container_name, blob_path = 'spreadsheets', f'{form_group_id}/active-form/{new_form_id}.xlsx'
-            blob_handler.upload_blob(container_name, blob_path, spreadsheetTemplate.file)
-            session.commit_transaction()
-            
-            return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
-            
-        except Exception as e:
-            # Abort transaction if anything fails
-            session.abort_transaction()
-            raise e
-"""
-
 
 @router.put("/active/{atp_form_group_id}", response_model = responses.ATPFormUpdateResponse)
 async def update_active_form_template(
     atp_form_group_id: Annotated[str, Path()],
+    spreadsheetTemplate: Annotated[Union[UploadFile, Literal['']], File()],
     metadata: Annotated[str, Form()],
     sections: Annotated[str, Form()],
-    spreadsheetTemplate: Annotated[Union[UploadFile, Literal['']], File()],
+    technicianImageData: dict = Depends(parse_technician_image_data),
+    engineerImageData: dict = Depends(parse_engineer_image_data),
     client: MongoClient = Depends(get_mongo_client),
     atp_forms: Collection = Depends(get_atp_forms_collection),
     blob_handler: Callable = Depends(get_blob_handler)
@@ -197,11 +154,18 @@ async def update_active_form_template(
             metadata_obj = json.loads(metadata)
             sections_obj = json.loads(sections)
             
-            validated_request_body = schemas.FormTemplate(
+            #Request body validation (excludes the image data)
+            validated_request_body = schemas.RequestFormTemplate(
                 spreadsheetTemplate = spreadsheetTemplate,
                 metadata = schemas.Metadata(**metadata_obj),
                 sections = sections_obj
             )
+            
+            # Convert FormData string values back to proper types
+             # Convert FormData string values in Section back to proper types
+            for section_name in ['technician', 'engineer']:
+                for item in sections_obj[section_name]['items']:
+                    item['hasImage'] = True if item['hasImage'] == 'true' else False
         
             new_form_template_data = validated_request_body.model_dump()
             # Remove the UploadFile object as it can't be stored in MongoDB
@@ -209,16 +173,97 @@ async def update_active_form_template(
             
             # Find the current active form template
             query = {'metadata.formGroupID': atp_form_group_id, 'metadata.status': 'active'}
-            current_form = atp_forms.find_one(query)
-            if not current_form:
+            old_form = atp_forms.find_one(query)
+            if not old_form:
                 return {"error": "ATP form group not found"}
-            old_form_id = current_form['_id']
+            old_form_id = old_form['_id']
             
             # Update metadata with server-generated fields
             new_form_template_data['metadata']['formGroupID'] = atp_form_group_id
-            new_form_template_data['metadata']['version'] = current_form['metadata']['version'] + 1
+            new_form_template_data['metadata']['version'] = old_form['metadata']['version'] + 1
             new_form_template_data['metadata']['status'] = 'active'
             new_form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
+            
+            
+            ###################################################################################################################
+            
+            prevTechnicianImageData = {item['uuid']: item.get('imageBlobPath', None) for item in old_form['sections']['technician']['items']}
+            
+            #Handle images for technician section
+            for index, uuid in enumerate(technicianImageData.keys()):
+                new_item = new_form_template_data['sections']['technician']['items'][index]
+                
+                #Items that already existed in the old form template
+                if uuid in prevTechnicianImageData:
+                    #Both items correspond to the same blob paths or they are both none
+                    if type(technicianImageData[uuid]) == type(prevTechnicianImageData[uuid]) and technicianImageData[uuid] == prevTechnicianImageData[uuid]:
+                        print(type(technicianImageData[uuid]), type(prevTechnicianImageData[uuid]))
+                        continue
+                    #New local image was uploaded (either for the first time or as a replacement -> both work since overwrite = True is set in the upload_blob function)
+                    elif hasattr(technicianImageData[uuid], 'file') and hasattr(technicianImageData[uuid], 'filename'):
+                        print('new local image was uploaded')
+                        data = technicianImageData[uuid].file
+                        container_name, blob_path = 'images', f'{atp_form_group_id}/technician/{uuid}.png'
+                        blob_handler.upload_blob(container_name, blob_path, data)
+                        new_item['imageBlobPath'] = blob_path
+                        new_item['hasImage'] = True
+                    #Image was removed
+                    elif technicianImageData[uuid] is None and prevTechnicianImageData[uuid] is not None:
+                        print('image was removed')
+                        blob_handler.delete_blob('images', prevTechnicianImageData[uuid])
+                        new_item['imageBlobPath'] = None
+                        new_item['hasImage'] = False
+                #New items that were not in the old form template
+                else:
+                    if hasattr(technicianImageData[uuid], 'file') and hasattr(technicianImageData[uuid], 'filename'):
+                        print('local image was uploaded for a new item')
+                        data = technicianImageData[uuid].file
+                        container_name, blob_path = 'images', f'{atp_form_group_id}/technician/{uuid}.png'
+                        blob_handler.upload_blob(container_name, blob_path, data)
+                        new_item['imageBlobPath'] = blob_path
+                        new_item['hasImage'] = True
+                        
+                        
+            ###################################################################################################################
+            
+            prevEngineerImageData = {item['uuid']: item.get('imageBlobPath', None) for item in old_form['sections']['engineer']['items']}
+            
+            #Handle images for technician section
+            for index, uuid in enumerate(engineerImageData.keys()):
+                new_item = new_form_template_data['sections']['engineer']['items'][index]
+                
+                #Items that already existed in the old form template
+                if uuid in prevEngineerImageData:
+                    #Both items correspond to the same blob paths or they are both none
+                    if type(engineerImageData[uuid]) == type(prevEngineerImageData[uuid]) and engineerImageData[uuid] == prevEngineerImageData[uuid]:
+                        print(type(technicianImageData[uuid]), type(prevTechnicianImageData[uuid]))
+                        continue
+                    #New local image was uploaded (either for the first time or as a replacement -> both work since overwrite = True is set in the upload_blob function)
+                    elif hasattr(engineerImageData[uuid], 'file') and hasattr(engineerImageData[uuid], 'filename'):
+                        print('new local image was uploaded')
+                        data = engineerImageData[uuid].file
+                        container_name, blob_path = 'images', f'{atp_form_group_id}/engineer/{uuid}.png'
+                        blob_handler.upload_blob(container_name, blob_path, data)
+                        new_item['imageBlobPath'] = blob_path
+                        new_item['hasImage'] = True
+                    #Image was removed
+                    elif engineerImageData[uuid] is None and prevEngineerImageData[uuid] is not None:
+                        print('image was removed')
+                        blob_handler.delete_blob('images', prevEngineerImageData[uuid])
+                        new_item['imageBlobPath'] = None
+                        new_item['hasImage'] = False
+                #New items that were not in the old form template
+                else:
+                    if hasattr(engineerImageData[uuid], 'file') and hasattr(engineerImageData[uuid], 'filename'):
+                        print('local image was uploaded for a new item')
+                        data = engineerImageData[uuid].file
+                        container_name, blob_path = 'images', f'{atp_form_group_id}/engineer/{uuid}.png'
+                        blob_handler.upload_blob(container_name, blob_path, data)
+                        new_item['imageBlobPath'] = blob_path
+                        new_item['hasImage'] = True
+                        
+            ###################################################################################################################
+
             
             session.start_transaction()
             
@@ -234,13 +279,13 @@ async def update_active_form_template(
                 blob_handler.upload_blob('spreadsheets', blob_path, spreadsheetTemplate.file)
             
                 # Archive the old spreadsheet if it exists
-                old_blob_path = f'{atp_form_group_id}/active-form/{current_form["_id"]}.xlsx'
+                old_blob_path = f'{atp_form_group_id}/active-form/{old_form["_id"]}.xlsx'
                 try:
                     blob_handler.move_blob(
                         from_container_name='spreadsheets',
                         blob_path=old_blob_path,
                         to_container_name='spreadsheets',
-                        to_blob_path=f'{atp_form_group_id}/archived-forms/{current_form["_id"]}.xlsx'
+                        to_blob_path=f'{atp_form_group_id}/archived-forms/{old_form["_id"]}.xlsx'
                     )
                 except Exception as e:
                     # If the old blob doesn't exist, just continue (this might be the first version)
@@ -265,8 +310,6 @@ async def update_active_form_template(
         
     return {"message": "ATP form template updated successfully"}
 
-
-
 @router.get("/active", response_model = responses.ATPAllActiveForms)
 async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_forms_collection), blob_handler: Callable = Depends(get_blob_handler)):
     """
@@ -279,10 +322,20 @@ async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_form
         #convert ObjectId to a string before appending the document to the list
         document['_id'] = str(document['_id'])
         for item in document['sections']['technician']['items']:
-            item['image'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('image')) if item.get('hasImage') else None
+            if item.get('hasImage') and item.get('imageBlobPath'):
+                item['imageUrl'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('imageBlobPath'))  # Full URL for display
+            else:
+                item['imageBlobPath'] = None
+                item['imageUrl'] = None
+                item['hasImage'] = False  # Ensure consistency
 
         for item in document['sections']['engineer']['items']:
-            item['image'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('image')) if item.get('hasImage') else None
+            if item.get('hasImage') and item.get('imageBlobPath'):
+                item['imageUrl'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('imageBlobPath'))  # Full URL for display
+            else:
+                item['imageBlobPath'] = None
+                item['imageUrl'] = None
+                item['hasImage'] = False  # Ensure consistency
         
         form_templates.append(document)
     return form_templates
@@ -302,11 +355,21 @@ async def get_active_form_template(atp_form_group_id: Annotated[str, Path(descri
     atp_form_document['_id'] = str(atp_form_document['_id'])
     
     for item in atp_form_document['sections']['technician']['items']:
-        item['image'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('image')) if item.get('hasImage') else None
+        if item.get('hasImage') and item.get('imageBlobPath'):
+            item['imageUrl'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('imageBlobPath'))  # Full URL for display
+        else:
+            item['imageBlobPath'] = None
+            item['imageUrl'] = None
+            item['hasImage'] = False  # Ensure consistency
         
         
     for item in atp_form_document['sections']['engineer']['items']:
-        item['image'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('image')) if item.get('hasImage') else None
+        if item.get('hasImage') and item.get('imageBlobPath'):
+            item['imageUrl'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('imageBlobPath'))  # Full URL for display
+        else:
+            item['imageBlobPath'] = None
+            item['imageUrl'] = None
+            item['hasImage'] = False  # Ensure consistency
         
        
     print('Final response data:', atp_form_document)

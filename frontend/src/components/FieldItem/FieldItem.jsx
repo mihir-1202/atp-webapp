@@ -16,7 +16,7 @@ function getPlaceholder(answerFormat)
     }
 }
 
-export default function FieldItem({questionUUID, questionText, answerFormat, register, role, readOnly = false, defaultValue = "", image = null })
+export default function FieldItem({questionUUID, questionText, answerFormat, register, role, readOnly = false, defaultValue = "", imageUrl = null })
 {
     // Subtle styling for empty readonly fields to make them visible
     const emptyReadonlyStyle = readOnly && !defaultValue ? {
@@ -33,9 +33,9 @@ export default function FieldItem({questionUUID, questionText, answerFormat, reg
                 {readOnly && !defaultValue && <span style={{color: '#6c757d', fontSize: '0.9em'}}> (No response)</span>}
             </label>
 
-            {image && (
+            {imageUrl && (
                 <div>
-                    <img src = {image} style = {{width: '50%', height: '50%', objectFit: 'contain'}} alt = "Heading Image" />
+                    <img src = {imageUrl} style = {{width: '50%', height: '50%', objectFit: 'contain'}} alt = "Heading Image" />
                 </div>
             )}
 

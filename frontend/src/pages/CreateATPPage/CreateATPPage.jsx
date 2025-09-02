@@ -84,7 +84,7 @@ export default function CreateATPPage()
 
         const sectionsWithoutImages = {
             technician: {
-                items: formData.sections.technician.items.map((item, index) => {
+                items: formData.sections.technician.items.map((item) => {
                     const {image, ...rest} = item;
                     
                     // Check if image is valid (File object or valid URL)
@@ -96,13 +96,13 @@ export default function CreateATPPage()
                         if (image instanceof File)
                         {
                             processedFormData.append('technicianUploadedImages', image);
-                            processedFormData.append('technicianUploadedImageIndices', index);
+                            processedFormData.append('technicianUploadedImageUUIDs', item.uuid);
                         }
 
                         else
                         {
-                            processedFormData.append('technicianRemoteImages', image);
-                            processedFormData.append('technicianRemoteImageIndices', index);
+                            processedFormData.append('technicianRemoteImagePaths', image);
+                            processedFormData.append('technicianRemoteImageUUIDs', item.uuid);
                         }
                     }
                     
@@ -111,7 +111,7 @@ export default function CreateATPPage()
             },
 
             engineer: {
-                items: formData.sections.engineer.items.map((item, index) => {
+                items: formData.sections.engineer.items.map((item) => {
                     const {image, ...rest} = item;
                     
                     // Check if image is valid (File object or valid URL)
@@ -123,13 +123,13 @@ export default function CreateATPPage()
                         if (image instanceof File)
                         {
                             processedFormData.append('engineerUploadedImages', image);
-                            processedFormData.append('engineerUploadedImageIndices', index);
+                            processedFormData.append('engineerUploadedImageUUIDs', item.uuid);
                         }
 
                         else
                         {
-                            processedFormData.append('engineerRemoteImages', image);
-                            processedFormData.append('engineerRemoteImageIndices', index);
+                            processedFormData.append('engineerRemoteImagePaths', image);
+                            processedFormData.append('engineerRemoteImageUUIDs', item.uuid);
                         }
                     }
                     

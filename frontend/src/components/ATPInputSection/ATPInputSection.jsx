@@ -29,7 +29,7 @@ export default function ATPInputSection({register, role, showButtons, atpTemplat
             key = {item.uuid} 
             index = {item.index}
             headingText = {item.content}
-            image = {item.image} 
+            imageUrl = {item.imageUrl || null} 
         />
         :
         <FieldItem 
@@ -42,7 +42,7 @@ export default function ATPInputSection({register, role, showButtons, atpTemplat
             defaultValue = {previousValue} 
             role = {role}
             readOnly = {readOnly}
-            image = {item.image} 
+            imageUrl = {item.imageUrl || null} 
         />
     });
 

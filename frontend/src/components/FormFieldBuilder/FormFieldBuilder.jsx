@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './FormFieldBuilder.module.css';
 import ImageInput from '../ImageInput';
 
-export default function FormFieldBuilder({index, role, id, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, remoteImageUrl = null})
+export default function FormFieldBuilder({index, role, id, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, imageUrl = null, imageBlobPath = null})
 {
     function handleClick()
     {
@@ -37,7 +37,8 @@ export default function FormFieldBuilder({index, role, id, removeItem, defaultVa
                     register={register}
                     resetField={resetField}
                     setValue={setValue}
-                    remoteImageUrl={remoteImageUrl}
+                    imageUrl={imageUrl}
+                    imageBlobPath={imageBlobPath}
                 />
 
                 <div className={styles.inputGroup} id={styles.answerFormatInputGroup}>

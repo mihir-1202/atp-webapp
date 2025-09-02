@@ -7,9 +7,38 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
 {
     const formItemsJSX = items.map((item, index) => 
         {
+            console.log(item);
             return (item.type === "heading") 
-            ? <FormHeadingBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.content || ""} lastClicked = {lastClicked} setLastClicked = {setLastClicked} resetField = {resetField} setValue = {setValue} /> 
-            : <FormFieldBuilder key = {item.uuid} index = {index} role = {role} removeItem = {removeItem} register = {register} id = {item.uuid} defaultValue = {item.question || ""} lastClicked = {lastClicked} setLastClicked = {setLastClicked} resetField = {resetField} setValue = {setValue} />
+            ? <FormHeadingBuilder 
+                key = {item.uuid} 
+                index = {index} 
+                role = {role} 
+                removeItem = {removeItem} 
+                register = {register} 
+                id = {item.uuid} 
+                defaultValue = {item.content || ""} 
+                lastClicked = {lastClicked} 
+                setLastClicked = {setLastClicked} r
+                esetField = {resetField} 
+                setValue = {setValue} 
+                imageUrl = {item.imageUrl || null} 
+                imageBlobPath = {item.imageBlobPath || null} 
+            /> 
+            : <FormFieldBuilder 
+                key = {item.uuid} 
+                index = {index} 
+                role = {role} 
+                removeItem = {removeItem} 
+                register = {register} 
+                id = {item.uuid} 
+                defaultValue = {item.question || ""} 
+                lastClicked = {lastClicked} 
+                setLastClicked = {setLastClicked} 
+                resetField = {resetField} 
+                setValue = {setValue} 
+                imageUrl = {item.imageUrl || null} 
+                imageBlobPath = {item.imageBlobPath || null} 
+            />
         }
     )
 
@@ -24,6 +53,8 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
                 index: items.length,
                 type: type,
                 content: "",
+                hasImage: false,
+                image: null
             })
             :
             appendItem({
@@ -32,7 +63,9 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
                 type: type,
                 question: "",
                 answerFormat: "text",
-                spreadsheetCell: ""
+                spreadsheetCell: "",
+                hasImage: false,
+                image: null
             })
         }
 
@@ -44,6 +77,7 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
                 index: lastClicked.index,
                 type: type,
                 content: "",
+                hasImage: false
             })
             :
             insertItem(lastClicked.index + 1, {
@@ -52,7 +86,8 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
                 type: type,
                 question: "",
                 answerFormat: "text",
-                spreadsheetCell: ""
+                spreadsheetCell: "",
+                hasImage: false
             })
         }
 
