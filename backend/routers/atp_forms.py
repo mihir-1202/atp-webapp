@@ -252,7 +252,57 @@ async def update_active_form_template(
                         
             ###################################################################################################################
             
-            #TODO: handle images for engineer's section
+            prevEngineerImageData = {item['uuid']: item.get('imageBlobPath', None) for item in old_form['sections']['engineer']['items']}
+            
+            #Handle images for technician section
+            new_engineer_items = new_form_template_data['sections']['engineer']['items']
+            for new_item in new_engineer_items:
+                # Check if this item has image data in the request
+                uuid = new_item['uuid']
+                if uuid in engineerImageData:
+                    new_image_data = engineerImageData[uuid]
+                    
+                    #Items that already existed in the old form template
+                    if uuid in prevEngineerImageData:
+                        # Check if the image is the same (both have blob paths and they match)
+                        if new_image_data == prevEngineerImageData[uuid]:
+                            print(f'unchanged image for {uuid}\nOld: {prevEngineerImageData[uuid]}\nNew: {new_image_data}')
+                            # Copy the existing image data to the new item
+                            new_item['imageBlobPath'] = prevEngineerImageData[uuid]
+                            new_item['hasImage'] = True
+                        #New local image was uploaded (either for the first time or as a replacement -> both work since overwrite = True is set in the upload_blob function)
+                        elif hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
+                            print('new local image was uploaded for an existing item')
+                            data = new_image_data.file
+                            container_name, blob_path = 'images', f'{atp_form_group_id}/engineer/{uuid}.png'
+                            blob_handler.upload_blob(container_name, blob_path, data)
+                            new_item['imageBlobPath'] = blob_path
+                            new_item['hasImage'] = True
+                        #Image was removed - handle FormData string conversion
+                        elif new_image_data is None and prevEngineerImageData[uuid] is not None:
+                            print(f'blob path being deleted:\nNew: {new_image_data}\nOld: {prevEngineerImageData[uuid]}')
+                            blob_handler.delete_blobs('images', blob_path = prevEngineerImageData[uuid], virtual_directory = None)
+                            new_item['imageBlobPath'] = None
+                            new_item['hasImage'] = False
+                    #New items that were not in the old form template
+                    else:
+                        if hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
+                            print('local image was uploaded for a new item')
+                            data = new_image_data.file
+                            container_name, blob_path = 'images', f'{atp_form_group_id}/engineer/{uuid}.png'
+                            blob_handler.upload_blob(container_name, blob_path, data)
+                            new_item['imageBlobPath'] = blob_path
+                            new_item['hasImage'] = True
+                        else:
+                            new_item['imageBlobPath'] = None
+                            new_item['hasImage'] = False
+                
+            # Handle deleted items (items that existed before but are not in the new form)
+            deleted_engineer_items = [uuid for uuid in prevEngineerImageData.keys() if uuid not in set(item['uuid'] for item in new_engineer_items)]
+            for deleted_item in deleted_engineer_items:
+                if prevEngineerImageData[deleted_item] is not None:
+                    print('Deleting image for an item that was deleted')
+                    blob_handler.delete_blobs('images', blob_path=prevEngineerImageData[deleted_item], virtual_directory=None)
                         
             ###################################################################################################################
 
