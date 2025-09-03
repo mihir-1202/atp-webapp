@@ -77,7 +77,7 @@ async def create_form_template(
 
             #Upload images to Azure Blob Storage and update items if necessary
             for uuid, image in technicianImageData.items():
-                container_name, blob_path = 'images', f'{form_group_id}/technician/{uuid}.png'
+                container_name, blob_path = 'images', f'{form_group_id}/active/{uuid}.png'
                 # Support both uploaded files and remote URLs
                 
                 print(type(image))
@@ -98,7 +98,7 @@ async def create_form_template(
                 
             
             for uuid, image in engineerImageData.items():
-                container_name, blob_path = 'images', f'{form_group_id}/engineer/{uuid}.png'
+                container_name, blob_path = 'images', f'{form_group_id}/active/{uuid}.png'
                 
                 print(type(image))
                 if hasattr(image, 'file') and hasattr(image, 'filename'):
@@ -192,6 +192,7 @@ async def update_active_form_template(
             new_form_template_data['metadata']['createdAt'] = datetime.now().isoformat()
             
             
+            """TODO: let azure functions handle scheduled deletion of images"""
             ###################################################################################################################
             
             prevTechnicianImageData = {item['uuid']: item.get('imageBlobPath', None) for item in old_form['sections']['technician']['items']}
@@ -216,22 +217,24 @@ async def update_active_form_template(
                         elif hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
                             print('new local image was uploaded for an existing item')
                             data = new_image_data.file
-                            container_name, blob_path = 'images', f'{atp_form_group_id}/technician/{uuid}.png'
+                            container_name, blob_path = 'images', f'{atp_form_group_id}/active/{uuid}.png'
                             blob_handler.upload_blob(container_name, blob_path, data)
                             new_item['imageBlobPath'] = blob_path
                             new_item['hasImage'] = True
                         #Image was removed - handle FormData string conversion
                         elif new_image_data is None and prevTechnicianImageData[uuid] is not None:
                             print(f'blob path being deleted:\nNew: {new_image_data}\nOld: {prevTechnicianImageData[uuid]}')
-                            blob_handler.delete_blobs('images', blob_path = prevTechnicianImageData[uuid], virtual_directory = None)
+                            #blob_handler.delete_blobs('images', blob_path = prevTechnicianImageData[uuid], virtual_directory = None)
+                            blob_handler.move_blob('images', prevTechnicianImageData[uuid], 'images', f'{atp_form_group_id}/archived/{uuid}.png')
                             new_item['imageBlobPath'] = None
                             new_item['hasImage'] = False
+                            pass
                     #New items that were not in the old form template
                     else:
                         if hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
                             print('local image was uploaded for a new item')
                             data = new_image_data.file
-                            container_name, blob_path = 'images', f'{atp_form_group_id}/technician/{uuid}.png'
+                            container_name, blob_path = 'images', f'{atp_form_group_id}/active/{uuid}.png'
                             blob_handler.upload_blob(container_name, blob_path, data)
                             new_item['imageBlobPath'] = blob_path
                             new_item['hasImage'] = True
@@ -244,7 +247,7 @@ async def update_active_form_template(
             for deleted_item in deleted_technician_items:
                 if prevTechnicianImageData[deleted_item] is not None:
                     print('Deleting image for an item that was deleted')
-                    blob_handler.delete_blobs('images', blob_path=prevTechnicianImageData[deleted_item], virtual_directory=None)
+                    blob_handler.move_blob('images', prevTechnicianImageData[deleted_item], 'images', f'{atp_form_group_id}/archived/{deleted_item}.png')
                 
                 
                     
@@ -274,22 +277,23 @@ async def update_active_form_template(
                         elif hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
                             print('new local image was uploaded for an existing item')
                             data = new_image_data.file
-                            container_name, blob_path = 'images', f'{atp_form_group_id}/engineer/{uuid}.png'
+                            container_name, blob_path = 'images', f'{atp_form_group_id}/active/{uuid}.png'
                             blob_handler.upload_blob(container_name, blob_path, data)
                             new_item['imageBlobPath'] = blob_path
                             new_item['hasImage'] = True
                         #Image was removed - handle FormData string conversion
                         elif new_image_data is None and prevEngineerImageData[uuid] is not None:
                             print(f'blob path being deleted:\nNew: {new_image_data}\nOld: {prevEngineerImageData[uuid]}')
-                            blob_handler.delete_blobs('images', blob_path = prevEngineerImageData[uuid], virtual_directory = None)
+                            blob_handler.move_blob('images', prevEngineerImageData[uuid], 'images', f'{atp_form_group_id}/archived/{uuid}.png')
                             new_item['imageBlobPath'] = None
                             new_item['hasImage'] = False
+                            pass
                     #New items that were not in the old form template
                     else:
                         if hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
                             print('local image was uploaded for a new item')
                             data = new_image_data.file
-                            container_name, blob_path = 'images', f'{atp_form_group_id}/engineer/{uuid}.png'
+                            container_name, blob_path = 'images', f'{atp_form_group_id}/active/{uuid}.png'
                             blob_handler.upload_blob(container_name, blob_path, data)
                             new_item['imageBlobPath'] = blob_path
                             new_item['hasImage'] = True
@@ -302,7 +306,7 @@ async def update_active_form_template(
             for deleted_item in deleted_engineer_items:
                 if prevEngineerImageData[deleted_item] is not None:
                     print('Deleting image for an item that was deleted')
-                    blob_handler.delete_blobs('images', blob_path=prevEngineerImageData[deleted_item], virtual_directory=None)
+                    blob_handler.move_blob('images', prevEngineerImageData[deleted_item], 'images', f'{atp_form_group_id}/archived/{deleted_item}.png')
                         
             ###################################################################################################################
 
@@ -459,6 +463,7 @@ async def delete_form_template(
         #delete all submissions associated with the ATP form
         atp_submissions.delete_many({'formGroupId': atp_form_group_id})
         blob_handler.delete_blobs('spreadsheets', virtual_directory = f'{atp_form_group_id}')
+        blob_handler.delete_blobs('images', virtual_directory = f'{atp_form_group_id}')
         session.commit_transaction()
     
     return {"message": "ATP form and corresponding submissions deleted successfully"}
