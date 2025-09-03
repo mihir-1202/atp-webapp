@@ -50,6 +50,8 @@ export default function UpdateATPPage()
                         {
                             processedFormData.append('technicianUploadedImages', image);
                             processedFormData.append('technicianUploadedImageUUIDs', item.uuid);
+                            // Ensure hasImage is true for new images
+                            rest.hasImage = true;
                         }
                         else
                         {
@@ -58,7 +60,7 @@ export default function UpdateATPPage()
                         }
                     }
                     
-                    return {...rest}
+                    return rest
                 })
             },
 
@@ -73,6 +75,8 @@ export default function UpdateATPPage()
                         {
                             processedFormData.append('engineerUploadedImages', image);
                             processedFormData.append('engineerUploadedImageUUIDs', item.uuid);
+                            // Ensure hasImage is true for new images
+                            rest.hasImage = true;
                         }
                         else
                         {
@@ -81,7 +85,7 @@ export default function UpdateATPPage()
                         }
                     }
                     
-                    return {...rest}
+                    return rest
                 })
             },
         }

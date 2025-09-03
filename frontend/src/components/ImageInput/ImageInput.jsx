@@ -21,6 +21,15 @@ export default function ImageInput({
     // const { onChange: defaultOnChange, ...registerWithoutDefaultOnChange } = register(`sections.${role}.items.${index}.image`);
     
 
+    // Update usingRemoteImage when imageBlobPath or imageUrl changes (when component is mounted, usingRemoteImage is false because API data is not available yet -> when API data becomes available we need to update the state)
+    React.useEffect(() => {
+        if (imageBlobPath && imageUrl) {
+            setUsingRemoteImage(true);
+        } else {
+            setUsingRemoteImage(false);
+        }
+    }, [imageBlobPath, imageUrl]);
+    
     // Initialize the form field when component mounts
     React.useEffect(() => {
         if (usingRemoteImage) 

@@ -161,22 +161,18 @@ async def update_active_form_template(
                 sections = sections_obj
             )
             
-            # Convert FormData string values back to proper types
-            # Only set hasImage to boolean, don't overwrite image data that was already parsed
+            # FastAPI automatically converts 'true' and 'false' to True and False, but it doesn't convert 'null' to None
             for section_name in ['technician', 'engineer']:
                 for item in sections_obj[section_name]['items']:
-                    if item['hasImage'] == 'true':
-                        item['hasImage'] = True
-                    else:
-                        item['hasImage'] = False
-                        # Don't overwrite image data that was already parsed from FormData
-                        # Only set to None if the item truly has no image data
+                    if section_name == 'technician':
+                        print('TECHNICIAN ITEM: ', item['hasImage'], type(item['hasImage']), technicianImageData.get(item['uuid'], None), type(technicianImageData.get(item['uuid'])), '\n\n')
+                    elif section_name == 'engineer':
+                        print('ENGINEER ITEM: ', item['hasImage'], type(item['hasImage']), engineerImageData.get(item['uuid'], None), type(engineerImageData.get(item['uuid'])), '\n\n')
+                    if not item['hasImage']:
                         if section_name == 'technician':
-                            if item['uuid'] not in technicianImageData:
-                                technicianImageData[item['uuid']] = None
+                            technicianImageData[item['uuid']] = None
                         elif section_name == 'engineer':
-                            if item['uuid'] not in engineerImageData:
-                                engineerImageData[item['uuid']] = None
+                            engineerImageData[item['uuid']] = None
         
             new_form_template_data = validated_request_body.model_dump()
             # Remove the UploadFile object as it can't be stored in MongoDB
@@ -201,7 +197,6 @@ async def update_active_form_template(
             prevTechnicianImageData = {item['uuid']: item.get('imageBlobPath', None) for item in old_form['sections']['technician']['items']}
             
             #Handle images for technician section
-            # Process ALL items, not just ones with images
             new_technician_items = new_form_template_data['sections']['technician']['items']
             for new_item in new_technician_items:
                 # Check if this item has image data in the request
@@ -240,18 +235,18 @@ async def update_active_form_template(
                             blob_handler.upload_blob(container_name, blob_path, data)
                             new_item['imageBlobPath'] = blob_path
                             new_item['hasImage'] = True
-                else:
-                    if hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
-                        print('new local image was uploaded for a new item')
-                        data = new_image_data.file
-                        container_name, blob_path = 'images', f'{atp_form_group_id}/technician/{uuid}.png'
-                        blob_handler.upload_blob(container_name, blob_path, data)
-                        new_item['imageBlobPath'] = blob_path
-                        new_item['hasImage'] = True
-                    else:
-                        new_item['imageBlobPath'] = None
-                        new_item['hasImage'] = False
-                        continue
+                        else:
+                            new_item['imageBlobPath'] = None
+                            new_item['hasImage'] = False
+                
+            # Handle deleted items (items that existed before but are not in the new form)
+            deleted_technician_items = [uuid for uuid in prevTechnicianImageData.keys() if uuid not in set(item['uuid'] for item in new_technician_items)]
+            for deleted_item in deleted_technician_items:
+                if prevTechnicianImageData[deleted_item] is not None:
+                    print('Deleting image for an item that was deleted')
+                    blob_handler.delete_blobs('images', blob_path=prevTechnicianImageData[deleted_item], virtual_directory=None)
+                
+                
                     
                         
                         
