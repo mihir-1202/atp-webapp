@@ -88,7 +88,6 @@ export default function CreateATPPage()
                     const {image, ...rest} = item;
                     
                     // Check if image is valid (File object or valid URL)
-                    console.log(image);
                     const hasValidImage = (image instanceof File || isValidURL(image));
                     
                     if (hasValidImage) 
@@ -115,7 +114,6 @@ export default function CreateATPPage()
                     const {image, ...rest} = item;
                     
                     // Check if image is valid (File object or valid URL)
-                    console.log(image);
                     const hasValidImage = (image instanceof File || isValidURL(image));
                     
                     if (hasValidImage) 

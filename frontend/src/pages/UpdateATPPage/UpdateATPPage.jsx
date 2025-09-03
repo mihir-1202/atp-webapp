@@ -24,7 +24,7 @@ export default function UpdateATPPage()
 
     function handleSubmit(formData)
     {
-        const isValidURL = (string) => {
+        const isValidBlobPath = (string) => {
             try{
                 new URL(string);
                 return true;
@@ -40,7 +40,9 @@ export default function UpdateATPPage()
             technician: {
                 items: formData.sections.technician.items.map((item) => {
                     const {image, ...rest} = item;
-                    const hasValidImage = (image instanceof File || isValidURL(image));
+                    
+                    //if the image is File object (local upload) or a string (blob path that hasn't been changed since last form update)
+                    const hasValidImage = (image instanceof File || typeof image === 'string');
 
                     if (hasValidImage)
                     {
@@ -55,6 +57,7 @@ export default function UpdateATPPage()
                             processedFormData.append('technicianRemoteImageUUIDs', item.uuid);
                         }
                     }
+                    
                     return {...rest}
                 })
             },
@@ -62,7 +65,7 @@ export default function UpdateATPPage()
             engineer: {
                 items: formData.sections.engineer.items.map((item) => {
                     const {image, ...rest} = item;
-                    const hasValidImage = (image instanceof File || isValidURL(image));
+                    const hasValidImage = (image instanceof File || typeof image === 'string');
 
                     if (hasValidImage)
                     {
@@ -77,6 +80,7 @@ export default function UpdateATPPage()
                             processedFormData.append('engineerRemoteImageUUIDs', item.uuid);
                         }
                     }
+                    
                     return {...rest}
                 })
             },

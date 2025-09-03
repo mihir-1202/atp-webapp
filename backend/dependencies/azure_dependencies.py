@@ -77,21 +77,27 @@ class BlobHandler:
 
     @staticmethod
     def delete_blobs(container_name: str, blob_path = None, virtual_directory = None) -> None:
+        print(f"delete_blobs called with: container_name={container_name}, blob_path={blob_path}, virtual_directory={virtual_directory}")
+        print(f"blob_path type: {type(blob_path)}, virtual_directory type: {type(virtual_directory)}")
+        
         if not blob_path and not virtual_directory:
             raise ValueError("Either blob_path or virtual_directory must be provided")
         
         try:
             if virtual_directory:
+                print(f"Deleting virtual directory: {virtual_directory}")
                 blob_container_client = blob_service_client.get_container_client(container_name)
                 blobs = blob_container_client.list_blobs(name_starts_with = virtual_directory)
                 for blob in blobs:
+                    print(f"  Deleting blob: {blob.name}")
                     blob_client = blob_service_client.get_blob_client(
                         container=container_name,
                         blob=blob.name
                     )
                     blob_client.delete_blob()
             
-            if blob_path:
+            elif blob_path:
+                print(f"Deleting specific blob: {blob_path}")
                 blob_client = blob_service_client.get_blob_client(
                     container = container_name,
                     blob = blob_path
