@@ -21,28 +21,23 @@ export default function ImageInput({
     // const { onChange: defaultOnChange, ...registerWithoutDefaultOnChange } = register(`sections.${role}.items.${index}.image`);
     
 
-    // Update usingRemoteImage when imageBlobPath or imageUrl changes (when component is mounted, usingRemoteImage is false because API data is not available yet -> when API data becomes available we need to update the state)
+    // Handle initial setup and remote image changes
     React.useEffect(() => {
-        if (imageBlobPath && imageUrl) {
+        if (!localImage && imageBlobPath && imageUrl) {
             setUsingRemoteImage(true);
-        } else {
-            setUsingRemoteImage(false);
-        }
-    }, [imageBlobPath, imageUrl]);
-    
-    // Initialize the form field when component mounts
-    React.useEffect(() => {
-        if (usingRemoteImage) 
-        {
             setValue(`sections.${role}.items.${index}.hasImage`, true);
             setValue(`sections.${role}.items.${index}.image`, imageBlobPath);
         } 
-        else 
+        else if (!localImage) 
         {
+            // No local image and no remote image - ensure hasImage is false
+            setUsingRemoteImage(false);
             setValue(`sections.${role}.items.${index}.hasImage`, false);
             setValue(`sections.${role}.items.${index}.image`, null);
         }
-    }, [usingRemoteImage, setValue, role, index]);
+    }, [imageBlobPath, imageUrl, localImage, role, index, setValue]);
+    
+   
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -51,10 +46,12 @@ export default function ImageInput({
         // Extract the file from FileList and set it directly
         if (file) 
         {
+            setValue(`sections.${role}.items.${index}.hasImage`, true);
             setValue(`sections.${role}.items.${index}.image`, file);
         } 
         else 
         {
+            setValue(`sections.${role}.items.${index}.hasImage`, false);
             setValue(`sections.${role}.items.${index}.image`, null);
         }
         setUsingRemoteImage(false);
@@ -76,8 +73,9 @@ export default function ImageInput({
         }
 
         // Reset the form fields
-        setValue(`sections.${role}.items.${index}.image`, null);
         setValue(`sections.${role}.items.${index}.hasImage`, false);
+        setValue(`sections.${role}.items.${index}.image`, null);
+        
     };
 
     return (

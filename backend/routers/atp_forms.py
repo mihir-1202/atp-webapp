@@ -45,14 +45,6 @@ async def create_form_template(
             if not validated_request_body.spreadsheetTemplate:
                 raise ValueError("Spreadsheet template is required")
             
-            # Convert FormData string values in Section back to proper types
-            for section_name in ['technician', 'engineer']:
-                for item in sections_obj[section_name]['items']:
-                    item['hasImage'] = True if item['hasImage'] == 'true' else False
-                    
-                    
-            
-            
             new_form_template_data = validated_request_body.model_dump()
             # Remove the UploadFile object as it can't be stored in MongoDB
             new_form_template_data.pop('spreadsheetTemplate', None)
@@ -212,7 +204,7 @@ async def update_active_form_template(
                             print(f'unchanged image for {uuid}\nOld: {prevTechnicianImageData[uuid]}\nNew: {new_image_data}')
                             # Copy the existing image data to the new item
                             new_item['imageBlobPath'] = prevTechnicianImageData[uuid]
-                            new_item['hasImage'] = True
+                            new_item['hasImage'] = prevTechnicianImageData[uuid] is not None
                         #New local image was uploaded (either for the first time or as a replacement -> both work since overwrite = True is set in the upload_blob function)
                         elif hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
                             print('new local image was uploaded for an existing item')
@@ -272,7 +264,7 @@ async def update_active_form_template(
                             print(f'unchanged image for {uuid}\nOld: {prevEngineerImageData[uuid]}\nNew: {new_image_data}')
                             # Copy the existing image data to the new item
                             new_item['imageBlobPath'] = prevEngineerImageData[uuid]
-                            new_item['hasImage'] = True
+                            new_item['hasImage'] = prevEngineerImageData[uuid] is not None
                         #New local image was uploaded (either for the first time or as a replacement -> both work since overwrite = True is set in the upload_blob function)
                         elif hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
                             print('new local image was uploaded for an existing item')

@@ -57,7 +57,14 @@ export default function UpdateATPPage()
                         {
                             processedFormData.append('technicianRemoteImagePaths', image);
                             processedFormData.append('technicianRemoteImageUUIDs', item.uuid);
+                            // Ensure hasImage is true for existing images too
+                            rest.hasImage = true;
                         }
+                    }
+                    else
+                    {
+                        // Image was removed or never existed
+                        rest.hasImage = false;
                     }
                     
                     return rest
@@ -82,7 +89,14 @@ export default function UpdateATPPage()
                         {
                             processedFormData.append('engineerRemoteImagePaths', image);
                             processedFormData.append('engineerRemoteImageUUIDs', item.uuid);
+                            // Ensure hasImage is true for existing images too
+                            rest.hasImage = true;
                         }
+                    }
+                    else
+                    {
+                        // Image was removed or never existed
+                        rest.hasImage = false;
                     }
                     
                     return rest
