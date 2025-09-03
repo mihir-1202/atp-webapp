@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, AnyUrl
 from typing import Annotated, List, Optional, Literal
 from .atp_submissions import ATPTechnicianSubmission, ATPReviewSubmission, Responses
 
@@ -22,7 +22,7 @@ class ATPSpecifiedSubmissionResponse(BaseModel):
   engineerResponses: Annotated[Optional[List[Responses]], Field(description = "The responses of the engineer", example = [{"questionUUID": "59ad8436-c64c-43fd-94b1-f149fb9eb975", "questionIndex": 0, "spreadsheetCell": "B2", "answer": "hello world", "answerFormat": "text"}])]
   reviewedAt: Annotated[Optional[str], Field(description = "The date and time the ATP submission was reviewed", example = "2025-08-27T16:35:36.940679")]
   reviewedBy: Annotated[Optional[str], Field(description = "The email of the user who reviewed the ATP submission", example = "engineer@upwingenergy.com")]
-
+  completedSpreadsheetURL: Annotated[Optional[AnyUrl], Field(description = "The URL of the completed spreadsheet", example = "https://upwingenergy.blob.core.windows.net/spreadsheets/68af915d5b6090eeac6c4335/submissions/68af915d5b6090eeac6c4336_2025-08-27T16:35:36.940679.xlsx")]
   class Config:
     populate_by_name = True
 

@@ -15,6 +15,7 @@ export default function ReadOnlyATPUI()
     const [atpTemplateData, setATPTemplateData] = React.useState(null);
     const [prevTechnicianResponses, setPrevTechnicianResponses] = React.useState(null);
     const [prevEngineerResponses, setPrevEngineerResponses] = React.useState(null);
+    const [completedSpreadsheetURL, setCompletedSpreadsheetURL] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(true);
 
     React.useEffect(() => {loadAllData();}, [atpFormId, prevSubmissionId]);
@@ -45,6 +46,7 @@ export default function ReadOnlyATPUI()
                 data = await data.json();
                 setPrevTechnicianResponses(data.technicianResponses);
                 setPrevEngineerResponses(data.engineerResponses); 
+                setCompletedSpreadsheetURL(data.completedSpreadsheetURL);
             }
             
             catch(error)
@@ -97,7 +99,7 @@ export default function ReadOnlyATPUI()
                         role = {"technician"} 
                         atpTemplateData = {atpTemplateData} 
                         prevResponses = {prevTechnicianResponses} 
-                        showButtons = {false}
+                        showFormActions = {false}
                         readOnly = {true}
                     />
                     
@@ -107,8 +109,9 @@ export default function ReadOnlyATPUI()
                         role = {"engineer"} 
                         atpTemplateData = {atpTemplateData} 
                         prevResponses = {prevEngineerResponses}
-                        showButtons = {false}
+                        showFormActions = {false}
                         readOnly = {true}
+                        completedSpreadsheetURL = {completedSpreadsheetURL}
                     />
                     
                 </form>

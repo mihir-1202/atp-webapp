@@ -39,8 +39,14 @@ async def update_atp_submission(atp_submission_id: str,
         except Exception:
             return {'error': 'Invalid submission ID format', 'submissionId': None}
         
+        
+        completion_time = datetime.now()
+        completion_time_isoformat = completion_time.isoformat()
+        completion_time_path_format = completion_time.strftime("%Y-%m-%d_%H-%M-%S")
+
+        
         atp_review_data = atp_submission.model_dump()
-        atp_review_data['reviewedAt'] = datetime.now().isoformat()
+        atp_review_data['reviewedAt'] = completion_time_isoformat
         
         # Check if the submission exists and update it
         result = atp_submissions.update_one({'_id': object_id}, {'$set': atp_review_data})
@@ -59,7 +65,7 @@ async def update_atp_submission(atp_submission_id: str,
             for response in atp_review_data['engineerResponses']:
                 cell_to_response_mappings[response['spreadsheetCell']] = response['answer']
             atp_spreadsheet_manager.populate_cells_with_responses(cell_to_response_mappings)
-            upload_path = f'{atp_review_data["formGroupId"]}/submissions/{atp_review_data["formId"]}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+            upload_path = f'{atp_review_data["formGroupId"]}/submissions/{atp_review_data["formId"]}_{completion_time_path_format}.xlsx'
             with open(spreadsheet_path, 'rb') as file_stream:
                 blob_handler.upload_blob(container_name = 'spreadsheets', blob_path = upload_path, file_stream = file_stream)
             blob_handler.cleanup_temp_files(spreadsheet_path)
@@ -186,7 +192,8 @@ async def get_all_atp_submissions_metadata(
 @router.get("/{atp_submission_id}", response_model = responses.ATPSpecifiedSubmissionResponse)
 async def get_submission(
     atp_submission_id: str, 
-    atp_submissions: Collection = Depends(get_atp_submissions_collection)
+    atp_submissions: Collection = Depends(get_atp_submissions_collection),
+    blob_handler: Callable = Depends(get_blob_handler)
     ):
     query = {'_id': ObjectId(atp_submission_id)}
    
@@ -199,12 +206,20 @@ async def get_submission(
     
     # Add missing optional fields if they don't exist
     #fill-atp doesn't use these fields since they are only used to reset the default values of the form if the location is review-atp
-    if 'reviewedAt' not in atp_submission_document:
+    if 'reviewedAt' in atp_submission_document:
+        form_group_id, form_id = atp_submission_document["formGroupId"], atp_submission_document["formId"]
+        reviewed_at_isoformat = atp_submission_document["reviewedAt"]
+        reviewed_at = datetime.fromisoformat(reviewed_at_isoformat)
+        reviewed_at_path_format = reviewed_at.strftime("%Y-%m-%d_%H-%M-%S")
+        
+        blob_path = f'{form_group_id}/submissions/{form_id}_{reviewed_at_path_format}.xlsx'
+        atp_submission_document['completedSpreadsheetURL'] = blob_handler.get_blob_url(container_name = 'spreadsheets', blob_name = blob_path)
+    else:
+        atp_submission_document['completedSpreadsheetURL'] = None
         atp_submission_document['reviewedAt'] = None
-    if 'reviewedBy' not in atp_submission_document:
         atp_submission_document['reviewedBy'] = None
-    if 'engineerResponses' not in atp_submission_document:
         atp_submission_document['engineerResponses'] = None
+    
     
     return atp_submission_document
    

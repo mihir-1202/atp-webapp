@@ -328,7 +328,7 @@ export default function EditableATPUI()
                          role = {"technician"} 
                          atpTemplateData = {atpTemplateData} 
                          prevResponses = {submissionData?.technicianResponses} 
-                         showButtons = {location === 'fill-atp'}
+                         showFormActions = {location === 'fill-atp'}
                          readOnly = {location === 'completed-atp'}
                      />
                      
@@ -339,7 +339,7 @@ export default function EditableATPUI()
                          role = {"engineer"} 
                          atpTemplateData = {atpTemplateData} 
                          prevResponses = {submissionData?.engineerResponses}
-                         showButtons = {location === 'review-atp'}
+                         showFormActions = {location === 'review-atp'}
                          readOnly = {location === 'completed-atp'}
                      />
                      }

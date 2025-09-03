@@ -4,7 +4,7 @@ import FieldItem from '../FieldItem/FieldItem';
 import styles from './ATPInputSection.module.css';
 import {useNavigate} from 'react-router-dom';
 
-export default function ATPInputSection({register, role, showButtons, atpTemplateData, readOnly = false, prevResponses = []})
+export default function ATPInputSection({register, role, showFormActions, atpTemplateData, readOnly = false, prevResponses = [], completedSpreadsheetURL = null})
 {
   
     function getResponseByUUID(questionUUID)
@@ -55,13 +55,20 @@ export default function ATPInputSection({register, role, showButtons, atpTemplat
             </div>
         </div>
 
-        {showButtons && 
+        {showFormActions && 
         <div className={styles.formActions}>
             {/* onSubmit submits a post request to /atp-submissions/ */}
             <button type="button" className={styles.actionButton}>Save Form</button>
             <button type="submit" className={styles.actionButton}>Submit Form</button>
             <button type="button" className={styles.actionButton}>Reset Form</button>
         </div>}
+
+        {!showFormActions && completedSpreadsheetURL &&
+        <div className={styles.formActions}>
+            <button type="button" className={styles.actionButton} onClick = {() => window.open(completedSpreadsheetURL, '_blank')}>Download Completed ATP Spreadsheet</button>
+        </div>
+
+        }
     </>
     )
 }
