@@ -124,6 +124,7 @@ class BlobHandler:
 
         # Construct full URL with SAS token
         return f"https://{account_name}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
+    
 
 
 #Dependency function to get the blob handler
