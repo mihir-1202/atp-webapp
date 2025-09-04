@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './FormFieldBuilder.module.css';
 import ImageInput from '../ImageInput';
 
-export default function FormFieldBuilder({index, role, id, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, moveItem, imageUrl = null, imageBlobPath = null})
+export default function FormFieldBuilder({index, role, id, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, moveItem, numItems, imageUrl = null, imageBlobPath = null})
 {
     function handleClick()
     {
@@ -11,14 +11,15 @@ export default function FormFieldBuilder({index, role, id, removeItem, defaultVa
 
     function handleMoveUp()
     {
-        e.stopPropagation();
-        moveItem(index, index - 1);
+        if (index > 0)
+            moveItem(index, index - 1);
     }
 
     function handleMoveDown()
     {
-        e.stopPropagation();
-        moveItem(index, index + 1);
+       // e.stopPropagation();
+        if (index < numItems - 1)
+            moveItem(index, index + 1);
     }
 
 

@@ -5,6 +5,7 @@ import styles from './RoleFormSection.module.css';
 
 export default function RoleFormSection({role, items, appendItem, removeItem, insertItem, register, lastClicked, setLastClicked, resetField, setValue, moveItem})
 {
+    const numItems = items.length;
     const formItemsJSX = items.map((item, index) => 
         {
             console.log(item);
@@ -23,6 +24,7 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
                 index = {index}
                 imageUrl = {item.imageUrl || null} 
                 imageBlobPath = {item.imageBlobPath || null} 
+                numItems = {numItems}
                 moveItem = {moveItem}
             /> 
             : <FormFieldBuilder 
@@ -39,6 +41,7 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
                 index = {index}
                 imageUrl = {item.imageUrl || null} 
                 imageBlobPath = {item.imageBlobPath || null} 
+                numItems = {numItems}
                 moveItem = {moveItem}
             />
         }

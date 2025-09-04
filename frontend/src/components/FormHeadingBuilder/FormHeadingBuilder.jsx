@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import styles from './FormHeadingBuilder.module.css';
 import ImageInput from '../ImageInput';
 
-export default function FormHeadingBuilder({index, role, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, moveItem, imageUrl = null, imageBlobPath = null})
+export default function FormHeadingBuilder({index, role, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, moveItem, numItems, imageUrl = null, imageBlobPath = null})
 {
     
 
@@ -14,12 +14,15 @@ export default function FormHeadingBuilder({index, role, removeItem, defaultValu
 
     function handleMoveUp()
     {
-        moveItem(index, index - 1);
+        if (index > 0)
+            moveItem(index, index - 1);
     }
 
     function handleMoveDown()
     {
-        moveItem(index, index + 1);
+       // e.stopPropagation();
+        if (index < numItems - 1)
+            moveItem(index, index + 1);
     }
 
 
