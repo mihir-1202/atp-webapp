@@ -7,7 +7,8 @@ from dependencies import get_atp_forms_collection, get_atp_submissions_collectio
 from schemas import atp_forms_requests as schemas, atp_forms_responses as responses
 from dependencies import parse_technician_image_data, parse_engineer_image_data, get_mongo_client, get_blob_handler
 from typing import Callable
-from pymongo.mongo_client import MongoClient
+from pymongo import AsyncMongoClient
+from pymongo.asynchronous.collection import AsyncCollection
 import json
 
 router = APIRouter()
@@ -20,8 +21,8 @@ async def create_form_template(
     sections: Annotated[str, Form()],
     technicianImageData: dict = Depends(parse_technician_image_data),
     engineerImageData: dict = Depends(parse_engineer_image_data),
-    client: MongoClient = Depends(get_mongo_client),
-    atp_forms: Collection = Depends(get_atp_forms_collection),
+    client: AsyncMongoClient = Depends(get_mongo_client),
+    atp_forms: AsyncCollection = Depends(get_atp_forms_collection),
     blob_handler: Callable = Depends(get_blob_handler)
 ):
     """
@@ -29,7 +30,7 @@ async def create_form_template(
 
     - **form_template**: The ATP form template JSON object to create
     """
-    with client.start_session() as session:
+    async with client.start_session() as session:
         try:
             # Parse JSON strings back to objects
             metadata_obj = json.loads(metadata)
@@ -79,7 +80,7 @@ async def create_form_template(
                     print(f'{image} is not an UploadFile')
                     continue
                 
-                blob_handler.upload_blob(container_name, blob_path, data)
+                await blob_handler.upload_blob(container_name, blob_path, data)
                 
                 # Find the item by UUID and update it
                 for item in new_form_template_data['sections']['technician']['items']:
@@ -98,7 +99,7 @@ async def create_form_template(
                 else:
                     print(f'{image} is not an UploadFile')
                     continue
-                blob_handler.upload_blob(container_name, blob_path, data)
+                await blob_handler.upload_blob(container_name, blob_path, data)
                 
                 # Find the item by UUID and update it
                 for item in new_form_template_data['sections']['engineer']['items']:
@@ -112,12 +113,12 @@ async def create_form_template(
             session.start_transaction()
             
             # Insert into MongoDB
-            inserted_document = atp_forms.insert_one(new_form_template_data, session=session)
+            inserted_document = await atp_forms.insert_one(new_form_template_data, session=session)
             new_form_id = inserted_document.inserted_id
             
             # Upload excel spreadsheet to Azure Blob Storage
             container_name, blob_path = 'spreadsheets', f'{form_group_id}/active-form/{new_form_id}.xlsx'
-            blob_handler.upload_blob(container_name, blob_path, spreadsheetTemplate.file)
+            await blob_handler.upload_blob(container_name, blob_path, spreadsheetTemplate.file)
             session.commit_transaction()
             
             return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
@@ -136,12 +137,12 @@ async def update_active_form_template(
     sections: Annotated[str, Form()],
     technicianImageData: dict = Depends(parse_technician_image_data),
     engineerImageData: dict = Depends(parse_engineer_image_data),
-    client: MongoClient = Depends(get_mongo_client),
-    atp_forms: Collection = Depends(get_atp_forms_collection),
+    client: AsyncMongoClient = Depends(get_mongo_client),
+    atp_forms: AsyncCollection = Depends(get_atp_forms_collection),
     blob_handler: Callable = Depends(get_blob_handler)
 ):
     
-    with client.start_session() as session:
+    async with client.start_session() as session:
         try:
             metadata_obj = json.loads(metadata)
             sections_obj = json.loads(sections)
@@ -172,7 +173,7 @@ async def update_active_form_template(
             
             # Find the current active form template
             query = {'metadata.formGroupID': atp_form_group_id, 'metadata.status': 'active'}
-            old_form = atp_forms.find_one(query)
+            old_form = await atp_forms.find_one(query)
             if not old_form:
                 return {"error": "ATP form group not found"}
             old_form_id = old_form['_id']
@@ -210,7 +211,7 @@ async def update_active_form_template(
                             print('new local image was uploaded for an existing item')
                             data = new_image_data.file
                             container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
-                            blob_handler.upload_blob(container_name, blob_path, data)
+                            await blob_handler.upload_blob(container_name, blob_path, data)
                             new_item['imageBlobPath'] = blob_path
                             new_item['hasImage'] = True
                         #Image was removed - handle FormData string conversion
@@ -227,7 +228,7 @@ async def update_active_form_template(
                             print('local image was uploaded for a new item')
                             data = new_image_data.file
                             container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
-                            blob_handler.upload_blob(container_name, blob_path, data)
+                            await blob_handler.upload_blob(container_name, blob_path, data)
                             new_item['imageBlobPath'] = blob_path
                             new_item['hasImage'] = True
                         else:
@@ -270,7 +271,7 @@ async def update_active_form_template(
                             print('new local image was uploaded for an existing item')
                             data = new_image_data.file
                             container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
-                            blob_handler.upload_blob(container_name, blob_path, data)
+                            await blob_handler.upload_blob(container_name, blob_path, data)
                             new_item['imageBlobPath'] = blob_path
                             new_item['hasImage'] = True
                         #Image was removed - handle FormData string conversion
@@ -286,7 +287,7 @@ async def update_active_form_template(
                             print('local image was uploaded for a new item')
                             data = new_image_data.file
                             container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
-                            blob_handler.upload_blob(container_name, blob_path, data)
+                            await blob_handler.upload_blob(container_name, blob_path, data)
                             new_item['imageBlobPath'] = blob_path
                             new_item['hasImage'] = True
                         else:
@@ -306,20 +307,20 @@ async def update_active_form_template(
             session.start_transaction()
             
             # Make the old template inactive
-            atp_forms.update_one(query, {'$set': {'metadata.status': 'inactive'}}, session=session)
+            await atp_forms.update_one(query, {'$set': {'metadata.status': 'inactive'}}, session=session)
             # Insert the new template
-            inserted_document = atp_forms.insert_one(new_form_template_data, session=session)
+            inserted_document = await atp_forms.insert_one(new_form_template_data, session=session)
             new_form_id = inserted_document.inserted_id
             
             # Upload new spreadsheet to Azure Blob Storage if a replacement was provided
             if hasattr(spreadsheetTemplate, 'file') and hasattr(spreadsheetTemplate, 'filename'):
                 blob_path = f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
-                blob_handler.upload_blob('spreadsheets', blob_path, spreadsheetTemplate.file)
+                await blob_handler.upload_blob('spreadsheets', blob_path, spreadsheetTemplate.file)
             
                 # Archive the old spreadsheet if it exists
                 old_blob_path = f'{atp_form_group_id}/active-form/{old_form["_id"]}.xlsx'
                 try:
-                    blob_handler.move_blob(
+                    await blob_handler.move_blob(
                         from_container_name='spreadsheets',
                         blob_path=old_blob_path,
                         to_container_name='spreadsheets',
@@ -331,7 +332,7 @@ async def update_active_form_template(
 
             #Update the spreadsheet template name in Blob Storage with the new form id
             else:
-                blob_handler.move_blob(
+                await blob_handler.move_blob(
                     from_container_name='spreadsheets',
                     blob_path=f'{atp_form_group_id}/active-form/{old_form_id}.xlsx',
                     to_container_name='spreadsheets',
@@ -354,9 +355,8 @@ async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_form
     Get all ATP form templates that are currently active.
     """
     #TODO: only return the metadata of the form templates instead of the entire document
-    cursor = atp_forms.find({'metadata.status': 'active'})
     form_templates = []
-    for document in cursor:
+    async for document in atp_forms.find({'metadata.status': 'active'}):
         #convert ObjectId to a string before appending the document to the list
         document['_id'] = str(document['_id'])
         for item in document['sections']['technician']['items']:
@@ -385,7 +385,7 @@ async def get_active_form_template(atp_form_group_id: Annotated[str, Path(descri
     """
     print('in getATPTemplateData')
     query = {'metadata.formGroupID': atp_form_group_id, 'metadata.status': 'active'}
-    atp_form_document = atp_forms.find_one(query)
+    atp_form_document = await atp_forms.find_one(query)
     
     if not atp_form_document:
         return {"error": "ATP form group not found"}
@@ -416,14 +416,14 @@ async def get_active_form_template(atp_form_group_id: Annotated[str, Path(descri
 @router.get("/{atp_form_id}", response_model = responses.ATPSpecifiedForm)
 async def get_form_template(
     atp_form_id: Annotated[str, Path(description = "The ID of the ATP form to get", example = "674a1b2c3d4e5f6789012345")], 
-    atp_forms: Collection = Depends(get_atp_forms_collection),
+    atp_forms: AsyncCollection = Depends(get_atp_forms_collection),
     blob_handler: Callable = Depends(get_blob_handler)
 ):
     """
     Get an ATP form.
     """
     query = {'_id': ObjectId(atp_form_id)}
-    atp_form_document = atp_forms.find_one(query)
+    atp_form_document = await atp_forms.find_one(query)
     if not atp_form_document:
         return {"error": "ATP form not found"}
         #TODO: add error handling if an atp form is not found
@@ -459,15 +459,15 @@ async def get_form_template(
 @router.delete("/{atp_form_group_id}", response_model = responses.ATPFormDeleteResponse)
 async def delete_form_template(
     atp_form_group_id: Annotated[str, Path(description = "The ID of the ATP form group to delete", example = "674a1b2c3d4e5f6789012345")], 
-    atp_forms: Collection = Depends(get_atp_forms_collection),
-    atp_submissions: Collection = Depends(get_atp_submissions_collection),
-    client: MongoClient = Depends(get_mongo_client),
+    atp_forms: AsyncCollection = Depends(get_atp_forms_collection),
+    atp_submissions: AsyncCollection = Depends(get_atp_submissions_collection),
+    client: AsyncMongoClient = Depends(get_mongo_client),
     blob_handler: Callable = Depends(get_blob_handler)
 ):
     """
     Delete an ATP form.
     """
-    with client.start_session() as session:
+    async with client.start_session() as session:
         session.start_transaction()
         try:
             # Validate ObjectId format
@@ -476,13 +476,13 @@ async def delete_form_template(
             return {"error": "Invalid ATP form ID format"}
         
         query = {'metadata.formGroupID': atp_form_group_id}
-        result = atp_forms.delete_many(query)
+        result = await atp_forms.delete_many(query)
         
         if result.deleted_count == 0:
             return {"error": "ATP form not found"}
         
         #delete all submissions associated with the ATP form
-        atp_submissions.delete_many({'formGroupId': atp_form_group_id})
+        await atp_submissions.delete_many({'formGroupId': atp_form_group_id})
         blob_handler.delete_blobs('spreadsheets', virtual_directory = f'{atp_form_group_id}')
         blob_handler.delete_blobs('images', virtual_directory = f'{atp_form_group_id}')
         session.commit_transaction()

@@ -1,12 +1,13 @@
+from re import A
 from fastapi import APIRouter, Body, Depends
 from datetime import datetime
-from typing import Annotated, Dict, Any, Callable
-from openpyxl.worksheet import cell_range
-from pymongo.collection import Collection
-from pymongo.mongo_client import MongoClient
+from typing import Annotated, Callable
 from bson import ObjectId
 from dependencies import get_atp_submissions_collection, get_atp_forms_collection, get_blob_handler, get_mongo_client, get_atp_spreadsheet_manager, ATPSpreadsheetManager
 from schemas import atp_submissions as schemas, atp_submissions_responses as responses
+import aiofiles
+from pymongo import AsyncMongoClient
+from pymongo.asynchronous.collection import AsyncCollection
 
 router = APIRouter()
 
@@ -14,25 +15,25 @@ router = APIRouter()
 @router.post("/", response_model = responses.ATPSubmissionCreationResponse)
 async def create_atp_submission(
     atp_submission: Annotated[schemas.ATPTechnicianSubmission, Body()],
-    atp_submissions: Collection = Depends(get_atp_submissions_collection)
+    atp_submissions: AsyncCollection = Depends(get_atp_submissions_collection)
 ):
     atp_submission_data = atp_submission.model_dump()
     atp_submission_data['submittedAt'] = datetime.now().isoformat()
     atp_submission_data['status'] = 'pending'
-    inserted_document = atp_submissions.insert_one(atp_submission_data)
+    inserted_document = await atp_submissions.insert_one(atp_submission_data)
     return {'message': 'Submitted ATP succesfully', 'submissionId': str(inserted_document.inserted_id)}
    
 #Engineer review submission
 @router.put("/{atp_submission_id}", response_model = responses.ATPReviewSubmissionResponse)
 async def update_atp_submission(atp_submission_id: str, 
                                 atp_submission: Annotated[schemas.ATPReviewSubmission, Body()], 
-                                atp_submissions: Collection = Depends(get_atp_submissions_collection),
-                                client: MongoClient = Depends(get_mongo_client),
+                                atp_submissions: AsyncCollection = Depends(get_atp_submissions_collection),
+                                client: AsyncMongoClient = Depends(get_mongo_client),
                                 atp_spreadsheet_manager: ATPSpreadsheetManager = Depends(get_atp_spreadsheet_manager),
                                 blob_handler: Callable = Depends(get_blob_handler)
                                 ):
     
-    with client.start_session() as session:
+    async with client.start_session() as session:
         try:
             # Validate ObjectId format
             object_id = ObjectId(atp_submission_id)
@@ -49,7 +50,7 @@ async def update_atp_submission(atp_submission_id: str,
         atp_review_data['reviewedAt'] = completion_time_isoformat
         
         # Check if the submission exists and update it
-        result = atp_submissions.update_one({'_id': object_id}, {'$set': atp_review_data})
+        result = await atp_submissions.update_one({'_id': object_id}, {'$set': atp_review_data})
         
         if result.matched_count == 0:
             return {'error': 'ATP submission not found', 'submissionId': None}
@@ -57,7 +58,8 @@ async def update_atp_submission(atp_submission_id: str,
         if result.modified_count == 0:
             return {'error': 'ATP submission was not modified', 'submissionId': atp_submission_id}
         
-        spreadsheet_path = blob_handler.download_blob(container_name = 'spreadsheets', blob_path = f'{atp_review_data["formGroupId"]}/active-form/{atp_review_data["formId"]}.xlsx')
+        spreadsheet_path = await blob_handler.download_blob(container_name = 'spreadsheets', blob_path = f'{atp_review_data["formGroupId"]}/active-form/{atp_review_data["formId"]}.xlsx')
+        
         with atp_spreadsheet_manager.register_workbook(spreadsheet_path):
             cell_to_response_mappings = {}
             for response in atp_review_data['technicianResponses']:
@@ -66,19 +68,23 @@ async def update_atp_submission(atp_submission_id: str,
                 cell_to_response_mappings[response['spreadsheetCell']] = response['answer']
             atp_spreadsheet_manager.populate_cells_with_responses(cell_to_response_mappings)
             upload_path = f'{atp_review_data["formGroupId"]}/submissions/{atp_review_data["formId"]}_{completion_time_path_format}.xlsx'
-            with open(spreadsheet_path, 'rb') as file_stream:
-                blob_handler.upload_blob(container_name = 'spreadsheets', blob_path = upload_path, file_stream = file_stream)
+            
+            async with aiofiles.open(spreadsheet_path, 'rb') as file_stream:
+                await blob_handler.upload_blob(container_name = 'spreadsheets', blob_path = upload_path, file_stream = file_stream)
+            
             blob_handler.cleanup_temp_files(spreadsheet_path)
         
     return {'message': 'ATP submission updated successfully', 'submissionId': atp_submission_id}
 
 @router.get("/pending/metadata", response_model = responses.ATPAllPendingSubmissionsMetadata)
 async def get_all_pending_submissions_metadata(
-    atp_submissions: Collection = Depends(get_atp_submissions_collection), 
-    atp_forms: Collection = Depends(get_atp_forms_collection)
+    atp_submissions: AsyncCollection = Depends(get_atp_submissions_collection), 
+    atp_forms: AsyncCollection = Depends(get_atp_forms_collection)
     ):
 
-    pending_submissions = list(atp_submissions.find({'status': 'pending'}))
+    pending_submissions = []
+    async for submission in atp_submissions.find({'status': 'pending'}):
+        pending_submissions.append(submission)
     
     if not pending_submissions:
         return []
@@ -88,20 +94,16 @@ async def get_all_pending_submissions_metadata(
     form_object_ids = [ObjectId(form_id) for form_id in submission_form_ids]
     
     # Get form metadata for all relevant forms
-    atp_forms_cursor = atp_forms.find({'_id': {'$in': form_object_ids}})
+    form_metadata_dict = {}
     
-    if not atp_forms_cursor:
-        return []
-    
-    #Create a dictionary of form metadata for all relevant forms where the key is the form id and the value is the form metadata
-    form_metadata_dict = {
-        str(form['_id']): {
+    async for form in atp_forms.find({'_id': {'$in': form_object_ids}}):
+        form_metadata_dict[str(form['_id'])] = {
             'formTitle': form['metadata']['title'], 
             'formDescription': form['metadata']['description'],
             'formGroupId': form['metadata']['formGroupID']  # Get formGroupId from form template
-        } 
-        for form in atp_forms_cursor
-    }
+        }
+    if not form_metadata_dict:
+        return []
     
     result = []
     for atp_submission in pending_submissions:
@@ -124,11 +126,13 @@ async def get_all_pending_submissions_metadata(
 
 @router.get("/metadata", response_model = responses.ATPAllSubmissionsMetadata)
 async def get_all_atp_submissions_metadata(
-    atp_submissions: Collection = Depends(get_atp_submissions_collection), 
-    atp_forms: Collection = Depends(get_atp_forms_collection)
+    atp_submissions: AsyncCollection = Depends(get_atp_submissions_collection), 
+    atp_forms: AsyncCollection = Depends(get_atp_forms_collection)
     ):
     #TODO: add error handling when a form is submitted but the form template metadata is deleted/not found
-    all_submissions = list(atp_submissions.find())
+    all_submissions = []
+    async for submission in atp_submissions.find():
+        all_submissions.append(submission)
     if not all_submissions:
         return []
     
@@ -137,20 +141,14 @@ async def get_all_atp_submissions_metadata(
     form_object_ids = [ObjectId(form_id) for form_id in submission_form_ids]
     
     # Get form metadata for all relevant forms
-    atp_forms_cursor = atp_forms.find({'_id': {'$in': form_object_ids}})
-    
-    if not atp_forms_cursor:
-        return []
-    
-    #Create a dictionary of form metadata for all relevant forms where the key is the form id and the value is the form metadata dictionary
-    form_metadata_dict = {
-        str(form['_id']): {
+    form_metadata_dict = {}
+    async for form in atp_forms.find({'_id': {'$in': form_object_ids}}):
+        form_metadata_dict[str(form['_id'])] = {
             'formTitle': form['metadata']['title'], 
             'formDescription': form['metadata']['description'],
             'formGroupId': form['metadata'].get('formGroupID', '')  # Get formGroupId from form template
-        } 
-        for form in atp_forms_cursor
-    }
+        }
+   
     
     result = []
     for atp_submission in all_submissions:
@@ -192,12 +190,12 @@ async def get_all_atp_submissions_metadata(
 @router.get("/{atp_submission_id}", response_model = responses.ATPSpecifiedSubmissionResponse)
 async def get_submission(
     atp_submission_id: str, 
-    atp_submissions: Collection = Depends(get_atp_submissions_collection),
+    atp_submissions: AsyncCollection = Depends(get_atp_submissions_collection),
     blob_handler: Callable = Depends(get_blob_handler)
     ):
     query = {'_id': ObjectId(atp_submission_id)}
    
-    atp_submission_document = atp_submissions.find_one(query)
+    atp_submission_document = await atp_submissions.find_one(query)
     if not atp_submission_document:
         return {'error': 'ATP submission not found'}
     

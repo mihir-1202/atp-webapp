@@ -1,32 +1,34 @@
 from dotenv import load_dotenv
 import os
-from azure.storage.blob import BlobServiceClient, BlobSasPermissions, generate_blob_sas
+from azure.storage.blob.aio import BlobServiceClient
+from azure.storage.blob import BlobSasPermissions, generate_blob_sas
 import tempfile
 from azure.core.exceptions import AzureError
 from typing import Annotated, BinaryIO
 from fastapi import File
 from datetime import datetime, timedelta
+import aiofiles
 
 load_dotenv() 
 AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 
 """=====BLOB SERVICE CLIENT====="""
-blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
+blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING, async_only=True)
 
 class BlobHandler:
     @staticmethod
-    def upload_blob(container_name: str, blob_path: str, file_stream: Annotated[BinaryIO, File()]) -> None:
+    async def upload_blob(container_name: str, blob_path: str, file_stream: Annotated[BinaryIO, File()]) -> None:
         try:
             blob_client = blob_service_client.get_blob_client(
                 container=container_name,
                 blob=blob_path
             )
-            blob_client.upload_blob(file_stream, overwrite=True)
+            await blob_client.upload_blob(file_stream, overwrite=True)
         except AzureError as e:
             raise AzureError(f"Failed to upload blob {blob_path} to container {container_name}: {str(e)}")
         
     @staticmethod
-    def download_blob(container_name: str, blob_path: str) -> str:
+    async def download_blob(container_name: str, blob_path: str) -> str:
         try:
             blob_client = blob_service_client.get_blob_client(
                 container=container_name,
@@ -34,22 +36,26 @@ class BlobHandler:
             )
             
             # Verify blob exists
-            if not blob_client.exists():
+            if not await blob_client.exists():
                 raise AzureError(f"Blob {blob_path} not found in container {container_name}")
+            
+            # TODO: rename to download_excel_blob since it is only used for excel blobs (images arent downloaded, they only need a url)
+            with tempfile.NamedTemporaryFile(delete = False, mode = 'wb', suffix='.xlsx') as tmp_file:
+                tmp_path = tmp_file.name
                 
-            with tempfile.NamedTemporaryFile(delete=False, mode='wb', suffix='.xlsx') as temp_file:
+            async with aiofiles.open(tmp_path, 'wb') as temp_file:
                 #returns a StorageStreamDownloader object.
-                blob_stream = blob_client.download_blob()
+                blob_stream = await blob_client.download_blob()
                 
                 #.chunks() returns a generator
-                for chunk in blob_stream.chunks():
-                    temp_file.write(chunk)
+                async for chunk in blob_stream.chunks():
+                    await temp_file.write(chunk)
                 
                 #context manager flushes and closes the file automatically when the context is exited                   
         except AzureError as e:
             raise IOError(f"Failed to download blob {blob_path}: {str(e)}")
         
-        return temp_file.name
+        return tmp_path
 
     @staticmethod
     def cleanup_temp_files(*file_paths: str) -> None:
@@ -61,22 +67,23 @@ class BlobHandler:
                 raise IOError(f"Failed to cleanup temp file {file_path}: {str(e)}")
             
     @staticmethod
-    def move_blob(from_container_name: str, blob_path: str, to_container_name: str, to_blob_path: str) -> None:
+    async def move_blob(from_container_name: str, blob_path: str, to_container_name: str, to_blob_path: str) -> None:
         try:
             blob_client = blob_service_client.get_blob_client(
                 container = from_container_name,
                 blob = blob_path
             )
-            tempfile_path = BlobHandler.download_blob(from_container_name, blob_path)
-            with open(tempfile_path, 'rb') as temp_file:
-                BlobHandler.upload_blob(to_container_name, to_blob_path, temp_file)
-            BlobHandler.cleanup_temp_files(tempfile_path)
-            blob_client.delete_blob()
+            tempfile_path = await BlobHandler.download_blob(from_container_name, blob_path)
+            
+            async with aiofiles.open(tempfile_path, 'rb') as temp_file:
+                await BlobHandler.upload_blob(to_container_name, to_blob_path, temp_file)
+            await BlobHandler.cleanup_temp_files(tempfile_path)
+            await blob_client.delete_blob()
         except AzureError as e:
             raise AzureError(f"Couldn't move blob {blob_path} from container {from_container_name} to container {to_container_name}: {str(e)}")
 
     @staticmethod
-    def delete_blobs(container_name: str, blob_path = None, virtual_directory = None) -> None:
+    async def delete_blobs(container_name: str, blob_path = None, virtual_directory = None) -> None:
         print(f"delete_blobs called with: container_name={container_name}, blob_path={blob_path}, virtual_directory={virtual_directory}")
         print(f"blob_path type: {type(blob_path)}, virtual_directory type: {type(virtual_directory)}")
         
@@ -87,14 +94,14 @@ class BlobHandler:
             if virtual_directory:
                 print(f"Deleting virtual directory: {virtual_directory}")
                 blob_container_client = blob_service_client.get_container_client(container_name)
-                blobs = blob_container_client.list_blobs(name_starts_with = virtual_directory)
-                for blob in blobs:
+                blobs = await blob_container_client.list_blobs(name_starts_with = virtual_directory)
+                async for blob in blobs:
                     print(f"  Deleting blob: {blob.name}")
                     blob_client = blob_service_client.get_blob_client(
                         container=container_name,
                         blob=blob.name
                     )
-                    blob_client.delete_blob()
+                    await blob_client.delete_blob()
             
             elif blob_path:
                 print(f"Deleting specific blob: {blob_path}")
@@ -102,7 +109,7 @@ class BlobHandler:
                     container = container_name,
                     blob = blob_path
                 )
-                blob_client.delete_blob()
+                await blob_client.delete_blob()
                 
         except AzureError as e:
             raise AzureError(f"Failed to delete blob {blob_path} from container {container_name}: {str(e)}")

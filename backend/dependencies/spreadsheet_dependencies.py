@@ -10,6 +10,7 @@ class ATPSpreadsheetManager:
          
     def register_workbook(self, excel_filepath):
         try:
+            print('\n\n\n\n\n', excel_filepath, '\n\n\n\n\n')
             self.excel_filepath = excel_filepath
             self.wb = xl.load_workbook(excel_filepath)
             self.ws = self.wb.active
