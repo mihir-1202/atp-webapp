@@ -77,7 +77,7 @@ class BlobHandler:
             
             async with aiofiles.open(tempfile_path, 'rb') as temp_file:
                 await BlobHandler.upload_blob(to_container_name, to_blob_path, temp_file)
-            await BlobHandler.cleanup_temp_files(tempfile_path)
+            BlobHandler.cleanup_temp_files(tempfile_path)
             await blob_client.delete_blob()
         except AzureError as e:
             raise AzureError(f"Couldn't move blob {blob_path} from container {from_container_name} to container {to_container_name}: {str(e)}")
@@ -94,7 +94,7 @@ class BlobHandler:
             if virtual_directory:
                 print(f"Deleting virtual directory: {virtual_directory}")
                 blob_container_client = blob_service_client.get_container_client(container_name)
-                blobs = await blob_container_client.list_blobs(name_starts_with = virtual_directory)
+                blobs = blob_container_client.list_blobs(name_starts_with = virtual_directory)
                 async for blob in blobs:
                     print(f"  Deleting blob: {blob.name}")
                     blob_client = blob_service_client.get_blob_client(

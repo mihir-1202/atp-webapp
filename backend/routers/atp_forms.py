@@ -110,7 +110,7 @@ async def create_form_template(
                 
             
             # Start transaction
-            session.start_transaction()
+            await session.start_transaction()
             
             # Insert into MongoDB
             inserted_document = await atp_forms.insert_one(new_form_template_data, session=session)
@@ -119,13 +119,13 @@ async def create_form_template(
             # Upload excel spreadsheet to Azure Blob Storage
             container_name, blob_path = 'spreadsheets', f'{form_group_id}/active-form/{new_form_id}.xlsx'
             await blob_handler.upload_blob(container_name, blob_path, spreadsheetTemplate.file)
-            session.commit_transaction()
+            await session.commit_transaction()
             
             return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
             
         except Exception as e:
             # Abort transaction if anything fails
-            session.abort_transaction()
+            await session.abort_transaction()
             raise e
 
 
@@ -175,7 +175,7 @@ async def update_active_form_template(
             query = {'metadata.formGroupID': atp_form_group_id, 'metadata.status': 'active'}
             old_form = await atp_forms.find_one(query)
             if not old_form:
-                return {"error": "ATP form group not found"}
+                return {"message": "ATP form group not found"}
             old_form_id = old_form['_id']
             
             # Update metadata with server-generated fields
@@ -304,7 +304,7 @@ async def update_active_form_template(
             ###################################################################################################################
 
             
-            session.start_transaction()
+            await session.start_transaction()
             
             # Make the old template inactive
             await atp_forms.update_one(query, {'$set': {'metadata.status': 'inactive'}}, session=session)
@@ -340,14 +340,17 @@ async def update_active_form_template(
                 )
             
             # Commit the transaction
-            session.commit_transaction()
-                
+            print('committing transaction')
+            await session.commit_transaction()
+                   
         except Exception as e:
             # Rollback the transaction on error
-            session.abort_transaction()
-            return {"error": str(e)}
+            print('error: ', e)
+            print('aborting transaction')
+            await session.abort_transaction()
+            return {"message": f"Error updating ATP form template: {str(e)}"}
         
-    return {"message": "ATP form template updated successfully"}
+        return {"message": "ATP form template updated successfully"}
 
 @router.get("/active", response_model = responses.ATPAllActiveForms)
 async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_forms_collection), blob_handler: Callable = Depends(get_blob_handler)):
@@ -388,7 +391,7 @@ async def get_active_form_template(atp_form_group_id: Annotated[str, Path(descri
     atp_form_document = await atp_forms.find_one(query)
     
     if not atp_form_document:
-        return {"error": "ATP form group not found"}
+        return {"message": "ATP form group not found"}
     
     atp_form_document['_id'] = str(atp_form_document['_id'])
     
@@ -425,7 +428,7 @@ async def get_form_template(
     query = {'_id': ObjectId(atp_form_id)}
     atp_form_document = await atp_forms.find_one(query)
     if not atp_form_document:
-        return {"error": "ATP form not found"}
+        return {"message": "ATP form not found"}
         #TODO: add error handling if an atp form is not found
     atp_form_document['_id'] = str(atp_form_document['_id'])  # Convert ObjectId to string
     
@@ -468,24 +471,24 @@ async def delete_form_template(
     Delete an ATP form.
     """
     async with client.start_session() as session:
-        session.start_transaction()
+        await session.start_transaction()
         try:
             # Validate ObjectId format
             object_id = ObjectId(atp_form_group_id)
         except Exception:
-            return {"error": "Invalid ATP form ID format"}
+            return {"message": "Invalid ATP form ID format"}
         
         query = {'metadata.formGroupID': atp_form_group_id}
         result = await atp_forms.delete_many(query)
         
         if result.deleted_count == 0:
-            return {"error": "ATP form not found"}
+            return {"message": "ATP form not found"}
         
         #delete all submissions associated with the ATP form
         await atp_submissions.delete_many({'formGroupId': atp_form_group_id})
-        blob_handler.delete_blobs('spreadsheets', virtual_directory = f'{atp_form_group_id}')
-        blob_handler.delete_blobs('images', virtual_directory = f'{atp_form_group_id}')
-        session.commit_transaction()
+        await blob_handler.delete_blobs('spreadsheets', virtual_directory = f'{atp_form_group_id}')
+        await blob_handler.delete_blobs('images', virtual_directory = f'{atp_form_group_id}')
+        await session.commit_transaction()
     
     return {"message": "ATP form and corresponding submissions deleted successfully"}
 
