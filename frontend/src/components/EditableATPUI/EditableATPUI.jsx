@@ -221,12 +221,13 @@ export default function EditableATPUI()
             //JS arrays are objects under the hood so they can have missing keys -> even though technicianResponses will be an array instead of an object, for in will skip over the missing keys
             for (let questionUUID in data.technicianResponses) {
                 const question = getQuestionMetadataByUUID("technician", questionUUID);
-                const {answerFormat, spreadsheetCell, index} = question;
+                const {answerFormat, spreadsheetCell} = question;
                 const answer = data.technicianResponses[questionUUID].response;
                 const lastEdited = data.technicianResponses[questionUUID].lastEdited;
                 
+                
                 // Only add if we found the question and answer exists
-                if (answerFormat && spreadsheetCell && index && answer !== undefined && answer !== '') {
+                if (answerFormat && spreadsheetCell && answer !== undefined && answer !== '') {
                     formattedTechnicianResponses.push({
                         questionUUID: questionUUID,
                         spreadsheetCell: spreadsheetCell,
