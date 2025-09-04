@@ -32,12 +32,12 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
     fields represents the current state of the array
     append, remove, and insert are used to manipulate the array
     */
-    const {fields: technicianItems, append: appendTechnicianItem, remove: removeTechnicianItem, insert: insertTechnicianItem} = useFieldArray({
+    const {fields: technicianItems, append: appendTechnicianItem, remove: removeTechnicianItem, insert: insertTechnicianItem, move: moveTechnicianItem} = useFieldArray({
         control,
         name: "sections.technician.items"
     });
 
-    const {fields: engineerItems, append: appendEngineerItem, remove: removeEngineerItem, insert: insertEngineerItem} = useFieldArray({
+    const {fields: engineerItems, append: appendEngineerItem, remove: removeEngineerItem, insert: insertEngineerItem, move: moveEngineerItem} = useFieldArray({
         control,
         name: "sections.engineer.items"
     });
@@ -79,7 +79,9 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
                         <span>{location === "create-atp" ? "Import ATP Excel Spreadsheet Template" : "Replace ATP Excel Spreadsheet Template"}</span>
                     </label>
                     
-                    <FormMetadata register = {register}/>
+                    <FormMetadata 
+                        register = {register}
+                    />
 
                     <hr className="divider" />
 
@@ -94,6 +96,7 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
                         setLastClicked = {setLastClicked}
                         resetField = {resetField}
                         setValue = {setValue}
+                        moveItem = {moveTechnicianItem}
                     />
 
                     <hr className="divider" />
@@ -109,6 +112,7 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
                         setLastClicked = {setLastClicked}
                         resetField = {resetField}
                         setValue = {setValue}
+                        moveItem = {moveEngineerItem}
                     />
 
                     <hr className="divider" />

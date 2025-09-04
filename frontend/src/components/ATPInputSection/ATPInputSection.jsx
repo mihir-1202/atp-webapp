@@ -27,14 +27,12 @@ export default function ATPInputSection({register, role, showFormActions, atpTem
         return item.type === 'heading' ? 
         <HeadingItem 
             key = {item.uuid} 
-            index = {item.index}
             headingText = {item.content}
             imageUrl = {item.imageUrl || null} 
         />
         :
         <FieldItem 
             key = {item.uuid} 
-            index = {item.index}
             questionUUID = {item.uuid} 
             questionText = {item.question} 
             answerFormat = {item.answerFormat} 

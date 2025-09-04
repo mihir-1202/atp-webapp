@@ -18,7 +18,6 @@ export default function CreateATPPage()
     const defaultTechnicianItems = [
         {
             uuid: crypto.randomUUID(),
-            index: 0,
             type: "heading",
             content: "This is a technician heading",
             image: null
@@ -26,7 +25,6 @@ export default function CreateATPPage()
 
         {
             uuid: crypto.randomUUID(),
-            index: 1,
             type: "field",
             question: "This is a technician question",
             answerFormat: "text",
@@ -38,7 +36,6 @@ export default function CreateATPPage()
     const defaultEngineerItems = [
         {
             uuid: crypto.randomUUID(),
-            index: 0,
             type: "heading",
             content: "This is not a engineer heading",
             image: null
@@ -46,7 +43,6 @@ export default function CreateATPPage()
 
         {
             uuid: crypto.randomUUID(),
-            index: 1,
             type: "field",
             question: "This is a engineer question",
             answerFormat: "text",

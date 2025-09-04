@@ -3,7 +3,7 @@ import FormHeadingBuilder from '../FormHeadingBuilder/FormHeadingBuilder';
 import FormFieldBuilder from '../FormFieldBuilder/FormFieldBuilder';
 import styles from './RoleFormSection.module.css';
 
-export default function RoleFormSection({role, items, appendItem, removeItem, insertItem, register, lastClicked, setLastClicked, resetField, setValue})
+export default function RoleFormSection({role, items, appendItem, removeItem, insertItem, register, lastClicked, setLastClicked, resetField, setValue, moveItem})
 {
     const formItemsJSX = items.map((item, index) => 
         {
@@ -11,22 +11,22 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
             return (item.type === "heading") 
             ? <FormHeadingBuilder 
                 key = {item.uuid} 
-                index = {index} 
                 role = {role} 
                 removeItem = {removeItem} 
                 register = {register} 
                 id = {item.uuid} 
                 defaultValue = {item.content || ""} 
                 lastClicked = {lastClicked} 
-                setLastClicked = {setLastClicked} r
+                setLastClicked = {setLastClicked} 
                 esetField = {resetField} 
                 setValue = {setValue} 
+                index = {index}
                 imageUrl = {item.imageUrl || null} 
                 imageBlobPath = {item.imageBlobPath || null} 
+                moveItem = {moveItem}
             /> 
             : <FormFieldBuilder 
                 key = {item.uuid} 
-                index = {index} 
                 role = {role} 
                 removeItem = {removeItem} 
                 register = {register} 
@@ -36,8 +36,10 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
                 setLastClicked = {setLastClicked} 
                 resetField = {resetField} 
                 setValue = {setValue} 
+                index = {index}
                 imageUrl = {item.imageUrl || null} 
                 imageBlobPath = {item.imageBlobPath || null} 
+                moveItem = {moveItem}
             />
         }
     )
@@ -50,7 +52,6 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
             type === "heading" ? 
             appendItem({
                 uuid: crypto.randomUUID(),
-                index: items.length,
                 type: type,
                 content: "",
                 hasImage: false,
@@ -59,7 +60,6 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
             :
             appendItem({
                 uuid: crypto.randomUUID(),
-                index: items.length,
                 type: type,
                 question: "",
                 answerFormat: "text",
@@ -69,12 +69,12 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
             })
         }
 
+        //insert the new item at the index after the last clicked item
         else
         {
             type === "heading" ? 
             insertItem(lastClicked.index + 1, {
                 uuid: crypto.randomUUID(),
-                index: lastClicked.index,
                 type: type,
                 content: "",
                 hasImage: false
@@ -82,7 +82,6 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
             :
             insertItem(lastClicked.index + 1, {
                 uuid: crypto.randomUUID(),
-                index: lastClicked.index,
                 type: type,
                 question: "",
                 answerFormat: "text",

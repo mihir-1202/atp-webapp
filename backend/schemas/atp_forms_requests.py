@@ -7,14 +7,12 @@ from .atp_forms_common import Metadata
 
 class RequestHeadingItem(BaseModel):
     uuid: Annotated[str, Field(min_length = 1, description = "The UUID of the heading item", example = "123e4567-e89b-12d3-a456-426614174000")]
-    index: Annotated[int, Field(ge = 0, description = "The index of the heading item", example = 0)]
     type: Annotated[Literal['heading'], Field(description = "The type of the heading item", example = "heading")] #type can only be a literal string 'heading'
     content: Annotated[str, Field(min_length = 1, description = "The content of the heading item", example = "This is a heading")]
     hasImage: Annotated[Optional[bool], Field(default=None, description = "Whether the heading item has an image", example = True)]
 
 class RequestFieldItem(BaseModel):
     uuid: Annotated[str, Field(min_length = 1, description = "The UUID of the field item", example = "123e4567-e89b-12d3-a456-426614174000")]
-    index: Annotated[int, Field(ge = 0, description = "The index of the field item", example = 0)]
     type: Annotated[Literal['field'], Field(description = "The type of the field item", example = "field")]
     question: Annotated[str, Field(min_length = 1, description = "The question of the field item", example = "What is the motor speed?")]
     answerFormat: Annotated[str, Field(min_length = 1, description = "The answer format of the field item", example = "number")]
@@ -32,7 +30,7 @@ FastAPI tries to validate the input against each model in the union one by one, 
 RequestItem = Annotated[Union[RequestHeadingItem, RequestFieldItem], Field(discriminator = "type")]
 
 class RequestSection(BaseModel):
-    items: Annotated[list[RequestItem], Field(min_length = 1, example = [{"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 0, "type": "heading", "content": "This is a heading"}, {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 1, "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1"}])]
+    items: Annotated[list[RequestItem], Field(min_length = 1, example = [{"uuid": "123e4567-e89b-12d3-a456-426614174000", "type": "heading", "content": "This is a heading"}, {"uuid": "123e4567-e89b-12d3-a456-426614174000", "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1"}])]
     
     #Whatever returns from the root_validator becomes the "final" set of field values used to instantiate the model
     @model_validator(mode = "after")
@@ -55,14 +53,14 @@ class RequestFormTemplate(BaseModel):
         example = {
             "technician": {
                 "items": [
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 0, "type": "heading", "content": "This is a heading", "image": "images/container/path/image.png", "hasImage": True},
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "type": "heading", "content": "This is a heading", "image": "images/container/path/image.png", "hasImage": True},
                     {"uuid": "123e4567-e89b-426614174000", "index": 1, "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1", "image": "images/container/path/image.png", "hasImage": True}
                 ]
             },
             "engineer": {
                 "items": [
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "index": 0, "type": "heading", "content": "Another heading", "image": "images/container/path/image.png", "hasImage": True},
-                    {"uuid": "123e4567-e89b-426614174000", "index": 1, "type": "field", "question": "What is the temperature?", "answerFormat": "number", "spreadsheetCell": "B1", "image": "images/container/path/image.png", "hasImage": True}
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "type": "heading", "content": "Another heading", "image": "images/container/path/image.png", "hasImage": True},
+                    {"uuid": "123e4567-e89b-426614174000", "type": "field", "question": "What is the temperature?", "answerFormat": "number", "spreadsheetCell": "B1", "image": "images/container/path/image.png", "hasImage": True}
                 ]
             }
         }

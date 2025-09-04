@@ -5,7 +5,6 @@ from .atp_forms_common import Metadata
 # Response-specific item models that include imageUrl for display
 class ResponseHeadingItem(BaseModel):
     uuid: Annotated[str, Field(description="The UUID of the heading item", example="123e4567-e89b-12d3-a456-426614174000")]
-    index: Annotated[int, Field(description="The index of the heading item", example=0)]
     type: Annotated[Literal['heading'], Field(description="The type of the heading item", example="heading")]
     content: Annotated[str, Field(description="The content of the heading item", example="This is a heading")]
     hasImage: Annotated[bool, Field(description="Whether the heading item has an image", example=True)]
@@ -14,8 +13,7 @@ class ResponseHeadingItem(BaseModel):
     
 
 class ResponseFieldItem(BaseModel):
-    uuid: Annotated[str, Field(description="The UUID of the field item", example="123e4567-e89b-12d3-a456-426614174000")]
-    index: Annotated[int, Field(description="The index of the field item", example=0)]
+    uuid: Annotated[str, Field(description="The UUID of the field item", example="123e4567-e89b-12d3-a456-426614174000")]    
     type: Annotated[Literal['field'], Field(description="The type of the field item", example="field")]
     question: Annotated[str, Field(description="The question of the field item", example="What is the motor speed?")]
     answerFormat: Annotated[str, Field(description="The answer format of the field item", example="number")]
@@ -66,7 +64,6 @@ class ATPSpecifiedForm(BaseModel):
                                 "items": [
                                     {
                                         "uuid": "fd6932ff-398f-4b6c-b9c7-1c60af17a088",
-                                        "index": 0,
                                         "type": "field",
                                         "question": "hello world",
                                         "answerFormat": "textarea",
@@ -81,7 +78,6 @@ class ATPSpecifiedForm(BaseModel):
                                 "items": [
                                     {
                                         "uuid": "15150c1d-f532-4982-a5a4-e9d6395e2697",
-                                        "index": 0,
                                         "type": "heading",
                                         "content": "This is not a engineer heading",
                                         "imageBlobPath": "images/container/path/image.png",
@@ -90,7 +86,6 @@ class ATPSpecifiedForm(BaseModel):
                                     },
                                     {
                                         "uuid": "11056fe7-6551-4bef-abe8-717d515db8be",
-                                        "index": 1,
                                         "type": "field",
                                         "question": "This is a engineer question",
                                         "answerFormat": "text",
@@ -126,7 +121,6 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                              "items": [
                                                  {
                                                      "uuid": "1d220efe-2c00-4b27-8209-b453fa743515",
-                                                     "index": 0,
                                                      "type": "heading",
                                                      "content": "This is a technician heading",
                                                      "imageBlobPath": "images/container/path/image.png",
@@ -135,7 +129,6 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                  },
                                                  {
                                                      "uuid": "57c55c49-57c4-4a6a-bc25-f0ae838916d5",
-                                                     "index": 1,
                                                      "type": "field",
                                                      "question": "This is a technician question",
                                                      "answerFormat": "text",
@@ -150,7 +143,6 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                              "items": [
                                                  {
                                                      "uuid": "e1e6bd9a-3803-4022-aa47-8c8196655b07",
-                                                     "index": 0,
                                                      "type": "heading",
                                                      "content": "This is not a engineer heading",
                                                      "image": "images/container/path/image.png",
@@ -159,7 +151,6 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                  },
                                                  {
                                                      "uuid": "3a8a2312-bce3-4479-9ff0-ce2b623632cc",
-                                                     "index": 1,
                                                      "type": "field",
                                                      "question": "This is a engineer question",
                                                      "answerFormat": "text",
@@ -189,7 +180,6 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                              "items": [
                                                  {
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174002",
-                                                     "index": 0,
                                                      "type": "heading",
                                                      "content": "Another heading",
                                                      "image": "images/container/path/image.png",
@@ -198,7 +188,6 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                  },
                                                  {
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174003",
-                                                     "index": 1,
                                                      "type": "field",
                                                      "question": "What is the temperature?",
                                                      "answerFormat": "number",
@@ -213,7 +202,6 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                              "items": [
                                                  {
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174000",
-                                                     "index": 0,
                                                      "type": "heading",
                                                      "content": "This is a heading",
                                                      "image": "images/container/path/image.png",
@@ -222,7 +210,6 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                  },
                                                  {
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174001",
-                                                     "index": 1,
                                                      "type": "field",
                                                      "question": "What is the motor speed?",
                                                      "answerFormat": "number",

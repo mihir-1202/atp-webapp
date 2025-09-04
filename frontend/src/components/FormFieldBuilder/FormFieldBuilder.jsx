@@ -2,17 +2,33 @@ import React from 'react';
 import styles from './FormFieldBuilder.module.css';
 import ImageInput from '../ImageInput';
 
-export default function FormFieldBuilder({index, role, id, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, imageUrl = null, imageBlobPath = null})
+export default function FormFieldBuilder({index, role, id, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, moveItem, imageUrl = null, imageBlobPath = null})
 {
     function handleClick()
     {
         setLastClicked({index: index, role: role});
     }
+
+    function handleMoveUp()
+    {
+        e.stopPropagation();
+        moveItem(index, index - 1);
+    }
+
+    function handleMoveDown()
+    {
+        e.stopPropagation();
+        moveItem(index, index + 1);
+    }
+
+
     
     return(
         <li className={styles.fieldItem} onClick = {handleClick}>
             <div className={styles.itemBoxHeader}>
                 <h3>Field</h3>
+                <button type = "button" onClick = {handleMoveUp}>↑</button>
+                <button type = "button" onClick = {handleMoveDown}>↓</button>
                 <button className={styles.removeItemButton} type="button" onClick={() => removeItem(index)}>−</button>
             </div>
             <div className={styles.fieldInputsContainer}>

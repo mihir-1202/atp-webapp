@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import styles from './FormHeadingBuilder.module.css';
 import ImageInput from '../ImageInput';
 
-export default function FormHeadingBuilder({index, role, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, imageUrl = null, imageBlobPath = null})
+export default function FormHeadingBuilder({index, role, removeItem, defaultValue = "", register, setLastClicked, resetField, setValue, moveItem, imageUrl = null, imageBlobPath = null})
 {
     
 
@@ -12,12 +12,24 @@ export default function FormHeadingBuilder({index, role, removeItem, defaultValu
         setLastClicked({index: index, role: role});
     }
 
+    function handleMoveUp()
+    {
+        moveItem(index, index - 1);
+    }
+
+    function handleMoveDown()
+    {
+        moveItem(index, index + 1);
+    }
+
 
 
     return(
         <li className={styles.headingItem} data-role={role} onClick = {handleClick}>
             <div className={styles.itemBoxHeader}>
                 <h3>Heading</h3>
+                <button type = "button" onClick = {handleMoveUp}>↑</button>
+                <button type = "button" onClick = {handleMoveDown}>↓</button>
                 <button className={styles.removeItemButton} type="button" onClick = {() => removeItem(index)}>−</button>
             </div>
 
