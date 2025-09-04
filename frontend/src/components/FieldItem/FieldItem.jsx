@@ -39,7 +39,6 @@ export default function FieldItem({questionUUID, questionText, answerFormat, reg
         <div className={styles.fieldItem} key = {questionUUID}>
             <label className={styles.fieldLabel}>
                 {questionText}
-                
             </label>
 
             {imageUrl && (

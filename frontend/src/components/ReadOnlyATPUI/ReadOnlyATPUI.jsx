@@ -12,16 +12,16 @@ import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner'
 //TODO: avoid repeated logic in this page (ReviewATPPage) and FillATPPage
 export default function ReadOnlyATPUI()
 {
+    //don't need to set default values for any fields because we aren't submitting it to the backend, we are only reading it
+    const defaultValues = {}
+    const {register, reset, setValue} = useForm(defaultValues);
+    
     const {atpFormId, prevSubmissionId} = useParams();
     const [atpTemplateData, setATPTemplateData] = React.useState(null);
-
     const [submissionData, setSubmissionData] = React.useState(null);
     const [completedSpreadsheetURL, setCompletedSpreadsheetURL] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(true);
 
-    //don't need to set default values for any fields because we aren't submitting it to the backend, we are only reading it
-    const defaultValues = {}
-    const {register, handleSubmit, reset, setValue} = useForm(defaultValues);
 
     React.useEffect(() => {loadAllData();}, [atpFormId, prevSubmissionId]);
 

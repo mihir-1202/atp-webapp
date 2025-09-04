@@ -194,7 +194,7 @@ export default function EditableATPUI()
             submittedBy: "technician@upwingenergy.com",
             technicianResponses: [
                 {
-                    questionIndex: 0,                  
+                    questionUUID: "123e4567-e89b-12d3-a456-426614174000",                  
                     answer: "Motor tested and operational",
                     answerFormat: "text",
                     spreadsheetCell: "A1"
@@ -202,7 +202,7 @@ export default function EditableATPUI()
             ],
             engineerResponses: [
                 {
-                    questionIndex: 1,
+                    questionUUID: "54321e4567-d43b-14e3-b743-346432704654",
                     answer: "2024-01-15",
                     answerFormat: "date",
                     spreadsheetCell: "B1"
@@ -229,7 +229,6 @@ export default function EditableATPUI()
                 if (answerFormat && spreadsheetCell && index && answer !== undefined && answer !== '') {
                     formattedTechnicianResponses.push({
                         questionUUID: questionUUID,
-                        questionIndex: typeof index === 'number' ? index : parseInt(index),
                         spreadsheetCell: spreadsheetCell,
                         answer: answer,
                         answerFormat: answerFormat,
@@ -254,7 +253,6 @@ export default function EditableATPUI()
                 const lastEdited = data.engineerResponses[questionUUID].lastEdited;
                 formattedEngineerResponses.push({
                     questionUUID: questionUUID,
-                    questionIndex: question.index, 
                     spreadsheetCell: spreadsheetCell, 
                     answer: answer, 
                     answerFormat: answerFormat,
