@@ -4,33 +4,42 @@ function getPlaceholder(answerFormat)
 {
     if(answerFormat === 'text' || answerFormat === 'textarea')
     {
-        return 'Text';
+        return 'example: Sample Text';
     }
     else if(answerFormat === 'number')
     {
-        return 'Number';
+        return 'example: 1.0652';
     }
     else if(answerFormat === 'date')
     {
-        return 'Date';
+        return 'example: 2025-01-01';
     }
 }
 
-export default function FieldItem({questionUUID, questionText, answerFormat, register, role, readOnly = false, defaultValue = "", imageUrl = null })
+export default function FieldItem({questionUUID, questionText, answerFormat, register, role, readOnly = false, imageUrl = null, setValue})
 {
     // Subtle styling for empty readonly fields to make them visible
-    const emptyReadonlyStyle = readOnly && !defaultValue ? {
+    const emptyReadonlyStyle = readOnly ? {
         backgroundColor: '#f8f9fa',
         border: '1px dashed #dee2e6',
         color: '#6c757d'
     } : {};
+
+    const {onChange: defaultOnChange, ...registerWithoutDefaultOnChange} = register(`${role}Responses.${questionUUID}.response`);
+
+    function handleChange(e)
+    {
+        console.log('Setting lastEdited to:', new Date().toISOString());
+        setValue(`${role}Responses.${questionUUID}.lastEdited`, new Date().toISOString());
+        defaultOnChange(e);
+    }
 
     //TODO: implement the logic to display the correct type of input field
     return(
         <div className={styles.fieldItem} key = {questionUUID}>
             <label className={styles.fieldLabel}>
                 {questionText}
-                {readOnly && !defaultValue && <span style={{color: '#6c757d', fontSize: '0.9em'}}> (No response)</span>}
+                
             </label>
 
             {imageUrl && (
@@ -47,19 +56,19 @@ export default function FieldItem({questionUUID, questionText, answerFormat, reg
                     type={answerFormat} 
                     className={styles.fieldInput} 
                     style={{...emptyReadonlyStyle}}
-                    placeholder={readOnly && !defaultValue ? `No ${role} response yet` : getPlaceholder(answerFormat)} 
-                    defaultValue={defaultValue} 
+                    placeholder={readOnly ? `No ${role} response yet` : getPlaceholder(answerFormat)} 
                     required 
-                    {...register(`${role}Responses.${questionUUID}`)} 
+                    {...registerWithoutDefaultOnChange} 
+                    onChange = {handleChange}
                     readOnly={readOnly} 
                 />
                 :
                 <textarea 
                     className={styles.fieldInput} 
                     style={{...emptyReadonlyStyle}}
-                    placeholder={readOnly && !defaultValue ? `No ${role} response yet` : getPlaceholder(answerFormat)} 
-                    defaultValue={defaultValue} 
-                    required {...register(`${role}Responses.${questionUUID}`)} 
+                    placeholder={readOnly ? `No ${role} response yet` : getPlaceholder(answerFormat)} 
+                    required {...registerWithoutDefaultOnChange} 
+                    onChange = {handleChange}
                     readOnly={readOnly}
                 />
             }

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useRef} from 'react';
 import {useParams, useNavigate} from 'react-router-dom'
 import {useForm} from 'react-hook-form'
 import {useLocation} from 'react-router-dom'
@@ -17,6 +17,7 @@ export default function EditableATPUI()
     const navigate = useNavigate();
     const location = useLocation().pathname.split('/')[1];
     const {atpFormGroupId, prevSubmissionId} = useParams();
+    const startTime = useRef(new Date().toISOString());
 
 
     let defaultValues;
@@ -34,7 +35,7 @@ export default function EditableATPUI()
             reviewedBy: 'engineer@upwingenergy.com'}};
     
     
-    const {register, handleSubmit, reset} = useForm(defaultValues);
+    const {register, handleSubmit, reset, setValue} = useForm(defaultValues);
 
     const [atpTemplateData, setATPTemplateData] = React.useState(null);
     const [submissionData, setSubmissionData] = React.useState(null);
@@ -50,13 +51,29 @@ export default function EditableATPUI()
     React.useEffect(() => {
         if (atpTemplateData && location === 'review-atp' && prevSubmissionId && submissionData) {
             console.log('resetting form with template data');
+            
+            // Transform technicianResponses to the format that the form works with (see onSubmit function for more details)
+            const technicianResponsesFormatted = {};
+            if (submissionData.technicianResponses) {
+                submissionData.technicianResponses.forEach(response => {
+                    technicianResponsesFormatted[response.questionUUID] = {
+                        response: response.answer,
+                        lastEdited: response.lastEdited
+                    };
+                });
+            }
+            
+            //reset the default form values when the data from the api is ready
             reset({
                 formGroupId: atpFormGroupId, 
                 formId: atpTemplateData._id,
+                engineerStartTime: startTime.current,
+                technicianStartTime: submissionData.technicianStartTime,
                 reviewedBy: 'engineer@upwingenergy.com', 
                 submittedBy: submissionData.submittedBy, 
                 submittedAt: submissionData.submittedAt, 
-                submissionId: prevSubmissionId
+                submissionId: prevSubmissionId,
+                technicianResponses: technicianResponsesFormatted
             }); 
         }
     }, [atpTemplateData, location, prevSubmissionId, submissionData]);
@@ -78,6 +95,7 @@ export default function EditableATPUI()
                 reset(
                     {formGroupId: atpFormGroupId, 
                     formId: data._id,
+                    engineerStartTime: startTime.current,
                     reviewedBy: 'engineer@upwingenergy.com' //populate reviewedBy field with the current engineer logged in to prepare for submission
                     }); 
             }
@@ -87,6 +105,7 @@ export default function EditableATPUI()
                 reset(
                     {formGroupId: atpFormGroupId, 
                     formId: data._id,
+                    technicianStartTime: startTime.current,
                     submittedBy: 'technician@upwingenergy.com', //populate submittedBy field with the current technician logged in to prepare for submission
                     });
             }
@@ -162,10 +181,10 @@ export default function EditableATPUI()
             formGroupId: "68a354881d8bf3c326340621",
             submittedBy: "technician@upwingenergy.com", 
             technicianResponses: {
-                "question1_uuid": "Motor tested and operational",                       
+                "question1_uuid": {response: "Motor tested and operational", lastEdited: "2024-01-15T10:30:00Z"},                       
             },
             engineerResponses: {     
-                "question4_uuid": "2024-01-15"                       
+                "question4_uuid": {response: "2024-01-15", lastEdited: "2024-01-15T10:30:00Z"}                       
             }
         }
         
@@ -192,7 +211,7 @@ export default function EditableATPUI()
         }
         */
 
-        //console.log('RAW ENGINEER FORM DATA (before transformation):');
+        console.log('RAW FORM DATA (before transformation):', data);
         //console.log(data);
 
         
@@ -203,17 +222,19 @@ export default function EditableATPUI()
             for (let questionUUID in data.technicianResponses) {
                 const question = getQuestionMetadataByUUID("technician", questionUUID);
                 const {answerFormat, spreadsheetCell, index} = question;
-                const answer = data.technicianResponses[questionUUID];
+                const answer = data.technicianResponses[questionUUID].response;
+                const lastEdited = data.technicianResponses[questionUUID].lastEdited;
                 
                 // Only add if we found the question and answer exists
                 if (answerFormat && spreadsheetCell && index && answer !== undefined && answer !== '') {
-                                    formattedTechnicianResponses.push({
-                    questionUUID: questionUUID,
-                    questionIndex: typeof index === 'number' ? index : parseInt(index),
-                    spreadsheetCell: spreadsheetCell,
-                    answer: answer,
-                    answerFormat: answerFormat
-                });
+                    formattedTechnicianResponses.push({
+                        questionUUID: questionUUID,
+                        questionIndex: typeof index === 'number' ? index : parseInt(index),
+                        spreadsheetCell: spreadsheetCell,
+                        answer: answer,
+                        answerFormat: answerFormat,
+                        lastEdited: lastEdited
+                    });
                 }
             }
         }
@@ -228,14 +249,17 @@ export default function EditableATPUI()
             for (let questionUUID in data.engineerResponses)
             {
                 let question = getQuestionMetadataByUUID("engineer", questionUUID);
-                let {id, answerFormat, spreadsheetCell} = question;
-                let answer = data.engineerResponses[questionUUID];
+                let {answerFormat, spreadsheetCell} = question;
+                let answer = data.engineerResponses[questionUUID].response;
+                const lastEdited = data.engineerResponses[questionUUID].lastEdited;
                 formattedEngineerResponses.push({
                     questionUUID: questionUUID,
                     questionIndex: question.index, 
                     spreadsheetCell: spreadsheetCell, 
                     answer: answer, 
-                    answerFormat: answerFormat});
+                    answerFormat: answerFormat,
+                    lastEdited: lastEdited
+                });
             }
         }
         data['engineerResponses'] = formattedEngineerResponses;
@@ -330,6 +354,7 @@ export default function EditableATPUI()
                          prevResponses = {submissionData?.technicianResponses} 
                          showFormActions = {location === 'fill-atp'}
                          readOnly = {location === 'completed-atp'}
+                         setValue = {setValue}
                      />
                      
                      {
@@ -341,6 +366,7 @@ export default function EditableATPUI()
                          prevResponses = {submissionData?.engineerResponses}
                          showFormActions = {location === 'review-atp'}
                          readOnly = {location === 'completed-atp'}
+                         setValue = {setValue}
                      />
                      }
 

@@ -22,19 +22,30 @@ app.add_middleware(
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     missing_fields = []
+    error_details = []
     for error in exc.errors():
         if error["type"] == "value_error.missing":
             # loc may be like ['body', 'field_name']
             field_path = ".".join(str(l) for l in error["loc"][1:])
             missing_fields.append(field_path)
+        
+        # Convert error to JSON-serializable format
+        error_details.append({
+            "type": error.get("type", ""),
+            "loc": error.get("loc", []),
+            "msg": error.get("msg", ""),
+            "input": str(error.get("input", "")) if error.get("input") is not None else None
+        })
+    
     print("Missing fields:", missing_fields)  # prints to console for debugging
+    print("All validation errors:", error_details)  # prints all errors for debugging
 
     return JSONResponse(
         status_code=422,
         content={
             "message": "Validation error",
             "missing_fields": missing_fields,
-            "details": exc.errors()  # full FastAPI error details
+            "details": error_details
         }
     )
 

@@ -1,6 +1,6 @@
 from re import A
 from fastapi import APIRouter, Body, Depends
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated, Callable
 from bson import ObjectId
 from dependencies import get_atp_submissions_collection, get_atp_forms_collection, get_blob_handler, get_mongo_client, get_atp_spreadsheet_manager, ATPSpreadsheetManager
@@ -18,7 +18,7 @@ async def create_atp_submission(
     atp_submissions: AsyncCollection = Depends(get_atp_submissions_collection)
 ):
     atp_submission_data = atp_submission.model_dump()
-    atp_submission_data['submittedAt'] = datetime.now().isoformat()
+    atp_submission_data['submittedAt'] = datetime.now(timezone.utc).isoformat().replace('+00:00', '')
     atp_submission_data['status'] = 'pending'
     inserted_document = await atp_submissions.insert_one(atp_submission_data)
     return {'message': 'Submitted ATP succesfully', 'submissionId': str(inserted_document.inserted_id)}
@@ -41,8 +41,8 @@ async def update_atp_submission(atp_submission_id: str,
             return {'error': 'Invalid submission ID format', 'submissionId': None}
         
         
-        completion_time = datetime.now()
-        completion_time_isoformat = completion_time.isoformat()
+        completion_time = datetime.now(timezone.utc)
+        completion_time_isoformat = completion_time.isoformat().replace('+00:00', '')
         completion_time_path_format = completion_time.strftime("%Y-%m-%d_%H-%M-%S")
 
         
@@ -217,6 +217,7 @@ async def get_submission(
         atp_submission_document['reviewedAt'] = None
         atp_submission_document['reviewedBy'] = None
         atp_submission_document['engineerResponses'] = None
+        atp_submission_document['engineerStartTime'] = None
     
     
     return atp_submission_document

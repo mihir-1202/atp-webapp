@@ -1,4 +1,5 @@
 import React from 'react'
+import { useForm } from 'react-hook-form';
 import {useParams} from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import ATPInputSection from '../../components/ATPInputSection/ATPInputSection'
@@ -13,12 +14,56 @@ export default function ReadOnlyATPUI()
 {
     const {atpFormId, prevSubmissionId} = useParams();
     const [atpTemplateData, setATPTemplateData] = React.useState(null);
-    const [prevTechnicianResponses, setPrevTechnicianResponses] = React.useState(null);
-    const [prevEngineerResponses, setPrevEngineerResponses] = React.useState(null);
+
+    const [submissionData, setSubmissionData] = React.useState(null);
     const [completedSpreadsheetURL, setCompletedSpreadsheetURL] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(true);
 
+    //don't need to set default values for any fields because we aren't submitting it to the backend, we are only reading it
+    const defaultValues = {}
+    const {register, handleSubmit, reset, setValue} = useForm(defaultValues);
+
     React.useEffect(() => {loadAllData();}, [atpFormId, prevSubmissionId]);
+
+    //atpTemplateData becomes available -> setAtpTemplateData() is called -> re-render the component -> useEffect runs and resets the form
+    /*
+    CANNOT do await getATPTemplateData(); await getSubmissionData(); 
+    because the re-render is triggered onlyafter the component function is fully executed/rendered -> setSubmissionData(null) -> setSubmissionData won't be called again after re-render
+    */
+    React.useEffect(() => {
+        if (atpTemplateData && prevSubmissionId && submissionData) {
+            console.log('resetting form with template data');
+            
+            // Transform technicianResponses to the format that the form works with (see onSubmit function for more details)
+            const technicianResponsesFormatted = {};
+            if (submissionData.technicianResponses) {
+                submissionData.technicianResponses.forEach(response => {
+                    technicianResponsesFormatted[response.questionUUID] = {
+                        response: response.answer,
+                        lastEdited: response.lastEdited
+                    };
+                });
+            }
+            
+            // Transform engineerResponses to the format that the form works with
+            const engineerResponsesFormatted = {};
+            if (submissionData.engineerResponses) {
+                submissionData.engineerResponses.forEach(response => {
+                    engineerResponsesFormatted[response.questionUUID] = {
+                        response: response.answer,
+                        lastEdited: response.lastEdited
+                    };
+                });
+            }
+            
+            //reset the default form values when the data from the api is ready
+            reset({
+                //only values needed to be reset are the previous repsonses -> don't need to reset the other values since we are only reading the completed form, not submitting a new form
+                technicianResponses: technicianResponsesFormatted,
+                engineerResponses: engineerResponsesFormatted
+            }); 
+        }
+    }, [atpTemplateData, prevSubmissionId, submissionData]);
 
     //Get the atp template data from the database
     async function getATPTemplateData()
@@ -36,7 +81,7 @@ export default function ReadOnlyATPUI()
     }
 
     //Get the previous responses from the database
-    async function getPrevResponses(role)
+    async function getPrevResponses()
     {
         if(prevSubmissionId)
         {
@@ -44,8 +89,7 @@ export default function ReadOnlyATPUI()
             {
                 let data = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`);
                 data = await data.json();
-                setPrevTechnicianResponses(data.technicianResponses);
-                setPrevEngineerResponses(data.engineerResponses); 
+                setSubmissionData(data);
                 setCompletedSpreadsheetURL(data.completedSpreadsheetURL);
             }
             
@@ -61,17 +105,8 @@ export default function ReadOnlyATPUI()
     async function loadAllData()
     {
         await getATPTemplateData();
-        await getPrevResponses('technician');
-        await getPrevResponses('engineer');
+        await getPrevResponses();
         setIsLoading(false);
-    }
-
-    //Get the question metadata from the atp template data
-    function getQuestionMetadataByUUID(role, questionUUID)
-    {
-        //iterates through the items in the atpTemplateData.sections.technician.items array and returns the item which has the same uuid as the argument
-        let question = atpTemplateData.sections[role].items.find(item => item.uuid === questionUUID);
-        return question;
     }
 
     if (isLoading) {
@@ -95,20 +130,21 @@ export default function ReadOnlyATPUI()
                 <form className="atp-form" id="submissionForm" onSubmit={() => {}}>
             
                     <ATPInputSection 
-                        register = {() => {}}
+                        register = {register}
                         role = {"technician"} 
                         atpTemplateData = {atpTemplateData} 
-                        prevResponses = {prevTechnicianResponses} 
+                        prevResponses = {submissionData?.technicianResponses} 
                         showFormActions = {false}
                         readOnly = {true}
                     />
                     
                     
                     <ATPInputSection 
-                        register = {() => {}}
+                        register = {register}
                         role = {"engineer"} 
                         atpTemplateData = {atpTemplateData} 
-                        prevResponses = {prevEngineerResponses}
+                        prevResponses = {submissionData?.engineerResponses}
+                        setValue = {setValue}
                         showFormActions = {false}
                         readOnly = {true}
                         completedSpreadsheetURL = {completedSpreadsheetURL}

@@ -4,7 +4,7 @@ import FieldItem from '../FieldItem/FieldItem';
 import styles from './ATPInputSection.module.css';
 import {useNavigate} from 'react-router-dom';
 
-export default function ATPInputSection({register, role, showFormActions, atpTemplateData, readOnly = false, prevResponses = [], completedSpreadsheetURL = null})
+export default function ATPInputSection({register, role, showFormActions, atpTemplateData, readOnly = false, prevResponses = [], completedSpreadsheetURL = null, setValue})
 {
   
     function getResponseByUUID(questionUUID)
@@ -39,10 +39,10 @@ export default function ATPInputSection({register, role, showFormActions, atpTem
             questionText = {item.question} 
             answerFormat = {item.answerFormat} 
             register = {register} 
-            defaultValue = {previousValue} 
             role = {role}
             readOnly = {readOnly}
             imageUrl = {item.imageUrl || null} 
+            setValue = {setValue}
         />
     });
 
