@@ -9,8 +9,8 @@ import EditableATPUI from './components/EditableATPUI/EditableATPUI.jsx'
 import PendingATPSPage from './pages/PendingATPSPage/PendingATPSPage.jsx'
 import AllATPSPage from './pages/AllATPSPage/AllATPSPage.jsx'
 
-import ProtectedRoute from './ProtectedRoute.jsx'
-import {AuthProvider} from './AuthProvider.jsx'
+import ProtectedRoute from './auth/ProtectedRoute.jsx'
+import {AuthProvider} from './auth/AuthProvider.jsx'
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 
 const router = createBrowserRouter([

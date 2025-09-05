@@ -1,5 +1,5 @@
 import { AuthenticatedTemplate, useMsal, UnauthenticatedTemplate } from '@azure/msal-react';
-import { loginRequest } from '../../authConfig.js';
+import { loginRequest } from '../../auth/authConfig.js';
 import { Navigate } from 'react-router-dom';
 
 import './App.css';
