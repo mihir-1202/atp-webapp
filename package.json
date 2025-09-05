@@ -12,7 +12,16 @@
     "install:backend": "cd backend && pip install -r requirements.txt",
     "install:all": "npm run install:frontend && npm run install:backend"
   },
-  "keywords": ["atp", "forms", "react", "fastapi"],
+  "keywords": [
+    "atp",
+    "forms",
+    "react",
+    "fastapi"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@azure/msal-browser": "^4.22.0",
+    "@azure/msal-react": "^3.0.19"
+  }
 }
