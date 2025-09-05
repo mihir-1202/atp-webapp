@@ -11,6 +11,8 @@ from pymongo.asynchronous.collection import AsyncCollection
 
 router = APIRouter()
 
+#TOOD: before downloading the spreadsheet template, check if it exists
+
 #Technician submission
 @router.post("/", response_model = responses.ATPSubmissionCreationResponse)
 async def create_atp_submission(
