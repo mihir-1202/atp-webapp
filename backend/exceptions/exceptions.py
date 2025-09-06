@@ -26,6 +26,18 @@ class DatabaseInsertError(MongoDBError):
             details=f"Failed to insert document into MongoDB.\nCollection: {collection_name}\nDocument: {document}" if details is None else details
         )
         
+class DatabaseUpdateError(MongoDBError):
+    def __init__(self, collection_name: str, document: str, details: str = None):
+        super().__init__(
+            details=f"Failed to update document in MongoDB.\nCollection: {collection_name}\nDocument: {document}" if details is None else details
+        )
+
+class DatabaseDeleteError(MongoDBError):
+    def __init__(self, collection_name: str, document: str, details: str = None):
+        super().__init__(
+            details=f"Failed to delete document from MongoDB.\nCollection: {collection_name}\nDocument: {document}" if details is None else details
+        )
+        
 class DatabaseConnectionError(MongoDBError):
     def __init__(self, details: str = None):
         super().__init__(
@@ -76,6 +88,12 @@ class BlobUploadError(AzureBlobStorageError):
     def __init__(self, container_name: str, blob_path: str):
         super().__init__(
             details=f"Failed to upload file to Azure Blob Storage.\nContainer: {container_name}\nPath: {blob_path}",
+        )
+        
+class BlobMoveError(AzureBlobStorageError):
+    def __init__(self, from_container_name: str, from_blob_path: str, to_container_name: str, to_blob_path: str):
+        super().__init__(
+            details=f"Failed to move file in Azure Blob Storage.\nFrom Container: {from_container_name}\nFrom Path: {from_blob_path}\nTo Container: {to_container_name}\nTo Path: {to_blob_path}",
         )
         
 class BlobDeleteError(AzureBlobStorageError):
