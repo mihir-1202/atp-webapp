@@ -2,11 +2,14 @@ import React from 'react';
 import HeadingItem from '../HeadingItem/HeadingItem';
 import FieldItem from '../FieldItem/FieldItem';
 import styles from './ATPInputSection.module.css';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useLocation} from 'react-router-dom';
+import StatusSelector from '../EditableATPUI/StatusSelector';
 
 export default function ATPInputSection({register, role, showFormActions, atpTemplateData, readOnly = false, prevResponses = [], completedSpreadsheetURL = null, setValue})
 {
   
+    const location = useLocation().pathname.split('/')[1];
+    
     function getResponseByUUID(questionUUID)
     {
         return prevResponses?.find(response => response.questionUUID === questionUUID);
@@ -53,6 +56,9 @@ export default function ATPInputSection({register, role, showFormActions, atpTem
             </div>
         </div>
 
+
+        {location === 'review-atp' && role === 'engineer' && <StatusSelector register = {register} />}
+
         {showFormActions && 
         <div className={styles.formActions}>
             {/* onSubmit submits a post request to /atp-submissions/ */}
@@ -67,6 +73,8 @@ export default function ATPInputSection({register, role, showFormActions, atpTem
         </div>
 
         }
+
+        
     </>
     )
 }

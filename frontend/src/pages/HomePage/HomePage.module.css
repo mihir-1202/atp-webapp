@@ -16,3 +16,14 @@
     white-space: nowrap;
     font-size: 35px;
 }
+
+.testSelectionTitle {
+    font-size: 24px;
+    font-weight: 700;
+    color: rgb(44, 76, 142);
+    margin: 20px 0 20px 80px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgb(44, 76, 142);
+    width: fit-content;
+    font-family: "Inter", "Roboto", sans-serif;
+}

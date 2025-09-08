@@ -8,7 +8,9 @@ export default function HomePage()
 {
     return(
         <div className={styles.homePage}>
-            <Navbar title = "Test Selection" />
+            <Navbar title = "Homepage" />
+            
+            <div className={styles.testSelectionTitle}>Test Selection</div>
             
             <MainContent />
         </div>

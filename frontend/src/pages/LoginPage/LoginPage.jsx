@@ -2,8 +2,8 @@ import { AuthenticatedTemplate, useMsal, UnauthenticatedTemplate } from '@azure/
 import { loginRequest } from '../../auth/authConfig.js';
 import { Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
-
-import './App.css';
+import styles from './LoginPage.module.css';
+import LoginScreenImage from './LoginScreen.png';
 
 /**
  * Most applications will need to conditionally render certain components based on whether a user is signed in or not. 
@@ -36,9 +36,24 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="App">
-            <button onClick={handleLoginRedirect}> Login </button>
-            <p>Please sign in</p>  
+        <div className={styles.loginPage}>
+            <div className={styles.loginContainer}>
+                <div className={styles.loginContent}>
+                    <div className={styles.logoSection}>
+                        <h1 className={styles.logo}>Upwing Energy</h1>
+                        <h2 className={styles.tagline}>ATP Digital Platform</h2>
+                    </div>
+                    
+                    <div className={styles.loginSection}>
+                        <button 
+                            className={styles.loginButton} 
+                            onClick={handleLoginRedirect}
+                        >
+                            Sign In with Microsoft
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

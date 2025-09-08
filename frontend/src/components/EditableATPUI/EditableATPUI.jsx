@@ -335,14 +335,9 @@ export default function EditableATPUI()
                             setValue = {setValue}
                         />
                      )}
-
-                    {location === 'review-atp' && <StatusSelector register = {register} />}
                 </form>
             </div>
             
-            <footer className={styles.footer}>
-                <p>&copy; 2024 Upwing Energy. All rights reserved.</p>
-            </footer>
         </div>
     )
 }
