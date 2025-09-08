@@ -1,4 +1,5 @@
 import { useMsal } from '@azure/msal-react';
+import styles from './LogoutButton.module.css';
 
 export default function LogoutButton()
 {
@@ -9,6 +10,6 @@ export default function LogoutButton()
         window.location.reload();
     }
     return(
-        <button onClick={handleLogoutRedirect}>Logout</button>
+        <button className={styles.logoutButton} onClick={handleLogoutRedirect}>Logout</button>
     )
 }

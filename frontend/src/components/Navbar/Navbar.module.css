@@ -8,7 +8,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     font-size: 24px;
     font-weight: bold;
     color: rgb(76, 75, 75);
@@ -17,13 +17,58 @@
     z-index: 1000;
     height: 80px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 0 30px;
+}
+
+.logoContainer {
+    position: relative;
+    display: inline-block;
 }
 
 .upwingLogo {
     cursor: pointer;
-    position: absolute;
-    left: 30px;
     height: 60px;
     width: 140px;
     object-fit: contain;
+}
+
+.tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    top: 54px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    z-index: 1001;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip::after {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: #333;
+}
+
+.logoContainer:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.logoutContainer {
+    display: flex;
+    align-items: center;
+    height: 100%;
 }

@@ -5,6 +5,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import styles from './CreateATPPage.module.css';
 import { useContext } from 'react';
 import { UserContext } from '../../auth/UserProvider';
+import UnauthorizedUI from '../../components/UnauthorizedUI/UnauthorizedUI.jsx';
 
 
 //Path: /create-atp
@@ -13,8 +14,7 @@ export default function CreateATPPage()
     const user = useContext(UserContext);
     if (user.userRole !== 'admin')
     {
-        alert('You are not authorized to create ATPs');
-        navigate('/');
+        return <UnauthorizedUI message='You are not authorized to create ATPs' />;
     }
     
     const navigate = useNavigate();

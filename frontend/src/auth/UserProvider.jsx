@@ -3,6 +3,7 @@ import {useNavigate} from 'react-router-dom'
 import {useEffect, useState} from 'react'
 import {createContext} from 'react'
 import LoadingSpinner from '../components/LoadingSpinner/LoadingSpinner.jsx'
+import UnauthorizedUI from '../components/UnauthorizedUI/UnauthorizedUI.jsx'
 
 
 /*
@@ -88,13 +89,12 @@ export default function UserProvider({children})
             const data = await response.json();
             console.log('User role response:', data);
             if (data.userRole === 'unauthorized')
-            {
                 setIsLoading(false);
-                alert('You are not authorized to use this application');
-                navigate('/login');
-            }
+          
+            
 
-            else{
+            else
+            {
                 setUserRole(data.userRole);
                 setIsLoading(false);
             }
@@ -104,10 +104,10 @@ export default function UserProvider({children})
     }, [accounts, instance, navigate, inProgress]);
 
     if (isLoading)
-        return null;
+        return <LoadingSpinner />;
 
-    if (!userRole || userRole === 'unauthorized')
-        return null;
+    if (userRole === 'unauthorized' || !userRole)
+        return <UnauthorizedUI message = "You are not authorized to use this application" />;
 
     const activeAccount = instance.getActiveAccount();
     console.log('Active account found, rendering children');

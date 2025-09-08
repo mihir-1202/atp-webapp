@@ -1,0 +1,78 @@
+.container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f7f7fb;
+    padding: 24px;
+    font-family: "Inter", "Roboto", sans-serif;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.card {
+    width: 100%;
+    max-width: 800px;
+    background: #ffffff;
+    border: 1px solid #e6e6ef;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    padding: 48px;
+    text-align: center;
+}
+
+.title {
+    margin: 0 0 16px 0;
+    font-size: 42px;
+    line-height: 1.2;
+    color: #1f2937;
+    font-weight: 700;
+}
+
+.message {
+    margin: 0 0 32px 0;
+    color: #4b5563;
+    font-size: 20px;
+    line-height: 1.5;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.button {
+    appearance: none;
+    border: none;
+    border-radius: 12px;
+    padding: 16px 32px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.primaryButton {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+
+.primaryButton:hover {
+    background: #1642b8;
+}
+
+.secondaryText {
+    margin-top: 24px;
+    font-size: 16px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+

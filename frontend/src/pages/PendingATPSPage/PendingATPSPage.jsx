@@ -4,6 +4,9 @@ import SubmissionCardsContainer from '../../components/SubmissionCardsContainer/
 import styles from './PendingATPSPage.module.css';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import {useNavigate} from 'react-router-dom';
+import UnauthorizedUI from '../../components/UnauthorizedUI/UnauthorizedUI.jsx';
+import { useContext } from 'react';
+import { UserContext } from '../../auth/UserProvider';
 
 
 //Path: /pending-atps
@@ -12,6 +15,12 @@ export default function PendingATPSPage()
     const [pendingSubmissions, setPendingSubmissions] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const navigate = useNavigate();
+    const user = useContext(UserContext);
+    
+    if (user.userRole == 'technician')
+    {
+        return <UnauthorizedUI message='You are not authorized to view pending ATPs' />;
+    }
     
 
     React.useEffect(() => {
