@@ -13,67 +13,72 @@ import AddUserPage from './pages/AddUserPage/AddUserPage.jsx'
 import UserProvider from './auth/UserProvider.jsx'
 import ProtectedRoute from './auth/ProtectedRoute.jsx'
 import {AuthProvider} from './auth/AuthProvider.jsx'
-import {createBrowserRouter, RouterProvider} from 'react-router-dom'
+import {createBrowserRouter, RouterProvider, Outlet} from 'react-router-dom'
+
+function Layout() {
+  return (
+    <UserProvider>
+      <Outlet />
+    </UserProvider>
+  );
+}
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <UserProvider><ProtectedRoute><HomePage /></ProtectedRoute></UserProvider>
-  },
-
   {
     path: "/login",
     element: <LoginPage />
   },
 
+  //whenever we switch pages, the parent 'element' (UserProvider wrapper) stays the same, but the child inside the 'element' gets swapped (since UserProvider isnt mounted again, the email endpoint doesn't get called multiple times)
   {
-    path: "/create-atp",
-    element: <UserProvider><ProtectedRoute><CreateATPPage /></ProtectedRoute></UserProvider>
-  },
-
-  {
-    path: "/update-atp/:atpFormGroupId",
-    element: <UserProvider><ProtectedRoute><UpdateATPPage /></ProtectedRoute></UserProvider>
-  },
-
-  {
-    path: "/select-atp",
-    element: <UserProvider><ProtectedRoute><SelectATPPage /></ProtectedRoute></UserProvider>
-  },
-
-  {
-    path: "/fill-atp/:atpFormGroupId",
-    element: <UserProvider><ProtectedRoute><EditableATPUI /></ProtectedRoute></UserProvider>
-  },
-
-  {
-    path: "/review-atp/:atpFormGroupId/:prevSubmissionId",
-    element: <UserProvider><ProtectedRoute><EditableATPUI /></ProtectedRoute></UserProvider>
-  },
-
-  {
-    path: "/completed-atp/:atpFormId/:prevSubmissionId",
-    element: <UserProvider><ProtectedRoute><ReadOnlyATPUI /></ProtectedRoute></UserProvider>
-  },
-
-  {
-    path: "/pending-atps",
-    element: <UserProvider><ProtectedRoute><PendingATPSPage /></ProtectedRoute></UserProvider>
-  },
-
-  {
-    path: "/all-atps",
-    element: <UserProvider><ProtectedRoute><AllATPSPage /></ProtectedRoute></UserProvider>
-  },
-
-  {
-    path: "/manage-atps",
-    element: <UserProvider><ProtectedRoute><ManageATPsPage /></ProtectedRoute></UserProvider>
-  },
-
-  {
-    path: "/add-user",
-    element: <UserProvider><ProtectedRoute><AddUserPage /></ProtectedRoute></UserProvider>
+    path: "/",
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: <ProtectedRoute><HomePage /></ProtectedRoute>
+      },
+      {
+        path: "create-atp",
+        element: <ProtectedRoute><CreateATPPage /></ProtectedRoute>
+      },
+      {
+        path: "update-atp/:atpFormGroupId",
+        element: <ProtectedRoute><UpdateATPPage /></ProtectedRoute>
+      },
+      {
+        path: "select-atp",
+        element: <ProtectedRoute><SelectATPPage /></ProtectedRoute>
+      },
+      {
+        path: "fill-atp/:atpFormGroupId",
+        element: <ProtectedRoute><EditableATPUI /></ProtectedRoute>
+      },
+      {
+        path: "review-atp/:atpFormGroupId/:prevSubmissionId",
+        element: <ProtectedRoute><EditableATPUI /></ProtectedRoute>
+      },
+      {
+        path: "completed-atp/:atpFormId/:prevSubmissionId",
+        element: <ProtectedRoute><ReadOnlyATPUI /></ProtectedRoute>
+      },
+      {
+        path: "pending-atps",
+        element: <ProtectedRoute><PendingATPSPage /></ProtectedRoute>
+      },
+      {
+        path: "all-atps",
+        element: <ProtectedRoute><AllATPSPage /></ProtectedRoute>
+      },
+      {
+        path: "manage-atps",
+        element: <ProtectedRoute><ManageATPsPage /></ProtectedRoute>
+      },
+      {
+        path: "add-user",
+        element: <ProtectedRoute><AddUserPage /></ProtectedRoute>
+      }
+    ]
   }
 ])
 

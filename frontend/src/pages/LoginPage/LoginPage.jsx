@@ -1,6 +1,7 @@
 import { AuthenticatedTemplate, useMsal, UnauthenticatedTemplate } from '@azure/msal-react';
 import { loginRequest } from '../../auth/authConfig.js';
 import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 import './App.css';
 
@@ -18,41 +19,26 @@ export default function LoginPage() {
      */
     
     //useMsal() automatically consumes the context of the MsalProvider
-    const { instance } = useMsal();
-    const activeAccount = instance.getActiveAccount();
+    const { instance, accounts } = useMsal();
 
-    console.log('Login - activeAccount:', activeAccount);
-    console.log('Login - all accounts:', instance.getAllAccounts());
+    useEffect(() => {
+        if (accounts.length > 0 && !instance.getActiveAccount()) {
+            instance.setActiveAccount(accounts[0]);
+        }
+    }, [instance, accounts]);
 
     const handleLoginRedirect = () => {
         instance.loginRedirect({
                 ...loginRequest,
-                prompt: 'create',
+                prompt: 'select_account',
             })
         .catch((error) => console.log(error));
     };
 
-
-    const handleLogoutRedirect = () => {
-      instance.logoutPopup({
-        postLogoutRedirectUri: '/',
-      });
-      window.location.reload();
-    }
-
     return (
         <div className="App">
-            <AuthenticatedTemplate>
-                {activeAccount ? (
-                    <Navigate to="/" replace />
-                ) : null}
-            </AuthenticatedTemplate>
-
-            <UnauthenticatedTemplate>
-                <button onClick={handleLoginRedirect}> Login </button>
-                <p>Please sign in</p>
-            </UnauthenticatedTemplate>
-            
+            <button onClick={handleLoginRedirect}> Login </button>
+            <p>Please sign in</p>  
         </div>
     );
 };
