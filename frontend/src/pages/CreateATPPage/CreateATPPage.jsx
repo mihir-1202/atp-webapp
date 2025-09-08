@@ -16,12 +16,14 @@ export default function CreateATPPage()
     {
         return <UnauthorizedUI message='You are not authorized to create ATPs' />;
     }
+
+    console.log('User:', user);
     
     const navigate = useNavigate();
     const defaultMetadata = {
         title: "this is not a test title",
         description: "this is not a test description",
-        createdBy: "someone@upwingenergy.com"
+        createdBy: user.userEmail
     }
     
     const defaultTechnicianItems = [
@@ -83,6 +85,7 @@ export default function CreateATPPage()
         const spreadsheetTemplate = formData.spreadsheetTemplate[0];
         if (!spreadsheetTemplate)
         {
+            //if we are creating an atp form for the first time, an excel file is required
             alert("Please select an Excel file to upload");
             return;
         }

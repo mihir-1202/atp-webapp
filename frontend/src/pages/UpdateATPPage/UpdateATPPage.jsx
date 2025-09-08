@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import FormBuilder from '../../components/FormBuilder/FormBuilder';
 import Navbar from '../../components/Navbar/Navbar';
 
@@ -26,6 +26,8 @@ export default function UpdateATPPage()
     const navigate = useNavigate();
 
 
+
+
     React.useEffect(() => {
         async function fetchData()
         {
@@ -43,6 +45,7 @@ export default function UpdateATPPage()
                 console.log(data);
                 setATPFormData(data);
                 setIsLoading(false);
+                setSelectedExcelFile(data.metadata.spreadsheetTemplateBlobPath);
             }
            
         }

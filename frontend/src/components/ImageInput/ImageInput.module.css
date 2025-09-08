@@ -38,6 +38,12 @@
     font-family: "Inter", "Roboto", sans-serif;
     cursor: pointer;
     margin-right: 12px;
+    transition: opacity 150ms ease, background-color 150ms ease;
+}
+
+.fileInputNative::file-selector-button:hover,
+.fileInputNative::-webkit-file-upload-button:hover {
+    opacity: 0.9;
 }
 
 .fileInputNative {
@@ -55,10 +61,12 @@
     cursor: pointer;
     margin-left: 4px;
     font-size: 0.9rem;
+    transition: opacity 150ms ease, background-color 150ms ease;
 }
 
 .removeButton:hover {
     background-color: #c82333;
+    opacity: 0.9;
 }
 
 .imagePreviewContainer {
