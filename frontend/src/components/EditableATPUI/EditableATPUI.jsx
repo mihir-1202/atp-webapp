@@ -79,7 +79,7 @@ export default function EditableATPUI()
                 formId: atpTemplateData._id,
                 engineerStartTime: startTime.current,
                 technicianStartTime: submissionData.technicianStartTime,
-                reviewedBy: 'engineer@upwingenergy.com', 
+                reviewedBy: user.userEmail, 
                 submittedBy: submissionData.submittedBy, 
                 submittedAt: submissionData.submittedAt, 
                 submissionId: prevSubmissionId,
