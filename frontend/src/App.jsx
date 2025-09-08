@@ -8,7 +8,9 @@ import ReadOnlyATPUI from './components/ReadOnlyATPUI/ReadOnlyATPUI.jsx'
 import EditableATPUI from './components/EditableATPUI/EditableATPUI.jsx'
 import PendingATPSPage from './pages/PendingATPSPage/PendingATPSPage.jsx'
 import AllATPSPage from './pages/AllATPSPage/AllATPSPage.jsx'
+import AddUserPage from './pages/AddUserPage/AddUserPage.jsx'
 
+import UserProvider from './auth/UserProvider.jsx'
 import ProtectedRoute from './auth/ProtectedRoute.jsx'
 import {AuthProvider} from './auth/AuthProvider.jsx'
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
@@ -16,7 +18,7 @@ import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <ProtectedRoute><HomePage /></ProtectedRoute>
+    element: <UserProvider><ProtectedRoute><HomePage /></ProtectedRoute></UserProvider>
   },
 
   {
@@ -26,47 +28,52 @@ const router = createBrowserRouter([
 
   {
     path: "/create-atp",
-    element: <ProtectedRoute><CreateATPPage /></ProtectedRoute>
+    element: <UserProvider><ProtectedRoute><CreateATPPage /></ProtectedRoute></UserProvider>
   },
 
   {
     path: "/update-atp/:atpFormGroupId",
-    element: <ProtectedRoute><UpdateATPPage /></ProtectedRoute>
+    element: <UserProvider><ProtectedRoute><UpdateATPPage /></ProtectedRoute></UserProvider>
   },
 
   {
     path: "/select-atp",
-    element: <ProtectedRoute><SelectATPPage /></ProtectedRoute>
+    element: <UserProvider><ProtectedRoute><SelectATPPage /></ProtectedRoute></UserProvider>
   },
 
   {
     path: "/fill-atp/:atpFormGroupId",
-    element: <ProtectedRoute><EditableATPUI /></ProtectedRoute>
+    element: <UserProvider><ProtectedRoute><EditableATPUI /></ProtectedRoute></UserProvider>
   },
 
   {
     path: "/review-atp/:atpFormGroupId/:prevSubmissionId",
-    element: <ProtectedRoute><EditableATPUI /></ProtectedRoute>
+    element: <UserProvider><ProtectedRoute><EditableATPUI /></ProtectedRoute></UserProvider>
   },
 
   {
     path: "/completed-atp/:atpFormId/:prevSubmissionId",
-    element: <ProtectedRoute><ReadOnlyATPUI /></ProtectedRoute>
+    element: <UserProvider><ProtectedRoute><ReadOnlyATPUI /></ProtectedRoute></UserProvider>
   },
 
   {
     path: "/pending-atps",
-    element: <ProtectedRoute><PendingATPSPage /></ProtectedRoute>
+    element: <UserProvider><ProtectedRoute><PendingATPSPage /></ProtectedRoute></UserProvider>
   },
 
   {
     path: "/all-atps",
-    element: <ProtectedRoute><AllATPSPage /></ProtectedRoute>
+    element: <UserProvider><ProtectedRoute><AllATPSPage /></ProtectedRoute></UserProvider>
   },
 
   {
     path: "/manage-atps",
-    element: <ProtectedRoute><ManageATPsPage /></ProtectedRoute>
+    element: <UserProvider><ProtectedRoute><ManageATPsPage /></ProtectedRoute></UserProvider>
+  },
+
+  {
+    path: "/add-user",
+    element: <UserProvider><ProtectedRoute><AddUserPage /></ProtectedRoute></UserProvider>
   }
 ])
 

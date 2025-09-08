@@ -12,42 +12,58 @@ export default function ManageATPsPage() {
     const [isLoading, setIsLoading] = React.useState(true);
 
     React.useEffect(() => {
-        fetch('http://localhost:8000/atp-forms/active')
-            .then(response => response.json())
-            .then(data => {
+        async function fetchATPForms()
+        {
+            const response = await fetch('http://localhost:8000/atp-forms/active');
+            const data = await response.json();
+            if (!response.ok)
+            {
+                setIsLoading(false);
+                alert(data?.message || 'Failed to fetch ATP forms');
+                navigate('/');
+            }
+            else
+            {
+                console.log(data);
                 setATPForms(data);
                 setIsLoading(false);
-            })
-            .catch(error => {
-                console.error('Error fetching ATP forms:', error);
-                setIsLoading(false);
-            });
+            }
+        }
+
+        fetchATPForms();
     }, []);
 
     function handleUpdate(atpFormGroupId) {
         navigate(`/update-atp/${atpFormGroupId}`);
     }
 
-    async function handleDelete(atpFormGroupId) {
-        if (window.confirm('Are you sure you want to delete this ATP form and all associated submissions? This action cannot be undone.')) {
-            try {
-                const response = await fetch(`http://localhost:8000/atp-forms/${atpFormGroupId}`, {
-                    method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                });
-
-                if (response.ok) {
-                    alert('ATP form deleted successfully!');
-                    // Refresh the page to update the list
-                    window.location.reload();
-                } else {
-                    const errorData = await response.json();
-                    alert(`Error deleting ATP form: ${errorData.error || 'Unknown error'}`);
+    async function handleDelete(atpFormGroupId) 
+    {
+        if (window.confirm('Are you sure you want to delete this ATP form and all associated submissions? This action cannot be undone.')) 
+        {
+            setIsLoading(true);
+            const response = await fetch(`http://localhost:8000/atp-forms/${atpFormGroupId}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
                 }
-            } catch (error) {
-                alert(`Error deleting ATP form: ${error.message}`);
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) 
+            {
+                setIsLoading(false);
+                alert(data?.message || 'Failed to delete ATP form');
+            }
+            
+            //TODO: check if data contains a succes message
+            else 
+            {
+                setIsLoading(false);
+                alert('ATP form deleted successfully!');
+                // Refresh the page to update the list
+                window.location.reload();
             }
         }
     }

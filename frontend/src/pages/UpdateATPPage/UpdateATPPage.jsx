@@ -5,7 +5,7 @@ import Navbar from '../../components/Navbar/Navbar';
 //TODO: import styles from the correct page
 import styles from '../CreateATPPage/CreateATPPage.module.css';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 //TODO: fix the path to the update ATP page
 //Path: /update-atp/atpFormGroupId
@@ -14,26 +14,34 @@ export default function UpdateATPPage()
     const {atpFormGroupId} = useParams();
     const [atpFormData, setATPFormData] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(true);
+    const navigate = useNavigate();
 
     React.useEffect(() => {
-        fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`)
-        .then(response => response.json())
-        .then(data => setATPFormData(data))
-        .then(() => setIsLoading(false));
-    }, [atpFormGroupId]);
+        async function fetchData()
+        {
+            const response = await fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`);
+            const data = await response.json();
+            if (!response.ok) 
+            {
+                console.error('Error fetching ATP form data:', data?.message);
+                setIsLoading(false);
+                alert(data?.message || 'Failed to fetch ATP form data');
+                navigate('/');
+            }
+            else
+            {
+                console.log(data);
+                setATPFormData(data);
+                setIsLoading(false);
+            }
+           
+        }
+      
+        fetchData();
+      }, [atpFormGroupId]);
 
     function handleSubmit(formData)
     {
-        const isValidBlobPath = (string) => {
-            try{
-                new URL(string);
-                return true;
-            }
-            catch(error){
-                return false;
-            }
-        }
-
         const processedFormData = new FormData();
 
         const sectionsWithoutImages = {
@@ -125,25 +133,7 @@ export default function UpdateATPPage()
             console.log(key, value);
         }
 
-        fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`, {
-            method: "PUT",
-            body: processedFormData
-        })
-        .then(async response => {
-            if (response.ok) 
-                return response.json();
-            else {
-                const errorData = await response.json();
-                throw new Error(errorData.errors);
-            }
-        })
-        .then(data => {
-            console.log("Backend response:", data);
-            alert("Successfully updated form template!");
-        })
-        .catch(error => {
-            alert(`Error: ${error.message}`);
-        });
+        updateATP(processedFormData, atpFormGroupId, navigate);
     };
 
     if (isLoading)
@@ -160,4 +150,25 @@ export default function UpdateATPPage()
             />
         </div>
     )
+}
+
+async function updateATP(processedFormData, atpFormGroupId, navigate)
+{
+    const response = await fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`, {
+        method: "PUT",
+        body: processedFormData
+    })
+
+    const data = await response.json();
+    if (!response.ok)
+        alert(data?.message || 'Failed to update form template');
+
+    else
+    {
+        console.log(data);
+        alert('Form template updated successfully!');
+        navigate('/');
+    }
+
+    return data;
 }

@@ -144,28 +144,7 @@ export default function CreateATPPage()
             console.log(key, value);
         }
 
-        
-        
-        fetch("http://localhost:8000/atp-forms/", {
-            method: "POST",
-            body: processedFormData
-        })
-        .then(async response => {
-            if (response.ok) 
-                return response.json();
-            else {
-                const errorData = await response.json();
-                throw new Error(errorData.errors);
-            }
-        })
-        .then(data => {
-            console.log("Backend response:", data);
-            alert("Successfully created form template!");
-            navigate('/');
-        })
-        .catch(error => {
-            alert(`Error: ${error.message}`);
-        });
+        createATP(processedFormData, navigate);
         
     };
 
@@ -180,4 +159,23 @@ export default function CreateATPPage()
             />
         </div>
     )
+}
+
+
+async function createATP(processedFormData, navigate)
+{
+    const response = await fetch("http://localhost:8000/atp-forms/", {
+        method: "POST",
+        body: processedFormData
+    })
+    const data = await response.json();
+    if (!response.ok)
+        alert(data?.message || 'Failed to create form template');
+    else
+    {
+        console.log("Backend response:", data);
+        alert("Successfully created form template!");
+        navigate('/');
+    }
+
 }

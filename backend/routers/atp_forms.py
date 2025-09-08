@@ -8,9 +8,10 @@ from schemas import atp_forms_requests as schemas, atp_forms_responses as respon
 from dependencies import parse_technician_image_data, parse_engineer_image_data, get_mongo_client, get_blob_handler
 from typing import Callable
 import pymongo
-from pymongo import AsyncMongoClient, PyMongoError
+from pymongo import AsyncMongoClient
+from pymongo.errors import PyMongoError
 from pymongo.asynchronous.collection import AsyncCollection
-from azure.core.exceptions import ServiceRequestError, AzureError
+from azure.core.exceptions import AzureError
 from exceptions import *
 import json
 
@@ -94,26 +95,25 @@ async def create_form_template(
                             break
                     
                 
-                try:
-                    for uuid, image in engineerImageData.items():
-                        container_name, blob_path = 'images', f'{form_group_id}/{uuid}_v{version}.png'
-                        
-                        print(type(image))
-                        if hasattr(image, 'file') and hasattr(image, 'filename'):
-                            data = image.file
-                        else:
-                            print(f'{image} is not an UploadFile')
-                            continue
-                        await blob_handler.upload_blob(container_name, blob_path, data)
-                        
-                        # Find the item by UUID and update it
-                        for item in new_form_template_data['sections']['engineer']['items']:
-                            if item['uuid'] == uuid:
-                                item['imageBlobPath'] = blob_path
-                                item['hasImage'] = True
-                                break
-                except ServiceRequestError as e:
-                    raise AzureBlobStorageError(details=f"Failed to upload engineer image to Azure Blob Storage: {e}")
+                
+                for uuid, image in engineerImageData.items():
+                    container_name, blob_path = 'images', f'{form_group_id}/{uuid}_v{version}.png'
+                    
+                    print(type(image))
+                    if hasattr(image, 'file') and hasattr(image, 'filename'):
+                        data = image.file
+                    else:
+                        print(f'{image} is not an UploadFile')
+                        continue
+                    await blob_handler.upload_blob(container_name, blob_path, data)
+                    
+                    # Find the item by UUID and update it
+                    for item in new_form_template_data['sections']['engineer']['items']:
+                        if item['uuid'] == uuid:
+                            item['imageBlobPath'] = blob_path
+                            item['hasImage'] = True
+                            break
+                
                     
                 
                 # Start transaction
@@ -128,21 +128,25 @@ async def create_form_template(
                     container_name, blob_path = 'spreadsheets', f'{form_group_id}/active-form/{new_form_id}.xlsx'
                     await blob_handler.upload_blob(container_name, blob_path, spreadsheetTemplate.file)
                     await session.commit_transaction()
-                except ServiceRequestError as e:
-                    raise AzureBlobStorageError(details=f"Failed to upload excel spreadsheet to Azure Blob Storage: {e}")
                 except PyMongoError as e:
-                    raise DatabaseInsertError(collection_name = 'atp_forms', document = new_form_template_data)
+                    raise DatabaseInsertError(collection_name = 'atp_forms')
             
     #connection to the database fails
     except pymongo.errors.ConnectionFailure as e:
-        raise DatabaseConnectionError(details = str(e))
+        print(type(e).__name__, str(e))
+        raise DatabaseConnectionError()
     except (AzureError, PyMongoError) as e:
+        print(type(e).__name__, str(e))
+        print('we caught an azure/mongo error')
         # Abort transaction if anything unexpectedfails
-        await session.abort_transaction()
+        if session.in_transaction:
+            await session.abort_transaction()
+
         if isinstance(e, AzureError):
-            raise AzureBlobStorageError(details=str(e))
+            raise AzureBlobStorageError()
         elif isinstance(e, PyMongoError):
-            raise MongoDBError(details=str(e))
+            print(type(e).__name__, str(e))
+            raise MongoDBError()
     else:
         return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}
 
@@ -191,11 +195,12 @@ async def update_active_form_template(
                 new_form_template_data.pop('spreadsheetTemplate', None)
                 
                 # Find the current active form template
-                try:
-                    query = {'metadata.formGroupID': atp_form_group_id, 'metadata.status': 'active'}
-                    old_form = await atp_forms.find_one(query)
-                except PyMongoError as e:
-                    raise ATPFormNotFoundError(details = str(e))
+                
+                query = {'metadata.formGroupID': atp_form_group_id, 'metadata.status': 'active'}
+                old_form = await atp_forms.find_one(query)
+                if not old_form:
+                    raise ATPFormNotFoundError(collection_name = 'atp_forms', document_id = atp_form_group_id)
+                
                 
                 old_form_id = old_form['_id']
                 
@@ -214,54 +219,50 @@ async def update_active_form_template(
                 
                 #Handle images for technician section
                 new_technician_items = new_form_template_data['sections']['technician']['items']
-                try:
-                    for new_item in new_technician_items:
-                        # Check if this item has image data in the request
-                        uuid = new_item['uuid']
-                        if uuid in technicianImageData:
-                            new_image_data = technicianImageData[uuid]
-                            
-                            #Items that already existed in the old form template
-                            if uuid in prevTechnicianImageData:
-                                # Check if the image is the same (both have blob paths and they match)
-                                if new_image_data == prevTechnicianImageData[uuid]:
-                                    print(f'unchanged image for {uuid}\nOld: {prevTechnicianImageData[uuid]}\nNew: {new_image_data}')
-                                    # Copy the existing image data to the new item
-                                    new_item['imageBlobPath'] = prevTechnicianImageData[uuid]
-                                    new_item['hasImage'] = prevTechnicianImageData[uuid] is not None
-                                #New local image was uploaded (either for the first time or as a replacement -> both work since overwrite = True is set in the upload_blob function)
-                                elif hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
-                                    print('new local image was uploaded for an existing item')
-                                    data = new_image_data.file
-                                    container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
-                                    await blob_handler.upload_blob(container_name, blob_path, data)
-                                    new_item['imageBlobPath'] = blob_path
-                                    new_item['hasImage'] = True
-                                #Image was removed - handle FormData string conversion
-                                elif new_image_data is None and prevTechnicianImageData[uuid] is not None:
-                                    #print(f'blob path being deleted:\nNew: {new_image_data}\nOld: {prevTechnicianImageData[uuid]}')
-                                    #blob_handler.delete_blobs('images', blob_path = prevTechnicianImageData[uuid], virtual_directory = None)
-                                    #blob_handler.move_blob('images', prevTechnicianImageData[uuid], 'images', f'{atp_form_group_id}/archived/{uuid}.png')
-                                    #new_item['imageBlobPath'] = None
-                                    #new_item['hasImage'] = False
-                                    pass
-                            #New items that were not in the old form template
+                
+                for new_item in new_technician_items:
+                    # Check if this item has image data in the request
+                    uuid = new_item['uuid']
+                    if uuid in technicianImageData:
+                        new_image_data = technicianImageData[uuid]
+                        
+                        #Items that already existed in the old form template
+                        if uuid in prevTechnicianImageData:
+                            # Check if the image is the same (both have blob paths and they match)
+                            if new_image_data == prevTechnicianImageData[uuid]:
+                                print(f'unchanged image for {uuid}\nOld: {prevTechnicianImageData[uuid]}\nNew: {new_image_data}')
+                                # Copy the existing image data to the new item
+                                new_item['imageBlobPath'] = prevTechnicianImageData[uuid]
+                                new_item['hasImage'] = prevTechnicianImageData[uuid] is not None
+                            #New local image was uploaded (either for the first time or as a replacement -> both work since overwrite = True is set in the upload_blob function)
+                            elif hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
+                                print('new local image was uploaded for an existing item')
+                                data = new_image_data.file
+                                container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
+                                await blob_handler.upload_blob(container_name, blob_path, data)
+                                new_item['imageBlobPath'] = blob_path
+                                new_item['hasImage'] = True
+                            #Image was removed - handle FormData string conversion
+                            elif new_image_data is None and prevTechnicianImageData[uuid] is not None:
+                                #print(f'blob path being deleted:\nNew: {new_image_data}\nOld: {prevTechnicianImageData[uuid]}')
+                                #blob_handler.delete_blobs('images', blob_path = prevTechnicianImageData[uuid], virtual_directory = None)
+                                #blob_handler.move_blob('images', prevTechnicianImageData[uuid], 'images', f'{atp_form_group_id}/archived/{uuid}.png')
+                                #new_item['imageBlobPath'] = None
+                                #new_item['hasImage'] = False
+                                pass
+                        #New items that were not in the old form template
+                        else:
+                            if hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
+                                print('local image was uploaded for a new item')
+                                data = new_image_data.file
+                                container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
+                                await blob_handler.upload_blob(container_name, blob_path, data)
+                                new_item['imageBlobPath'] = blob_path
+                                new_item['hasImage'] = True
                             else:
-                                if hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
-                                    print('local image was uploaded for a new item')
-                                    data = new_image_data.file
-                                    container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
-                                    await blob_handler.upload_blob(container_name, blob_path, data)
-                                    new_item['imageBlobPath'] = blob_path
-                                    new_item['hasImage'] = True
-                                else:
-                                    new_item['imageBlobPath'] = None
-                                    new_item['hasImage'] = False
-                except ServiceRequestError as e:
-                    if blob_path:
-                        raise BlobUploadError(container_name = 'images', blob_path = blob_path)
-                    else:
-                        raise AzureBlobStorageError(details = str(e))
+                                new_item['imageBlobPath'] = None
+                                new_item['hasImage'] = False
+                
                     
                 # Handle deleted items (items that existed before but are not in the new form)
                 #deleted_technician_items = [uuid for uuid in prevTechnicianImageData.keys() if uuid not in set(item['uuid'] for item in new_technician_items)]
@@ -281,53 +282,49 @@ async def update_active_form_template(
                 #Handle images for technician section
                 new_engineer_items = new_form_template_data['sections']['engineer']['items']
                 
-                try:
-                    for new_item in new_engineer_items:
-                        # Check if this item has image data in the request
-                        uuid = new_item['uuid']
-                        if uuid in engineerImageData:
-                            new_image_data = engineerImageData[uuid]
-                            
-                            #Items that already existed in the old form template
-                            if uuid in prevEngineerImageData:
-                                # Check if the image is the same (both have blob paths and they match)
-                                if new_image_data == prevEngineerImageData[uuid]:
-                                    print(f'unchanged image for {uuid}\nOld: {prevEngineerImageData[uuid]}\nNew: {new_image_data}')
-                                    # Copy the existing image data to the new item
-                                    new_item['imageBlobPath'] = prevEngineerImageData[uuid]
-                                    new_item['hasImage'] = prevEngineerImageData[uuid] is not None
-                                #New local image was uploaded (either for the first time or as a replacement -> both work since overwrite = True is set in the upload_blob function)
-                                elif hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
-                                    print('new local image was uploaded for an existing item')
-                                    data = new_image_data.file
-                                    container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
-                                    await blob_handler.upload_blob(container_name, blob_path, data)
-                                    new_item['imageBlobPath'] = blob_path
-                                    new_item['hasImage'] = True
-                                #Image was removed - handle FormData string conversion
-                                elif new_image_data is None and prevEngineerImageData[uuid] is not None:
-                                    #print(f'blob path being deleted:\nNew: {new_image_data}\nOld: {prevEngineerImageData[uuid]}')
-                                    #blob_handler.move_blob('images', prevEngineerImageData[uuid], 'images', f'{atp_form_group_id}/archived/{uuid}.png')
-                                    #new_item['imageBlobPath'] = None
-                                    #new_item['hasImage'] = False
-                                    pass
-                            #New items that were not in the old form template
+                
+                for new_item in new_engineer_items:
+                    # Check if this item has image data in the request
+                    uuid = new_item['uuid']
+                    if uuid in engineerImageData:
+                        new_image_data = engineerImageData[uuid]
+                        
+                        #Items that already existed in the old form template
+                        if uuid in prevEngineerImageData:
+                            # Check if the image is the same (both have blob paths and they match)
+                            if new_image_data == prevEngineerImageData[uuid]:
+                                print(f'unchanged image for {uuid}\nOld: {prevEngineerImageData[uuid]}\nNew: {new_image_data}')
+                                # Copy the existing image data to the new item
+                                new_item['imageBlobPath'] = prevEngineerImageData[uuid]
+                                new_item['hasImage'] = prevEngineerImageData[uuid] is not None
+                            #New local image was uploaded (either for the first time or as a replacement -> both work since overwrite = True is set in the upload_blob function)
+                            elif hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
+                                print('new local image was uploaded for an existing item')
+                                data = new_image_data.file
+                                container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
+                                await blob_handler.upload_blob(container_name, blob_path, data)
+                                new_item['imageBlobPath'] = blob_path
+                                new_item['hasImage'] = True
+                            #Image was removed - handle FormData string conversion
+                            elif new_image_data is None and prevEngineerImageData[uuid] is not None:
+                                #print(f'blob path being deleted:\nNew: {new_image_data}\nOld: {prevEngineerImageData[uuid]}')
+                                #blob_handler.move_blob('images', prevEngineerImageData[uuid], 'images', f'{atp_form_group_id}/archived/{uuid}.png')
+                                #new_item['imageBlobPath'] = None
+                                #new_item['hasImage'] = False
+                                pass
+                        #New items that were not in the old form template
+                        else:
+                            if hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
+                                print('local image was uploaded for a new item')
+                                data = new_image_data.file
+                                container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
+                                await blob_handler.upload_blob(container_name, blob_path, data)
+                                new_item['imageBlobPath'] = blob_path
+                                new_item['hasImage'] = True
                             else:
-                                if hasattr(new_image_data, 'file') and hasattr(new_image_data, 'filename'):
-                                    print('local image was uploaded for a new item')
-                                    data = new_image_data.file
-                                    container_name, blob_path = 'images', f'{atp_form_group_id}/{uuid}_v{version}.png'
-                                    await blob_handler.upload_blob(container_name, blob_path, data)
-                                    new_item['imageBlobPath'] = blob_path
-                                    new_item['hasImage'] = True
-                                else:
-                                    new_item['imageBlobPath'] = None
-                                    new_item['hasImage'] = False
-                except ServiceRequestError as e:
-                    if blob_path:
-                        raise BlobUploadError(container_name = 'images', blob_path = blob_path)
-                    else:
-                        raise AzureBlobStorageError(details = str(e))
+                                new_item['imageBlobPath'] = None
+                                new_item['hasImage'] = False
+                
                     
                 # Handle deleted items (items that existed before but are not in the new form)
                 #deleted_engineer_items = [uuid for uuid in prevEngineerImageData.keys() if uuid not in set(item['uuid'] for item in new_engineer_items)]
@@ -348,47 +345,41 @@ async def update_active_form_template(
                     inserted_document = await atp_forms.insert_one(new_form_template_data, session=session)
                     new_form_id = inserted_document.inserted_id
                 except PyMongoError as e:
-                    raise DatabaseUpdateError(collection_name = 'atp_forms', document = new_form_template_data)
+                    raise DatabaseUpdateError(collection_name = 'atp_forms', document_id = new_form_id)
                 
                 
                 # Upload new spreadsheet to Azure Blob Storage if a replacement was provided
                 if hasattr(spreadsheetTemplate, 'file') and hasattr(spreadsheetTemplate, 'filename'):
-                    try:
-                        blob_path = f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
-                    except ServiceRequestError as e:
-                        raise AzureBlobStorageError(details = str(e))
-                
+                    blob_path = f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
                     await blob_handler.upload_blob('spreadsheets', blob_path, spreadsheetTemplate.file)
                 
                     # Archive the old spreadsheet if it exists
                     old_blob_path = f'{atp_form_group_id}/active-form/{old_form["_id"]}.xlsx'
-                    try:
-                        await blob_handler.move_blob(
-                            from_container_name='spreadsheets',
-                            blob_path=old_blob_path,
-                            to_container_name='spreadsheets',
-                            to_blob_path=f'{atp_form_group_id}/archived-forms/{old_form["_id"]}.xlsx'
-                        )
-                    except ServiceRequestError as e:
-                        raise BlobMoveError(from_container_name = 'spreadsheets', from_blob_path = old_blob_path, to_container_name = 'spreadsheets', to_blob_path = f'{atp_form_group_id}/archived-forms/{old_form["_id"]}.xlsx')
+                    
+                    await blob_handler.move_blob(
+                        from_container_name='spreadsheets',
+                        blob_path=old_blob_path,
+                        to_container_name='spreadsheets',
+                        to_blob_path=f'{atp_form_group_id}/archived-forms/{old_form["_id"]}.xlsx'
+                    )
+                    
 
                 #Update the spreadsheet template name in Blob Storage with the new form id
                 else:
-                    try:
-                        await blob_handler.move_blob(
-                        from_container_name='spreadsheets',
-                        blob_path=f'{atp_form_group_id}/active-form/{old_form_id}.xlsx',
-                        to_container_name='spreadsheets',
-                            to_blob_path=f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
-                        )
-                    except ServiceRequestError as e:
-                        raise BlobMoveError(from_container_name = 'spreadsheets', from_blob_path = f'{atp_form_group_id}/active-form/{old_form_id}.xlsx', to_container_name = 'spreadsheets', to_blob_path = f'{atp_form_group_id}/active-form/{new_form_id}.xlsx')
+                    await blob_handler.move_blob(
+                    from_container_name='spreadsheets',
+                    blob_path=f'{atp_form_group_id}/active-form/{old_form_id}.xlsx',
+                    to_container_name='spreadsheets',
+                        to_blob_path=f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
+                    )
+                    
                     
                 
                 # Commit the transaction
                 print('committing transaction')
                 await session.commit_transaction()
-                    
+    except pymongo.errors.ServerSelectionTimeoutError as e:
+        raise DatabaseConnectionError()
     except (AzureError, PyMongoError) as e:
         await session.abort_transaction()
         if isinstance(e, AzureError):
@@ -410,32 +401,33 @@ async def get_active_form_templates(atp_forms: Collection = Depends(get_atp_form
         async for document in atp_forms.find({'metadata.status': 'active'}):
             #convert ObjectId to a string before appending the document to the list
             document['_id'] = str(document['_id'])
-            try:
-                for item in document['sections']['technician']['items']:
-                    if item.get('hasImage') and item.get('imageBlobPath'):
-                        item['imageUrl'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('imageBlobPath'))  # Full URL for display
-                    else:
-                        item['imageBlobPath'] = None
-                        item['imageUrl'] = None
-                        item['hasImage'] = False  # Ensure consistency
+           
+            for item in document['sections']['technician']['items']:
+                if item.get('hasImage') and item.get('imageBlobPath'):
+                    item['imageUrl'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('imageBlobPath'))  # Full URL for display
+                else:
+                    item['imageBlobPath'] = None
+                    item['imageUrl'] = None
+                    item['hasImage'] = False  # Ensure consistency
 
-                for item in document['sections']['engineer']['items']:
-                    if item.get('hasImage') and item.get('imageBlobPath'):
-                        item['imageUrl'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('imageBlobPath'))  # Full URL for display
-                    else:
-                        item['imageBlobPath'] = None
-                        item['imageUrl'] = None
-                        item['hasImage'] = False  # Ensure consistency
-            except ServiceRequestError as e:
-                raise BlobNotFoundError(container_name = 'images', blob_path = item.get('imageBlobPath'))
+            for item in document['sections']['engineer']['items']:
+                if item.get('hasImage') and item.get('imageBlobPath'):
+                    item['imageUrl'] = blob_handler.get_blob_url(container_name = 'images', blob_name = item.get('imageBlobPath'))  # Full URL for display
+                else:
+                    item['imageBlobPath'] = None
+                    item['imageUrl'] = None
+                    item['hasImage'] = False  # Ensure consistency
+            
             
             form_templates.append(document)
             
+    except pymongo.errors.ServerSelectionTimeoutError as e:
+        raise DatabaseConnectionError()
     except (PyMongoError, AzureError) as e:
         if isinstance(e, PyMongoError):
-            raise MongoDBError(details = str(e))
+            raise MongoDBError()
         elif isinstance(e, AzureError):
-            raise AzureBlobStorageError(details = str(e))
+            raise AzureBlobStorageError()
     else:
         return form_templates
 
@@ -448,7 +440,11 @@ async def get_active_form_template(atp_form_group_id: Annotated[str, Path(descri
     try:
         print('in getATPTemplateData')
         query = {'metadata.formGroupID': atp_form_group_id, 'metadata.status': 'active'}
+
         atp_form_document = await atp_forms.find_one(query)
+        if not atp_form_document:
+            print(f'ATP form template with form group ID {atp_form_group_id} not found')
+            raise ATPFormNotFoundError(collection_name = 'atp_forms', document_id = atp_form_group_id)
     
         atp_form_document['_id'] = str(atp_form_document['_id'])
         
@@ -469,10 +465,17 @@ async def get_active_form_template(atp_form_group_id: Annotated[str, Path(descri
                 item['imageBlobPath'] = None
                 item['imageUrl'] = None
                 item['hasImage'] = False  # Ensure consistency
-    except PyMongoError as e:
-        raise ATPFormNotFoundError(details = str(e))
-    except ServiceRequestError as e:
-        raise BlobNotFoundError(container_name = 'images', blob_path = item.get('imageBlobPath'))
+    except pymongo.errors.ServerSelectionTimeoutError as e:
+        raise DatabaseConnectionError()
+    except (PyMongoError, AzureError) as e:
+        if isinstance(e, PyMongoError):
+            raise MongoDBError()
+        elif isinstance(e, AzureError):
+            raise AzureBlobStorageError()
+    except Exception as e:
+        print(type(e).__name__)
+        # Preserve specific exceptions (e.g., ATPFormNotFoundError) so their handlers run
+        raise e
     else:
         return atp_form_document
 
@@ -490,8 +493,7 @@ async def get_form_template(
         query = {'_id': ObjectId(atp_form_id)}
         atp_form_document = await atp_forms.find_one(query)
         if not atp_form_document:
-            return {"message": "ATP form not found"}
-            #TODO: add error handling if an atp form is not found
+            raise ATPFormNotFoundError(collection_name = 'atp_forms', document_id = atp_form_id)
         atp_form_document['_id'] = str(atp_form_document['_id'])  # Convert ObjectId to string
         
         
@@ -511,10 +513,14 @@ async def get_form_template(
                 item['imageBlobPath'] = None
                 item['imageUrl'] = None
                 item['hasImage'] = False  # Ensure consistency
-    except PyMongoError as e:
-        raise ATPFormNotFoundError(details = str(e))
-    except ServiceRequestError as e:
-        raise BlobNotFoundError(container_name = 'images', blob_path = item.get('imageBlobPath'))
+    except pymongo.errors.ServerSelectionTimeoutError as e:
+        raise DatabaseConnectionError()
+    except (PyMongoError, AzureError) as e:
+        if isinstance(e, PyMongoError):
+            raise MongoDBError()
+        elif isinstance(e, AzureError):
+            raise AzureBlobStorageError()
+        raise MongoDBError()
     else:
         return atp_form_document
     
@@ -533,32 +539,29 @@ async def delete_form_template(
     try:
         async with client.start_session() as session:
             await session.start_transaction()
-            try:
-                # Validate ObjectId format
-                object_id = ObjectId(atp_form_group_id)
-            except Exception:
-                return {"message": "Invalid ATP form ID format"}
+            
+            object_id = ObjectId(atp_form_group_id)
+            
             
             query = {'metadata.formGroupID': atp_form_group_id}
             result = await atp_forms.delete_many(query)
             
             if result.deleted_count == 0:
-                return {"message": "ATP form not found"}
+                raise DatabaseDeleteError(collection_name = 'atp_forms', document_id = atp_form_group_id)
             
             #delete all submissions associated with the ATP form
             await atp_submissions.delete_many({'formGroupId': atp_form_group_id})
             await blob_handler.delete_blobs('spreadsheets', virtual_directory = f'{atp_form_group_id}')
             await blob_handler.delete_blobs('images', virtual_directory = f'{atp_form_group_id}')
             await session.commit_transaction()
-    
-    except pymongo.errors.OperationFailure as e:
-        raise DatabaseDeleteError(details = str(e))
+    except pymongo.errors.ServerSelectionTimeoutError as e:
+        raise DatabaseConnectionError()
     except (PyMongoError, AzureError) as e:
         await session.abort_transaction()
         if isinstance(e, PyMongoError):
-            raise MongoDBError(details = str(e))
+            raise MongoDBError()
         elif isinstance(e, AzureError):
-            raise AzureBlobStorageError(details = str(e))
+            raise AzureBlobStorageError()
     else:
         return {"message": "ATP form and corresponding submissions deleted successfully"}
 

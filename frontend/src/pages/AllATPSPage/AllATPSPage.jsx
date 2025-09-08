@@ -4,24 +4,38 @@ import SubmissionCardsContainer from '../../components/SubmissionCardsContainer/
 import styles from './AllATPSPage.module.css';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import FilterSelector from '../AllATPSPage/FilterSelector'
+import {useNavigate} from 'react-router-dom';
 
 //Path: /all-atps
 export default function AllATPSPage()
 {
     const [allSubmissions, setAllSubmissions] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
-
+    const navigate = useNavigate();
     const [filter, setFilter] = React.useState({pending: true, approved: true, rejected: true});
 
-    async function fetchAllSubmissions()
-    {
-        fetch(`http://localhost:8000/atp-submissions/metadata`)
-        .then(response => response.json())
-        .then(data => {console.log(data); setAllSubmissions(data); setIsLoading(false);})
-        .catch(error => {console.error('Error fetching submissions:', error); setIsLoading(false);})
-    }
+    
 
     React.useEffect(() => {
+        async function fetchAllSubmissions()
+        {
+            const response = await fetch(`http://localhost:8000/atp-submissions/metadata`)
+            const data = await response.json()
+            if (!response.ok)
+            {
+                setIsLoading(false);
+                alert(data?.message || 'Failed to fetch submissions');
+                navigate('/');
+            }
+
+            else
+            {
+                console.log(data);
+                setAllSubmissions(data);
+                setIsLoading(false);
+            }
+        }
+
         fetchAllSubmissions();
     }, []);
 

@@ -13,6 +13,7 @@ export default function ActionsButtons()
             <button className={styles.atpButton}>Drafts</button>
             <button className={styles.atpButton} onClick = {() => navigate('/pending-atps')}>Pending ATPs</button>
             <button className={styles.atpButton} onClick = {() => navigate('/all-atps')}>All ATPs</button>
+            <button className={styles.atpButton} onClick = {() => navigate('/add-user')}>Add User</button>
         </div>
     )
 }

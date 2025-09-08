@@ -3,7 +3,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
-from routers import atp_forms_router, atp_submissions_router
+from routers import atp_forms_router, atp_submissions_router, atp_users_router
+from pymongo.errors import PyMongoError
+from exceptions import *
 
 app = FastAPI(
     title = "ATP Web Application API",
@@ -49,6 +51,39 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         }
     )
 
+
+@app.exception_handler(PyMongoError)
+async def pymongo_exception_handler(request: Request, exc: PyMongoError):
+    print(type(exc).__name__, str(exc))
+    return JSONResponse(
+        status_code=500,
+        content={"message": str(exc)}
+    )
+
+@app.exception_handler(AzureBlobStorageError)
+async def azure_blob_storage_error_handler(request: Request, exc: AzureBlobStorageError):
+    print(type(exc).__name__, str(exc))
+    return JSONResponse(
+        status_code=500,
+        content={"message": str(exc)}
+    )
+
+@app.exception_handler(ATPException)
+async def atp_error_handler(request: Request, exc: ATPException):
+    print(type(exc).__name__, str(exc))
+    return JSONResponse(
+        status_code=500,
+        content={"message": str(exc)}
+    )
+
+@app.exception_handler(Exception)
+async def exception_handler(request: Request, exc: Exception):
+    print(type(exc).__name__, str(exc))
+    return JSONResponse(
+        status_code=500,
+        content={"message": 'Something unexpected happened'}
+    )
+
 """
 # Add global exception handler
 @app.exception_handler(RequestValidationError)
@@ -56,12 +91,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     error_messages = [error['msg'] for error in exc.errors()]
     return JSONResponse(
         status_code = 422,
-        content = {"errors": '\n'.join(error_messages)}
+        content = {"message": '\n'.join(error_messages)}
     )
 """
 
 app.include_router(atp_forms_router, prefix = "/atp-forms", tags = ['ATP Forms'])
 app.include_router(atp_submissions_router, prefix = "/atp-submissions", tags = ['ATP Submissions'])
+app.include_router(atp_users_router, prefix = "/atp-users", tags = ['ATP Users'])
     
 if __name__ == "__main__":
     uvicorn.run('main:app', host="localhost", port=8000, reload=True)

@@ -18,6 +18,7 @@ export default function EditableATPUI()
     const location = useLocation().pathname.split('/')[1];
     const {atpFormGroupId, prevSubmissionId} = useParams();
     const startTime = useRef(new Date().toISOString());
+    const [error, setError] = React.useState(null);
 
 
     let defaultValues;
@@ -54,7 +55,7 @@ export default function EditableATPUI()
             
             // Transform technicianResponses to the format that the form works with (see onSubmit function for more details)
             const technicianResponsesFormatted = {};
-            if (submissionData.technicianResponses) {
+            if (submissionData?.technicianResponses) {
                 submissionData.technicianResponses.forEach(response => {
                     technicianResponsesFormatted[response.questionUUID] = {
                         response: response.answer,
@@ -81,65 +82,61 @@ export default function EditableATPUI()
     //Get the atp template data from the database
     async function getATPTemplateData()
     {
-        try {
-            let data = null;
-            if (location === 'review-atp' || location === 'fill-atp')
-                data = await fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`);
+        const response = await fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`);
+        const data = await response.json();
 
-            data = await data.json();
-            console.log(data);
-            setATPTemplateData(data);
-            if(location === 'review-atp')
-            {
-                console.log('data._id', data._id);
-                reset(
-                    {formGroupId: atpFormGroupId, 
-                    formId: data._id,
-                    engineerStartTime: startTime.current,
-                    reviewedBy: 'engineer@upwingenergy.com' //populate reviewedBy field with the current engineer logged in to prepare for submission
-                    }); 
-            }
-            else if(location === 'fill-atp')
-            {
-                console.log('data._id', data._id);
-                reset(
-                    {formGroupId: atpFormGroupId, 
-                    formId: data._id,
-                    technicianStartTime: startTime.current,
-                    submittedBy: 'technician@upwingenergy.com', //populate submittedBy field with the current technician logged in to prepare for submission
-                    });
-            }
+        if (!response.ok)
+        {
+            console.log('response', response);
+            //the string passed to the Error constructor becomes the 'message' property of the Error obejct
+            alert(data?.message);
+            navigate('/');
+            return;
+        }
 
+        console.log(data);
+        setATPTemplateData(data);
+        if(location === 'review-atp')
+        {
+            console.log('data._id', data._id);
+            reset(
+                {formGroupId: atpFormGroupId, 
+                formId: data._id,
+                engineerStartTime: startTime.current,
+                reviewedBy: 'engineer@upwingenergy.com' //populate reviewedBy field with the current engineer logged in to prepare for submission
+                }); 
         }
-        catch(error) {
-            console.error('Error fetching form data:', error);
-            setATPTemplateData(null);
-        }
+        else if(location === 'fill-atp')
+        {
+            console.log('data._id', data._id);
+            reset(
+                {formGroupId: atpFormGroupId, 
+                formId: data._id,
+                technicianStartTime: startTime.current,
+                submittedBy: 'technician@upwingenergy.com', //populate submittedBy field with the current technician logged in to prepare for submission
+                });
+        }  
     }
 
     //Get the previous responses from the database
-    async function getPrevResponses(role)
+    async function getPrevResponses()
     {
         if(prevSubmissionId)
         {
-            try
+            
+            const response = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`);
+            const data = await response.json();
+            if (!response.ok) 
             {
-                const response = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                setSubmissionData(data); // Store the entire submission data
-                //When submissionData becomes available after the function is fully executed and the re-render happens, 
-                //useEffect will reset the form (it inserts the submittedAt data to the form data)   
+                alert(data?.message);
+                navigate('/');
+                return;
             }
             
-            catch(error)
-            {
-                console.error('Error fetching responses:', error);
-                // TODO: Handle error state
-            }
+            
+            setSubmissionData(data); // Store the entire submission data
+            //When submissionData becomes available after the function is fully executed and the re-render happens, 
+            //useEffect will reset the form (it inserts the submittedAt data to the form data)      
         }
     }
 
@@ -150,10 +147,7 @@ export default function EditableATPUI()
         { 
             await getATPTemplateData();
             if (location !== 'fill-atp')
-            {
-                await getPrevResponses('technician');
-                await getPrevResponses('engineer'); //will be null for review-atp since the engineer hasnt submitted responses yet
-            }
+                await getPrevResponses(); //engineer repsonses will be null for review-atp since the engineer hasnt submitted responses yet
             setIsLoading(false);
         }
         else
@@ -217,7 +211,7 @@ export default function EditableATPUI()
         
         let formattedTechnicianResponses = [];
         // Check if technicianResponses exists
-        if (data.technicianResponses) {
+        if (data?.technicianResponses) {
             //JS arrays are objects under the hood so they can have missing keys -> even though technicianResponses will be an array instead of an object, for in will skip over the missing keys
             for (let questionUUID in data.technicianResponses) {
                 const question = getQuestionMetadataByUUID("technician", questionUUID);
@@ -244,7 +238,7 @@ export default function EditableATPUI()
         let formattedEngineerResponses = [];
         console.log('engineerResponses', data.engineerResponses);
         console.log('data.engineerResponses', data.engineerResponses);
-        if (data.engineerResponses)
+        if (data?.engineerResponses)
         {
             for (let questionUUID in data.engineerResponses)
             {
@@ -279,51 +273,10 @@ export default function EditableATPUI()
         console.log('atpFormGroupId', atpFormGroupId);
 
         if (location === 'fill-atp')
-        {
-            fetch('http://localhost:8000/atp-submissions/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log(data);
-            })
-            .catch(error => {
-                console.error('Error submitting ATP:', error);
-            })
-            .then(() => {alert('ATP submitted successfully'); navigate('/');});
-        }
+           createInitialSubmission(data, navigate);
 
         else if (location === 'review-atp')
-        {
-            fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Submission updated successfully:', data);
-                
-                //TODO: instead of hardcoding alert, display the message returned by the backend
-                alert('Submission updated successfully');
-                navigate('/');
-            })
-            .catch(error => {
-                console.error('Error updating submission:', error);
-                alert('Failed to update submission. Check console for details.');
-            });
-        }
+            createReviewSubmission(prevSubmissionId, data, navigate);
     }
 
     if (isLoading) {
@@ -332,6 +285,10 @@ export default function EditableATPUI()
 
     if (!atpTemplateData) {
         return <LoadingSpinner />
+    }
+
+    if (error) {
+        return <div>{error}</div>;
     }
 
     return(
@@ -346,28 +303,29 @@ export default function EditableATPUI()
             <div className={styles.formContainer}>
                 <form className="atp-form" id="submissionForm" onSubmit={handleSubmit(onSubmit)}>
             
-                    <ATPInputSection 
-                         register = {register}
-                         role = {"technician"} 
-                         atpTemplateData = {atpTemplateData} 
-                         prevResponses = {submissionData?.technicianResponses} 
-                         showFormActions = {location === 'fill-atp'}
-                         readOnly = {location === 'completed-atp'}
-                         setValue = {setValue}
-                     />
+                    {atpTemplateData?.sections && (
+                        <ATPInputSection 
+                            register = {register}
+                            role = {"technician"} 
+                            atpTemplateData = {atpTemplateData} 
+                            prevResponses = {submissionData?.technicianResponses} 
+                            showFormActions = {location === 'fill-atp'}
+                            readOnly = {location === 'completed-atp'}
+                            setValue = {setValue}
+                        />
+                    )}
                      
-                     {
-                     (location != 'fill-atp') &&
-                     <ATPInputSection 
-                         register = {register}
-                         role = {"engineer"} 
-                         atpTemplateData = {atpTemplateData} 
-                         prevResponses = {submissionData?.engineerResponses}
-                         showFormActions = {location === 'review-atp'}
-                         readOnly = {location === 'completed-atp'}
-                         setValue = {setValue}
-                     />
-                     }
+                     {(location != 'fill-atp') && atpTemplateData?.sections && (
+                        <ATPInputSection 
+                            register = {register}
+                            role = {"engineer"} 
+                            atpTemplateData = {atpTemplateData} 
+                            prevResponses = {submissionData?.engineerResponses}
+                            showFormActions = {location === 'review-atp'}
+                            readOnly = {location === 'completed-atp'}
+                            setValue = {setValue}
+                        />
+                     )}
 
                     {location === 'review-atp' && <StatusSelector register = {register} />}
                 </form>
@@ -379,3 +337,56 @@ export default function EditableATPUI()
         </div>
     )
 }
+
+async function createInitialSubmission(data, navigate)
+{
+    const response = await fetch('http://localhost:8000/atp-submissions/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok)
+        alert(responseData?.message || 'Failed to submit ATP');
+
+    else
+    {
+        console.log(responseData);
+        alert('ATP submitted successfully');
+        navigate('/');
+    }
+
+    return responseData;
+}
+
+
+async function createReviewSubmission(prevSubmissionId, data, navigate)
+{
+    const response = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) 
+        alert(responseData?.message || 'Failed to submit engineering');
+    
+    else
+    {
+        console.log('Submission updated successfully:', responseData);
+        //TODO: instead of hardcoding alert, display the message returned by the backend
+        alert('Submission updated successfully');
+        navigate('/');
+    }
+    
+    return responseData;
+}
+  

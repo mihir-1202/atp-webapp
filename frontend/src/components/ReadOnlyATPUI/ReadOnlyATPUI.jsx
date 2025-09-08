@@ -1,6 +1,6 @@
 import React from 'react'
 import { useForm } from 'react-hook-form';
-import {useParams} from 'react-router-dom'
+import {useParams, useNavigate} from 'react-router-dom'
 import Navbar from '../../components/Navbar/Navbar'
 import ATPInputSection from '../../components/ATPInputSection/ATPInputSection'
 import FormHeader from '../../components/FormHeader/FormHeader'
@@ -17,6 +17,7 @@ export default function ReadOnlyATPUI()
     const {register, reset, setValue} = useForm(defaultValues);
     
     const {atpFormId, prevSubmissionId} = useParams();
+    const navigate = useNavigate();
     const [atpTemplateData, setATPTemplateData] = React.useState(null);
     const [submissionData, setSubmissionData] = React.useState(null);
     const [completedSpreadsheetURL, setCompletedSpreadsheetURL] = React.useState(null);
@@ -68,16 +69,19 @@ export default function ReadOnlyATPUI()
     //Get the atp template data from the database
     async function getATPTemplateData()
     {
-        try {
-            let data = await fetch(`http://localhost:8000/atp-forms/${atpFormId}`);
-            data = await data.json();
-            console.log(data);
-            setATPTemplateData(data);
-
+        const response = await fetch(`http://localhost:8000/atp-forms/${atpFormId}`);
+        
+        const data = await response.json();
+        if (!response.ok) 
+        {
+            console.error('Error fetching form template data:', data?.message);
+            alert(data?.message);
+            navigate('/');
+            return;
         }
-        catch(error) {
-            console.error('Error fetching form data:', error);
-        }
+        
+        console.log(data);
+        setATPTemplateData(data);
     }
 
     //Get the previous responses from the database
@@ -85,19 +89,19 @@ export default function ReadOnlyATPUI()
     {
         if(prevSubmissionId)
         {
-            try
+           
+            const response = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`);
+            const data = await response.json();
+            if (!response.ok) 
             {
-                let data = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`);
-                data = await data.json();
-                setSubmissionData(data);
-                setCompletedSpreadsheetURL(data.completedSpreadsheetURL);
+                console.error('Error fetching previous responses:', data?.message);
+                alert(data?.message);
+                navigate('/');
+                return;
             }
             
-            catch(error)
-            {
-                console.error('Error fetching responses:', error);
-                // TODO: Handle error state
-            }
+            setSubmissionData(data);
+            setCompletedSpreadsheetURL(data.completedSpreadsheetURL);
         }
     }
 

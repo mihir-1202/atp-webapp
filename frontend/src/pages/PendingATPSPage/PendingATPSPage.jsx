@@ -3,22 +3,34 @@ import Navbar from '../../components/Navbar/Navbar';
 import SubmissionCardsContainer from '../../components/SubmissionCardsContainer/SubmissionCardsContainer';
 import styles from './PendingATPSPage.module.css';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
+import {useNavigate} from 'react-router-dom';
 
 //Path: /pending-atps
 export default function PendingATPSPage()
 {
     const [pendingSubmissions, setPendingSubmissions] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);
-
-    async function fetchPendingSubmissions()
-    {
-        fetch(`http://localhost:8000/atp-submissions/pending/metadata`)
-        .then(response => response.json())
-        .then(data => {console.log(data); setPendingSubmissions(data); setIsLoading(false);})
-        .catch(error => {console.error('Error fetching submissions:', error); setIsLoading(false);})
-    }
+    const navigate = useNavigate();
+    
 
     React.useEffect(() => {
+        async function fetchPendingSubmissions()
+        {
+            const response = await fetch(`http://localhost:8000/atp-submissions/pending/metadata`)
+            const data = await response.json()
+            if (!response.ok)
+            {
+                alert(data?.message || 'Failed to fetch pending submissions');
+                navigate('/');
+            }
+
+            else
+            {
+                setPendingSubmissions(data);
+                setIsLoading(false);
+            }    
+        }
+        
         fetchPendingSubmissions();
     }, []);
 

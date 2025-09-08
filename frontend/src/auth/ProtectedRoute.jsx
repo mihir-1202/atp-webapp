@@ -1,20 +1,22 @@
 import {useMsal} from '@azure/msal-react'
 import {useNavigate} from 'react-router-dom'
+import {useEffect, useState} from 'react'
+import {useContext} from 'react'
+import {UserContext} from './UserProvider'
+
+
 
 export default function ProtectedRoute({children})
 {
+    const user = useContext(UserContext);
     const navigate = useNavigate();
-    const {instance} = useMsal();
-    const activeAccount = instance.getActiveAccount();
 
-    if (!activeAccount)
+    if (!user || user?.userRole === 'unauthorized')
     {
-        console.log('No active account found, redirecting to login');
-        navigate('/login');
+        alert('You are not authorized to use this application');
         return null;
     }
 
-    console.log('Active account found, rendering children');
-    console.log(`User Name: ${activeAccount.name}\nUser Email: ${activeAccount.username}`);
-    return children;
+    else
+        return children;
 }

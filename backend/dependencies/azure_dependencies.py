@@ -8,6 +8,7 @@ from typing import Annotated, BinaryIO
 from fastapi import File
 from datetime import datetime, timedelta
 import aiofiles
+from exceptions import *
 
 load_dotenv() 
 AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
@@ -25,7 +26,7 @@ class BlobHandler:
             )
             await blob_client.upload_blob(file_stream, overwrite=True)
         except AzureError as e:
-            raise AzureError(f"Failed to upload blob {blob_path} to container {container_name}: {str(e)}")
+            raise BlobUploadError(container_name = container_name, blob_path = blob_path)
         
     @staticmethod
     async def download_blob(container_name: str, blob_path: str) -> str:
@@ -37,7 +38,7 @@ class BlobHandler:
             
             # Verify blob exists
             if not await blob_client.exists():
-                raise AzureError(f"Blob {blob_path} not found in container {container_name}")
+                raise BlobNotFoundError(container_name = container_name, blob_path = blob_path)
             
             # TODO: rename to download_excel_blob since it is only used for excel blobs (images arent downloaded, they only need a url)
             with tempfile.NamedTemporaryFile(delete = False, mode = 'wb', suffix='.xlsx') as tmp_file:
@@ -53,7 +54,7 @@ class BlobHandler:
                 
                 #context manager flushes and closes the file automatically when the context is exited                   
         except AzureError as e:
-            raise IOError(f"Failed to download blob {blob_path}: {str(e)}")
+            raise BlobDownloadError(container_name = container_name, blob_path = blob_path)
         
         return tmp_path
 
@@ -80,7 +81,7 @@ class BlobHandler:
             BlobHandler.cleanup_temp_files(tempfile_path)
             await blob_client.delete_blob()
         except AzureError as e:
-            raise AzureError(f"Couldn't move blob {blob_path} from container {from_container_name} to container {to_container_name}: {str(e)}")
+            raise BlobMoveError(from_container_name = from_container_name, blob_path = blob_path, to_container_name = to_container_name, to_blob_path = to_blob_path)
 
     @staticmethod
     async def delete_blobs(container_name: str, blob_path = None, virtual_directory = None) -> None:
@@ -112,7 +113,7 @@ class BlobHandler:
                 await blob_client.delete_blob()
                 
         except AzureError as e:
-            raise AzureError(f"Failed to delete blob {blob_path} from container {container_name}: {str(e)}")
+            raise BlobDeleteError(container_name = container_name, blob_path = blob_path)
         
     @staticmethod
     def get_blob_url(container_name: str, blob_name: str, expiry_hours: int = 1):

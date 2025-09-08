@@ -16,6 +16,7 @@ db = client['atp-webapp-database']  # Database name
 # Collections
 atp_forms_collection = db['atp-forms']  # Collection name
 atp_submissions_collection = db['atp-submissions']
+atp_users_collection = db['atp-users']
 
 # Dependency functions
 def get_mongo_client():
@@ -28,3 +29,5 @@ def get_atp_forms_collection():
 def get_atp_submissions_collection():
     return atp_submissions_collection
     
+def get_atp_users_collection():
+    return atp_users_collection

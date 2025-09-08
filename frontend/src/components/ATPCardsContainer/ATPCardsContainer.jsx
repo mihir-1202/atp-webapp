@@ -3,19 +3,38 @@ import {useState, useEffect} from 'react';
 import ATPCard from '../ATPCard/ATPCard';
 import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import styles from './ATPCardsContainer.module.css';
+import {useNavigate} from 'react-router-dom';
 
 export default function ATPCardsContainer()
 {
     const [atpCards, setATPCards] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
-        fetch('http://localhost:8000/atp-forms/active')
-        .then(response => response.json())
-        .then(data => setATPCards(data))
-        .then(() => setIsLoading(false))
-        .then(() => console.log(atpCards))
-        .catch(error => console.error('Error fetching ATP cards:', error));
+        async function fetchATPCards(){
+            const response = await fetch('http://localhost:8000/atp-forms/active');
+            const data = await response.json();
+
+            if (!response.ok)
+            {
+                setIsLoading(false);
+                alert(data.message);
+                setError(data.message);
+                return; // Exit early, don't navigate away
+            }
+
+            else{
+                setATPCards(data);
+                setIsLoading(false);
+            }
+
+            
+        }
+        
+        fetchATPCards();
     }, []);
 
     if(isLoading)
@@ -25,8 +44,19 @@ export default function ATPCardsContainer()
             </div>
         )
 
+    if(error)
+    {
+        console.log('in error');
+        return (
+            <div className={styles.errorContainer}>
+                <h2 className={styles.errorTitle}>Error</h2>
+                <p className={styles.errorMessage}>{error}</p>
+            </div>
+        )
+    }
+        
     //if there are no ATPs the message should NOT be shown in an ul element
-    if(atpCards.length === 0)
+    if(!atpCards || atpCards.length === 0)
     {
         return (
             <div className={styles.noATPsContainer}>
@@ -40,20 +70,26 @@ export default function ATPCardsContainer()
         );
     }
 
-    const atpCardsJSX = atpCards.map((atpCard) => 
+    else
     {
-        return <ATPCard 
-            key = {atpCard._id} 
-            atpFormGroupId = {atpCard.metadata.formGroupID}
-            atpFormId = {atpCard._id}
-            atpTitle = {atpCard.metadata.title} 
-            atpDescription = {atpCard.metadata.description}
-        />
-    });
+        console.log('in here');
+        const atpCardsJSX = atpCards.map((atpCard) => 
+            {
+                return <ATPCard 
+                    key = {atpCard._id} 
+                    atpFormGroupId = {atpCard.metadata.formGroupID}
+                    atpFormId = {atpCard._id}
+                    atpTitle = {atpCard.metadata.title} 
+                    atpDescription = {atpCard.metadata.description}
+                />
+            });
+        
+            return(
+                <ul className={styles.atpCardsContainer}>
+                    {atpCardsJSX}
+                </ul>
+            )
+    }
 
-    return(
-        <ul className={styles.atpCardsContainer}>
-            {atpCardsJSX}
-        </ul>
-    )
+    
 }
