@@ -17,7 +17,7 @@ class ResponseFieldItem(BaseModel):
     type: Annotated[Literal['field'], Field(description="The type of the field item", example="field")]
     question: Annotated[str, Field(description="The question of the field item", example="What is the motor speed?")]
     answerFormat: Annotated[str, Field(description="The answer format of the field item", example="number")]
-    spreadsheetCell: Annotated[str, Field(description="Cell reference in format A1, B5, AA10, etc.", example="A1")]
+    spreadsheetCell: Annotated[Optional[str], Field(description="Cell reference in format A1, B5, AA10, etc.", example="A1")]
     hasImage: Annotated[Optional[bool], Field(description="Whether the field item has an image", example=True)]
     imageBlobPath: Annotated[Optional[str], Field(description="The blob path of the field item image", example="images/container/path/image.png")]
     imageUrl: Annotated[Optional[AnyUrl], Field(description="The full URL of the field item image for display", example="https://storage.blob.core.windows.net/images/container/path/image.png?sv=...")]

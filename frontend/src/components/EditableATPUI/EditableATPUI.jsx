@@ -230,7 +230,7 @@ export default function EditableATPUI()
                 
                 
                 // Only add if we found the question and answer exists
-                if (answerFormat && spreadsheetCell && answer !== undefined && answer !== '') {
+                if (answerFormat && answer && answer !== '') {
                     formattedTechnicianResponses.push({
                         questionUUID: questionUUID,
                         spreadsheetCell: spreadsheetCell,

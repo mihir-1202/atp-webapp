@@ -90,9 +90,15 @@ async def update_atp_submission(atp_submission_id: str,
             with atp_spreadsheet_manager.register_workbook(spreadsheet_path):
                 cell_to_response_mappings = {}
                 for response in atp_review_data['technicianResponses']:
+                    if not response['spreadsheetCell']:
+                        continue
                     cell_to_response_mappings[response['spreadsheetCell']] = response['answer']
+                
                 for response in atp_review_data['engineerResponses']:
+                    if not response['spreadsheetCell']:
+                        continue
                     cell_to_response_mappings[response['spreadsheetCell']] = response['answer']
+                
                 atp_spreadsheet_manager.populate_cells_with_responses(cell_to_response_mappings)
                 upload_path = f'{atp_review_data["formGroupId"]}/submissions/{atp_review_data["formId"]}_{completion_time_path_format}.xlsx'
                 
