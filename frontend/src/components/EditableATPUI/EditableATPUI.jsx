@@ -36,13 +36,13 @@ export default function EditableATPUI()
         defaultValues = {defaultValues: 
             {formGroupId: atpFormGroupId, 
             formId: null, 
-            submittedBy: 'technician@upwingenergy.com'}};
+            submittedBy: user.userEmail}};
 
     else if (location === 'review-atp')
         defaultValues = {defaultValues: 
             {formGroupId: atpFormGroupId, 
             formId: null, 
-            reviewedBy: 'engineer@upwingenergy.com'}};
+            reviewedBy: user.userEmail}};
     
     
     const {register, handleSubmit, reset, setValue} = useForm(defaultValues);
@@ -112,7 +112,7 @@ export default function EditableATPUI()
                 {formGroupId: atpFormGroupId, 
                 formId: data._id,
                 engineerStartTime: startTime.current,
-                reviewedBy: 'engineer@upwingenergy.com' //populate reviewedBy field with the current engineer logged in to prepare for submission
+                reviewedBy: user.userEmail //populate reviewedBy field with the current engineer logged in to prepare for submission
                 }); 
         }
         else if(location === 'fill-atp')
@@ -122,7 +122,7 @@ export default function EditableATPUI()
                 {formGroupId: atpFormGroupId, 
                 formId: data._id,
                 technicianStartTime: startTime.current,
-                submittedBy: 'technician@upwingenergy.com', //populate submittedBy field with the current technician logged in to prepare for submission
+                submittedBy: user.userEmail, //populate submittedBy field with the current technician logged in to prepare for submission
                 });
         }  
     }

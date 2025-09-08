@@ -284,7 +284,7 @@ async def update_active_form_template(
                 
                 prevEngineerImageData = {item['uuid']: item.get('imageBlobPath', None) for item in old_form['sections']['engineer']['items']}
                 
-                #Handle images for technician section
+                #Handle images for engineer section
                 new_engineer_items = new_form_template_data['sections']['engineer']['items']
                 
                 
@@ -360,6 +360,8 @@ async def update_active_form_template(
                     
                 #Update the spreadsheet template name in Blob Storage with the new form id
                 else:
+                    # Copy the spreadsheet blob path from the old form when no new spreadsheet is provided
+                    new_form_template_data['metadata']['spreadsheetTemplateBlobPath'] = old_form['metadata']['spreadsheetTemplateBlobPath']
                     # Insert the new template
                     inserted_document = await atp_forms.insert_one(new_form_template_data, session=session)
                     new_form_id = inserted_document.inserted_id

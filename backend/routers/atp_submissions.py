@@ -44,6 +44,7 @@ async def create_atp_submission(
 @router.put("/{atp_submission_id}", response_model = responses.ATPReviewSubmissionResponse)
 async def update_atp_submission(atp_submission_id: str, 
                                 atp_submission: Annotated[schemas.ATPReviewSubmission, Body()], 
+                                atp_forms: AsyncCollection = Depends(get_atp_forms_collection),
                                 atp_submissions: AsyncCollection = Depends(get_atp_submissions_collection),
                                 client: AsyncMongoClient = Depends(get_mongo_client),
                                 atp_spreadsheet_manager: ATPSpreadsheetManager = Depends(get_atp_spreadsheet_manager),
@@ -78,8 +79,13 @@ async def update_atp_submission(atp_submission_id: str,
                 #raise ATPSubmissionUpdateError(collection_name = 'atp_submissions', document_id = atp_submission_id)
             
             
-            spreadsheet_path = await blob_handler.download_blob(container_name = 'spreadsheets', blob_path = f'{atp_review_data["formGroupId"]}/{atp_review_data["formId"]}.xlsx')
+            # Get the form template to find the correct spreadsheet blob path
+            form = await atp_forms.find_one({'_id': ObjectId(atp_review_data["formId"])})
+            if not form:
+                raise ATPFormNotFoundError(collection_name = 'atp_forms', document_id = atp_review_data["formId"])
             
+            # Download the spreadsheet from blob storage to a temporary file
+            spreadsheet_path = await blob_handler.download_blob(container_name = 'spreadsheets', blob_path = form["metadata"]["spreadsheetTemplateBlobPath"])
 
             with atp_spreadsheet_manager.register_workbook(spreadsheet_path):
                 cell_to_response_mappings = {}

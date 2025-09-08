@@ -45,7 +45,6 @@ export default function UpdateATPPage()
                 console.log(data);
                 setATPFormData(data);
                 setIsLoading(false);
-                setSelectedExcelFile(data.metadata.spreadsheetTemplateBlobPath);
             }
            
         }

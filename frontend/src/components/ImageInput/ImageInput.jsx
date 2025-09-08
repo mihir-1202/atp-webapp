@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import styles from './ImageInput.module.css';
+import { useEffect } from 'react';
 
 export default function ImageInput({
     id,
@@ -18,7 +19,21 @@ export default function ImageInput({
     const fileInputRef = useRef(null);
     const clearedRemoteImage = useRef(false);
 
+    useEffect(() => {
+        if (imageBlobPath) 
+        {
+            setValue(`sections.${role}.items.${index}.image`, imageBlobPath);
+            setValue(`sections.${role}.items.${index}.hasImage`, true);
+            setFileName(imageBlobPath);
+        }
 
+        else
+        {
+            setValue(`sections.${role}.items.${index}.hasImage`, false);
+            setValue(`sections.${role}.items.${index}.image`, null);
+            setFileName('No file chosen');
+        }
+    }, [imageBlobPath, setValue, role, index]);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
