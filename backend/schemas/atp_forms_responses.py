@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, AnyUrl
 from typing import Annotated, List, Optional, Literal, Union
-from .atp_forms_common import Metadata
+from .atp_forms_common import ATPFormMetadata
 
 # Response-specific item models that include imageUrl for display
 class ResponseHeadingItem(BaseModel):
@@ -46,7 +46,7 @@ class ATPSpecifiedFormMetadata(BaseModel):
 
 class ATPSpecifiedForm(BaseModel):
     id: Annotated[str, Field(alias="_id", description="The ID of the ATP form", example="68af7b2a710b560dffc8741c")]
-    metadata: Annotated[Metadata, 
+    metadata: Annotated[ATPFormMetadata, 
                         Field(description="The metadata of the ATP form", 
                         example={
                             "title": "asdasdad",
@@ -55,7 +55,8 @@ class ATPSpecifiedForm(BaseModel):
                             "createdAt": "2025-08-27T14:39:54.525021",
                             "status": "inactive",
                             "version": 1,
-                            "formGroupID": "68af7b2a710b560dffc8741b"
+                            "formGroupID": "68af7b2a710b560dffc8741b",
+                            "spreadsheetTemplateBlobPath": "3294kjsdgkdg833/3294346sioudbg33.xlsx"
                         })]
     sections: Annotated[dict[str, ResponseSection], 
                         Field(description="The sections of the ATP form",
@@ -104,17 +105,18 @@ class ATPSpecifiedForm(BaseModel):
 
 ATPAllActiveForms = Annotated[List[ATPSpecifiedForm], 
                              Field(description="The list of ATP forms", 
-                                                           example=[
+                                    example=[
                                   {
                                       "_id": "68af7b2a710b560dffc8741c",
-                                                                                                                  "metadata": {
+                                        "metadata": {
                                            "title": "asdasdad",
                                            "description": "asdasdasdasd",
                                            "createdBy": "someone@upwingenergy.com",
                                            "createdAt": "2025-08-27T14:39:54.525021",
                                            "status": "inactive",
                                            "version": 1,
-                                           "formGroupID": "68af7b2a710b560dffc8741b"
+                                           "formGroupID": "68af7b2a710b560dffc8741b",
+                                           "spreadsheetTemplateBlobPath": "3294kjsdgkdg833/3294346sioudbg33.xlsx"
                                        },
                                      "sections": {
                                          "technician": {
@@ -173,7 +175,8 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                            "createdAt": "2025-08-27T14:48:58.994781",
                                            "status": "active",
                                            "version": 1,
-                                           "formGroupID": "68af7d4aea334609889360eb"
+                                           "formGroupID": "68af7d4aea334609889360eb",
+                                           "spreadsheetTemplateBlobPath": "3294kjsdgkdg833/3294346sioudbg33.xlsx"
                                        },
                                      "sections": {
                                          "engineer": {

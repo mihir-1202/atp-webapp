@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Callable
 from bson import ObjectId
 from dependencies import get_atp_submissions_collection, get_atp_forms_collection, get_blob_handler, get_mongo_client, get_atp_spreadsheet_manager, ATPSpreadsheetManager
-from schemas import atp_submissions as schemas, atp_submissions_responses as responses
+from schemas import atp_submissions_requests as schemas, atp_submissions_responses as responses
 import aiofiles
 import pymongo
 from azure.core.exceptions import AzureError
@@ -74,11 +74,11 @@ async def update_atp_submission(atp_submission_id: str,
             if result.matched_count == 0:
                 raise ATPSubmissionNotFoundError(collection_name = 'atp_submissions', document_id = atp_submission_id)
 
-            if result.modified_count == 0:
-                raise ATPSubmissionUpdateError(collection_name = 'atp_submissions', document_id = atp_submission_id)
+            #if result.modified_count == 0:
+                #raise ATPSubmissionUpdateError(collection_name = 'atp_submissions', document_id = atp_submission_id)
             
             
-            spreadsheet_path = await blob_handler.download_blob(container_name = 'spreadsheets', blob_path = f'{atp_review_data["formGroupId"]}/active-form/{atp_review_data["formId"]}.xlsx')
+            spreadsheet_path = await blob_handler.download_blob(container_name = 'spreadsheets', blob_path = f'{atp_review_data["formGroupId"]}/{atp_review_data["formId"]}.xlsx')
             
 
             with atp_spreadsheet_manager.register_workbook(spreadsheet_path):

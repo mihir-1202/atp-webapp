@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, model_validator, ValidationError
 from typing import Annotated, Literal, Union, Self, Optional
 from fastapi import UploadFile
-from .atp_forms_common import Metadata
+from .atp_forms_common import ATPFormMetadata
 
 # Request-specific models for creating and updating ATP forms
 
@@ -45,7 +45,7 @@ class RequestFormTemplate(BaseModel):
     #Since spreadsheetTemplate still needs to be sent as a key value pair in the Form Data request body, it will be an empty string if not provided
     #spreadsheetTemplate: Annotated[Optional[UploadFile], Field(description = "The spreadsheet template of the ATP form")] #UploadFile is a FastAPI class that represents FormData.File[0]
     spreadsheetTemplate: Annotated[Optional[Union[UploadFile, Literal['']]], Field(description = "The spreadsheet template of the ATP form")] #UploadFile is a FastAPI class that represents FormData.File[0]
-    metadata: Annotated[Metadata, Field(description = "The metadata of the ATP form")]
+    metadata: Annotated[ATPFormMetadata, Field(description = "The metadata of the ATP form")]
     sections: Annotated[dict[str, RequestSection], Field(
         min_length = 2,
         max_length = 2,

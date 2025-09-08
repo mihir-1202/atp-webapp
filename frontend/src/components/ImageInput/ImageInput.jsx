@@ -12,38 +12,17 @@ export default function ImageInput({
     className = ''
 }) {
 
-    const [usingRemoteImage, setUsingRemoteImage] = useState(imageUrl ? true : false);
-    const [localImage, setLocalImage] = useState(null);
-    const [fileName, setFileName] = useState('No file chosen');
+    // Stateless preview: only track user's selected file
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [fileName, setFileName] = useState(imageBlobPath || 'No file chosen');
     const fileInputRef = useRef(null);
+    const clearedRemoteImage = useRef(false);
 
 
-    // Don't register the field automatically - we'll manage it manually
-    // const { onChange: defaultOnChange, ...registerWithoutDefaultOnChange } = register(`sections.${role}.items.${index}.image`);
-    
-
-    // Handle initial setup and remote image changes
-    React.useEffect(() => {
-        if (!localImage && imageBlobPath && imageUrl) {
-            setUsingRemoteImage(true);
-            setFileName(imageBlobPath);
-            setValue(`sections.${role}.items.${index}.hasImage`, true);
-            setValue(`sections.${role}.items.${index}.image`, imageBlobPath);
-        } 
-        else if (!localImage) 
-        {
-            // No local image and no remote image - ensure hasImage is false
-            setUsingRemoteImage(false);
-            setValue(`sections.${role}.items.${index}.hasImage`, false);
-            setValue(`sections.${role}.items.${index}.image`, null);
-        }
-    }, [imageBlobPath, imageUrl, localImage, role, index, setValue]);
-    
-   
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        setLocalImage(file);
+        setSelectedFile(file || null);
         
         // Extract the file from FileList and set it directly
         if (file) 
@@ -51,7 +30,6 @@ export default function ImageInput({
             setValue(`sections.${role}.items.${index}.hasImage`, true);
             setValue(`sections.${role}.items.${index}.image`, file);
             setFileName(file.name);
-            setUsingRemoteImage(false);
         } 
         else 
         {
@@ -59,18 +37,13 @@ export default function ImageInput({
             setValue(`sections.${role}.items.${index}.image`, null);
             setFileName('No file chosen');
         }
-        setUsingRemoteImage(false);
+        clearedRemoteImage.current = true;
 
         //THE FIELD KEY WILL EITHER BE A FILE OBJECT, URL STRING, OR NULL
     };
 
     const handleRemoveImage = () => {
-        if (localImage) {
-            setLocalImage(null);
-        }
-        if (usingRemoteImage) {
-            setUsingRemoteImage(false);
-        }
+        setSelectedFile(null);
 
         // Clear the file input value
         if (fileInputRef.current) {
@@ -81,6 +54,7 @@ export default function ImageInput({
         setValue(`sections.${role}.items.${index}.hasImage`, false);
         setValue(`sections.${role}.items.${index}.image`, null);
         setFileName('No file chosen');
+        clearedRemoteImage.current = true; // prevent remote from reappearing
         
     };
 
@@ -106,7 +80,7 @@ export default function ImageInput({
                 />
                 <span className={styles.fileName}>{fileName}</span>
                 
-                {(localImage || usingRemoteImage) && (
+                {(selectedFile || (!clearedRemoteImage.current && imageUrl)) && (
                     <button 
                         type="button" 
                         className={styles.removeButton}
@@ -118,10 +92,10 @@ export default function ImageInput({
             </div>
 
             {/* Image Preview */}
-            {(localImage || usingRemoteImage) && (
+            {(selectedFile || (!clearedRemoteImage.current && imageUrl)) && (
                 <div className={styles.imagePreviewContainer}>
                     <img 
-                        src={localImage ? URL.createObjectURL(localImage) : imageUrl} 
+                        src={selectedFile ? URL.createObjectURL(selectedFile) : imageUrl} 
                         className={styles.imagePreview}
                         alt="Image Preview" 
                     />
