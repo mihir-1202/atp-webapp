@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, {useRef, useContext} from 'react';
 import {useParams, useNavigate} from 'react-router-dom'
 import {useForm} from 'react-hook-form'
 import {useLocation} from 'react-router-dom'
@@ -8,6 +8,7 @@ import FormHeader from '../FormHeader/FormHeader'
 import styles from './EditableATPUI.module.css'
 import StatusSelector from './StatusSelector'
 import LoadingSpinner from '../LoadingSpinner/LoadingSpinner'
+import {UserContext} from '../../auth/UserProvider';
 
 //Path: /review-atp/:atpFormGroupId/:prevSubmissionId
 
@@ -20,7 +21,13 @@ export default function EditableATPUI()
     const startTime = useRef(new Date().toISOString());
     const [error, setError] = React.useState(null);
 
-
+    const user = useContext(UserContext);
+    if (location === 'review-atp' && user.userRole === 'technician')
+    {
+        alert('You are not authorized to review ATP submissions');
+        navigate('/');
+    }
+    
     let defaultValues;
     //formId will be NULL at first since it is not in the path parameter
     if(location === 'fill-atp')

@@ -4,9 +4,19 @@ import Navbar from '../../components/Navbar/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import ManageATPCard from './ManageATPCard';
 import styles from './ManageATPsPage.module.css';
+import { useContext } from 'react';
+import { UserContext } from '../../auth/UserProvider';
 
 //Path: /manage-atps
-export default function ManageATPsPage() {
+export default function ManageATPsPage() 
+{
+    const user = useContext(UserContext);
+    if (user.userRole !== 'admin')
+    {
+        alert('You are not authorized to manage ATPs');
+        navigate('/');
+    }
+    
     const navigate = useNavigate();
     const [atpForms, setATPForms] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(true);

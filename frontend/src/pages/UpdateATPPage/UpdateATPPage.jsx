@@ -6,11 +6,20 @@ import Navbar from '../../components/Navbar/Navbar';
 import styles from '../CreateATPPage/CreateATPPage.module.css';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { UserContext } from '../../auth/UserProvider';
 
 //TODO: fix the path to the update ATP page
 //Path: /update-atp/atpFormGroupId
 export default function UpdateATPPage()
 {
+    const user = useContext(UserContext);
+    if (user.userRole !== 'admin')
+    {
+        alert('You are not authorized to update ATPs');
+        navigate('/');
+    }
+    
     const {atpFormGroupId} = useParams();
     const [atpFormData, setATPFormData] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(true);

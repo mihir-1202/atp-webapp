@@ -3,11 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import FormBuilder from '../../components/FormBuilder/FormBuilder';
 import Navbar from '../../components/Navbar/Navbar';
 import styles from './CreateATPPage.module.css';
+import { useContext } from 'react';
+import { UserContext } from '../../auth/UserProvider';
 
 
 //Path: /create-atp
 export default function CreateATPPage()
 {
+    const user = useContext(UserContext);
+    if (user.userRole !== 'admin')
+    {
+        alert('You are not authorized to create ATPs');
+        navigate('/');
+    }
+    
     const navigate = useNavigate();
     const defaultMetadata = {
         title: "this is not a test title",

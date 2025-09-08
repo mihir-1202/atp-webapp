@@ -2,7 +2,6 @@ import LoginPage from './pages/LoginPage/LoginPage.jsx'
 import CreateATPPage from './pages/CreateATPPage/CreateATPPage.jsx'
 import HomePage from './pages/HomePage/HomePage.jsx'
 import UpdateATPPage from './pages/UpdateATPPage/UpdateATPPage.jsx'
-import SelectATPPage from './pages/SelectATPPage/SelectATPPage.jsx'
 import ManageATPsPage from './pages/ManageATPsPage/ManageATPsPage.jsx'
 import ReadOnlyATPUI from './components/ReadOnlyATPUI/ReadOnlyATPUI.jsx'
 import EditableATPUI from './components/EditableATPUI/EditableATPUI.jsx'
@@ -45,10 +44,6 @@ const router = createBrowserRouter([
       {
         path: "update-atp/:atpFormGroupId",
         element: <ProtectedRoute><UpdateATPPage /></ProtectedRoute>
-      },
-      {
-        path: "select-atp",
-        element: <ProtectedRoute><SelectATPPage /></ProtectedRoute>
       },
       {
         path: "fill-atp/:atpFormGroupId",

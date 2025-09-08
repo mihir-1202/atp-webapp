@@ -5,6 +5,7 @@ import styles from './PendingATPSPage.module.css';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import {useNavigate} from 'react-router-dom';
 
+
 //Path: /pending-atps
 export default function PendingATPSPage()
 {

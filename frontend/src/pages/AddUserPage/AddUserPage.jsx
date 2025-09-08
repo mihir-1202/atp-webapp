@@ -2,11 +2,20 @@ import Navbar from '../../components/Navbar/Navbar';
 import styles from './AddUserPage.module.css';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { UserContext } from '../../auth/UserProvider';
 
 export default function AddUserPage()
 {
     const {register, handleSubmit} = useForm();
     const navigate = useNavigate();
+    
+    const user = useContext(UserContext);
+    if (user.userRole !== 'admin')
+    {
+        alert('You are not authorized to add users');
+        navigate('/');
+    }
 
     function onSubmit(data)
     {

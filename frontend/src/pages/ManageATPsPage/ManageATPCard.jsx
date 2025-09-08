@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './ManageATPCard.module.css';
 
+
 export default function ManageATPCard({ atpForm, onUpdate, onDelete }) {
     return (
         <div className={styles.manageATPCard}>
