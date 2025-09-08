@@ -1,5 +1,7 @@
 .imageInputContainer {
     margin-bottom: 1rem;
+    font-family: "Inter", "Roboto", sans-serif;
+    font-size: 14px;
 }
 
 .inputLabel {
@@ -9,22 +11,49 @@
     color: #333;
 }
 
-.imageInputContainer input[type="file"] {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-bottom: 0.5rem;
+.controlsRow {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+/* Removed custom upload button styles (not used) */
+
+.fileName {
+    color: #6b7280;
+    font-size: 14px;
+    margin-left: 4px;
+}
+
+.fileInputNative::file-selector-button,
+.fileInputNative::-webkit-file-upload-button {
+    background: rgb(44,76,142);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 500; /* match label weight */
+    font-family: "Inter", "Roboto", sans-serif;
+    cursor: pointer;
+    margin-right: 12px;
+}
+
+.fileInputNative {
+    /* Hide the native filename text -> show custom label next to the button */
+    color: transparent;
+    font-size: 0;
 }
 
 .removeButton {
     background-color: #dc3545;
     color: white;
     border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    padding: 8px 12px;
+    border-radius: 6px;
     cursor: pointer;
-    margin-bottom: 0.5rem;
+    margin-left: 4px;
     font-size: 0.9rem;
 }
 
@@ -32,10 +61,18 @@
     background-color: #c82333;
 }
 
-.imagePreview {
-    display: block;
-    max-width: 100%;
+.imagePreviewContainer {
+    width: 100%;
     height: auto;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    background: transparent;
+}
+
+.imagePreview {
+    max-height: 480px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    border-radius: 8px;
 }

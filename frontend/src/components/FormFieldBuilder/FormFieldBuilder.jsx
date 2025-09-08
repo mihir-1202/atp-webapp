@@ -28,9 +28,11 @@ export default function FormFieldBuilder({index, role, id, removeItem, defaultVa
         <li className={styles.fieldItem} onClick = {handleClick}>
             <div className={styles.itemBoxHeader}>
                 <h3>Field</h3>
-                <button type = "button" onClick = {handleMoveUp}>↑</button>
-                <button type = "button" onClick = {handleMoveDown}>↓</button>
-                <button className={styles.removeItemButton} type="button" onClick={() => removeItem(index)}>−</button>
+                <div className={styles.headerActions}>
+                    <button className={styles.moveButton} type = "button" onClick = {handleMoveUp}>↑</button>
+                    <button className={styles.moveButton} type = "button" onClick = {handleMoveDown}>↓</button>
+                    <button className={styles.removeItemButton} type="button" onClick={() => removeItem(index)}>−</button>
+                </div>
             </div>
             <div className={styles.fieldInputsContainer}>
                 
@@ -45,18 +47,6 @@ export default function FormFieldBuilder({index, role, id, removeItem, defaultVa
                         {...register(`sections.${role}.items.${index}.question`)}
                     />
                 </div>
-
-                <ImageInput
-                    id={`${role}-field-image-${index}`}
-                    label="Field Image"
-                    role={role}
-                    index={index}
-                    register={register}
-                    resetField={resetField}
-                    setValue={setValue}
-                    imageUrl={imageUrl}
-                    imageBlobPath={imageBlobPath}
-                />
 
                 <div className={styles.inputGroup} id={styles.answerFormatInputGroup}>
                     <label htmlFor={`${role}-answer-format-${index}`} className={styles.inputLabel}>Answer Format</label>
@@ -98,6 +88,18 @@ export default function FormFieldBuilder({index, role, id, removeItem, defaultVa
                         })}
                     />
                 </div>
+
+                <ImageInput
+                    id={`${role}-field-image-${index}`}
+                    label="Field Image"
+                    role={role}
+                    index={index}
+                    register={register}
+                    resetField={resetField}
+                    setValue={setValue}
+                    imageUrl={imageUrl}
+                    imageBlobPath={imageBlobPath}
+                />
 
             </div>
         </li>

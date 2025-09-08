@@ -9,6 +9,7 @@ import styles from './FormBuilder.module.css';
 
 export default function FormBuilder({defaultMetadata, defaultTechnicianItems, defaultEngineerItems, onSubmit})
 {
+    console.log('Metadata:', defaultMetadata);
     const location = useLocation().pathname.split('/')[1];
 
     const [lastClicked, setLastClicked] = useState({index: null, role: null});
@@ -67,21 +68,25 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
         <main>
 
             <div className={styles.formContainer}>
-                <h1 className={styles.formTitle}>{location === "create-atp" ? "Create New ATP Form" : "Update ATP Form"}</h1>
+                <h1 className={styles.formTitle}>Form Details</h1>
                 <form className="atp-form" onSubmit = {handleSubmit(handleFormSubmit)}> 
                     
-                    <label style = {{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: "20px"}}>
-                        <input 
-                            type = "file" 
-                            accept=".xlsx,.xls"
-                            {...register("spreadsheetTemplate")}
-                        />
-                        <span>{location === "create-atp" ? "Import ATP Excel Spreadsheet Template" : "Replace ATP Excel Spreadsheet Template"}</span>
-                    </label>
+                    
                     
                     <FormMetadata 
                         register = {register}
                     />
+
+                    {/* Spreadsheet template upload under Form Details, below description (above divider) */}
+                    <div className={styles.fileUploadContainer}>
+                        <div className={styles.fileUploadLabel}> {location === "create-atp" ? "Import ATP Excel Spreadsheet Template" : "Replace ATP Excel Spreadsheet Template"} </div>
+                        <input 
+                            className={styles.fileUploadInput}
+                            type = "file" 
+                            accept=".xlsx,.xls"
+                            {...register("spreadsheetTemplate")}
+                        />
+                    </div>
 
                     <hr className="divider" />
 

@@ -31,9 +31,11 @@ export default function FormHeadingBuilder({index, role, removeItem, defaultValu
         <li className={styles.headingItem} data-role={role} onClick = {handleClick}>
             <div className={styles.itemBoxHeader}>
                 <h3>Heading</h3>
-                <button type = "button" onClick = {handleMoveUp}>↑</button>
-                <button type = "button" onClick = {handleMoveDown}>↓</button>
-                <button className={styles.removeItemButton} type="button" onClick = {() => removeItem(index)}>−</button>
+                <div className={styles.headerActions}>
+                    <button className={styles.moveButton} type = "button" onClick = {handleMoveUp}>↑</button>
+                    <button className={styles.moveButton} type = "button" onClick = {handleMoveDown}>↓</button>
+                    <button className={styles.removeItemButton} type="button" onClick = {() => removeItem(index)}>−</button>
+                </div>
             </div>
 
             <div className={styles.headingInputContainer}>

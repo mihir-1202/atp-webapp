@@ -40,6 +40,32 @@
     justify-content: center;
 }
 
+.headerActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.moveButton {
+    background: #d1d5db;
+    color: #000000;
+    border: 1px solid #9ca3af;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.moveButton:hover {
+    background: #9ca3af;
+    color: #000000;
+}
+
 .removeItemButton:hover {
     background: #c82333;
 }

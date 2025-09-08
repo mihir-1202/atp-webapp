@@ -5,8 +5,6 @@ export default function FormMetadata({ register })
 { 
     return(
         <section className="form-info-section">
-            <h2 className={styles.sectionTitle}>Form Details</h2>
-
             <div className={styles.inputGroup}>
                 <label htmlFor="form-title-input" className={styles.inputLabel}>Form Title</label>
                 <input 

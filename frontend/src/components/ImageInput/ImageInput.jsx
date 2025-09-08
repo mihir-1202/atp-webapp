@@ -14,6 +14,7 @@ export default function ImageInput({
 
     const [usingRemoteImage, setUsingRemoteImage] = useState(imageUrl ? true : false);
     const [localImage, setLocalImage] = useState(null);
+    const [fileName, setFileName] = useState('No file chosen');
     const fileInputRef = useRef(null);
 
 
@@ -25,6 +26,7 @@ export default function ImageInput({
     React.useEffect(() => {
         if (!localImage && imageBlobPath && imageUrl) {
             setUsingRemoteImage(true);
+            setFileName(imageBlobPath);
             setValue(`sections.${role}.items.${index}.hasImage`, true);
             setValue(`sections.${role}.items.${index}.image`, imageBlobPath);
         } 
@@ -48,11 +50,14 @@ export default function ImageInput({
         {
             setValue(`sections.${role}.items.${index}.hasImage`, true);
             setValue(`sections.${role}.items.${index}.image`, file);
+            setFileName(file.name);
+            setUsingRemoteImage(false);
         } 
         else 
         {
             setValue(`sections.${role}.items.${index}.hasImage`, false);
             setValue(`sections.${role}.items.${index}.image`, null);
+            setFileName('No file chosen');
         }
         setUsingRemoteImage(false);
 
@@ -75,6 +80,7 @@ export default function ImageInput({
         // Reset the form fields
         setValue(`sections.${role}.items.${index}.hasImage`, false);
         setValue(`sections.${role}.items.${index}.image`, null);
+        setFileName('No file chosen');
         
     };
 
@@ -89,32 +95,37 @@ export default function ImageInput({
             -When an image is changed, we want to implement a custom onChange function that updates the localImage state to provide a preview of the image AND ALSO
             update the useForm's internal state (combining custom onChange logic with the onChange logic that is provided by the register function)
             */}
-            <input 
-                ref={fileInputRef}
-                id={id}
-                type="file" 
-                accept="image/*" 
-                onChange={handleFileChange}
-            />
-
-            {/* Remove Image Button */}
-            {(localImage || usingRemoteImage) && (
-                <button 
-                    type="button" 
-                    className={styles.removeButton}
-                    onClick={handleRemoveImage}
-                >
-                    Remove Image
-                </button>
-            )}
+            <div className={styles.controlsRow}>
+                <input 
+                    ref={fileInputRef}
+                    id={id}
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleFileChange}
+                    className={`${styles.fileInputNative} ${styles.wideFileInput}`}
+                />
+                <span className={styles.fileName}>{fileName}</span>
+                
+                {(localImage || usingRemoteImage) && (
+                    <button 
+                        type="button" 
+                        className={styles.removeButton}
+                        onClick={handleRemoveImage}
+                    >
+                        Remove Image
+                    </button>
+                )}
+            </div>
 
             {/* Image Preview */}
             {(localImage || usingRemoteImage) && (
-                <img 
-                    src={localImage ? URL.createObjectURL(localImage) : imageUrl} 
-                    className={styles.imagePreview}
-                    alt="Image Preview" 
-                />
+                <div className={styles.imagePreviewContainer}>
+                    <img 
+                        src={localImage ? URL.createObjectURL(localImage) : imageUrl} 
+                        className={styles.imagePreview}
+                        alt="Image Preview" 
+                    />
+                </div>
             )}
         </div>
     );
