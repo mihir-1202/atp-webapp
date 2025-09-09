@@ -66,7 +66,9 @@ async def update_atp_submission(atp_submission_id: str,
 
             
             atp_review_data = atp_submission.model_dump()
+            upload_path = f'{atp_review_data["formGroupId"]}/submissions/{atp_review_data["formId"]}_{completion_time_path_format}.xlsx'
             atp_review_data['reviewedAt'] = completion_time_isoformat
+            atp_review_data['completedSpreadsheetBlobPath'] = upload_path
             
             # Check if the submission exists and update it
             
@@ -100,7 +102,6 @@ async def update_atp_submission(atp_submission_id: str,
                     cell_to_response_mappings[response['spreadsheetCell']] = response['answer']
                 
                 atp_spreadsheet_manager.populate_cells_with_responses(cell_to_response_mappings)
-                upload_path = f'{atp_review_data["formGroupId"]}/submissions/{atp_review_data["formId"]}_{completion_time_path_format}.xlsx'
                 
                 async with aiofiles.open(spreadsheet_path, 'rb') as file_stream:
                     await blob_handler.upload_blob(container_name = 'spreadsheets', blob_path = upload_path, file_stream = file_stream)
