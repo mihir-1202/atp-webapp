@@ -38,14 +38,13 @@ export default function FormFieldBuilder({index, role, id, removeItem, defaultVa
                 
                 <div className={styles.inputGroup} id={styles.questionInputGroup}>
                     <label htmlFor={`${role}-question-${index}`} className={styles.inputLabel}>Question</label>
-                    <input 
+                    <textarea 
                         id={`${role}-question-${index}`} 
-                        className="question-input" 
-                        type="text" 
                         placeholder="Enter question" 
                         defaultValue={defaultValue || ""}
                         {...register(`sections.${role}.items.${index}.question`)}
-                    />
+                    >   
+                    </textarea>
                 </div>
 
                 <div className={styles.inputGroup} id={styles.answerFormatInputGroup}>

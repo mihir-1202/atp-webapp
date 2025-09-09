@@ -87,6 +87,7 @@
 }
 
 .inputGroup input,
+.inputGroup textarea,
 .inputGroup select {
     width: 100%;
     padding: 10px;
@@ -94,12 +95,20 @@
     border-radius: 4px;
     font-size: 14px;
     box-sizing: border-box;
+    font-family: inherit;
 }
 
 .inputGroup input:focus,
+.inputGroup textarea:focus,
 .inputGroup select:focus {
     outline: none;
     border-color: rgb(44, 76, 142);
+}
+
+.inputGroup textarea {
+    min-height: 80px;
+    resize: vertical;
+    line-height: 1.4;
 }
 
 /* SpreadsheetCellMapper CSS Module */

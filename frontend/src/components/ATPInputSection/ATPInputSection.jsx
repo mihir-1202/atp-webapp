@@ -31,6 +31,7 @@ export default function ATPInputSection({register, role, showFormActions, atpTem
         <HeadingItem 
             key = {item.uuid} 
             headingText = {item.content}
+            headingType = {item.headingType}
             imageUrl = {item.imageUrl || null} 
         />
         :

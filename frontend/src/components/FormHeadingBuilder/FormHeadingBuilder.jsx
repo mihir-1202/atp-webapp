@@ -39,17 +39,32 @@ export default function FormHeadingBuilder({index, role, removeItem, defaultValu
             </div>
 
             <div className={styles.headingInputContainer}>
-                <div className={`${styles.inputGroup} ${styles.headingInputGroup}`} id="heading-input-group">
+                <div className={styles.inputGroup} id="heading-text-group">
                     <label htmlFor={`${role}-heading-${index}`} className={styles.inputLabel}>Heading Text</label>
-                    <input 
+                    <textarea 
                         id={`${role}-heading-${index}`} 
-                        className="heading-input" 
-                        type="text" 
                         placeholder="Enter Heading" 
                         defaultValue={defaultValue}
                         required 
                         {...register(`sections.${role}.items.${index}.content`)}
-                    />
+                    >
+                    </textarea>
+                </div>
+                
+                <div className={styles.inputGroup} id="heading-type-group">
+                    <label htmlFor = {`${role}-heading-type-${index}`} className={styles.inputLabel}>Heading Type</label>
+                    <select id = {`${role}-heading-type-${index}`} 
+                    defaultValue=""
+                    required
+                    {...register(`sections.${role}.items.${index}.headingType`)}>
+                        <option value = "" disabled>Select Heading Type</option>
+                        <option value = "h1">H1</option>
+                        <option value = "h2">H2</option>
+                        <option value = "h3">H3</option>
+                        <option value = "h4">H4</option>
+                        <option value = "h5">H5</option>
+                        <option value = "h6">H6</option>
+                    </select>
                 </div>
             </div>
 

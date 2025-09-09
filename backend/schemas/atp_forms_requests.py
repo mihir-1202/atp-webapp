@@ -9,6 +9,7 @@ class RequestHeadingItem(BaseModel):
     uuid: Annotated[str, Field(min_length = 1, description = "The UUID of the heading item", example = "123e4567-e89b-12d3-a456-426614174000")]
     type: Annotated[Literal['heading'], Field(description = "The type of the heading item", example = "heading")] #type can only be a literal string 'heading'
     content: Annotated[str, Field(min_length = 1, description = "The content of the heading item", example = "This is a heading")]
+    headingType: Annotated[Literal['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], Field(description = "The type of the heading item", example = "h1")]
     hasImage: Annotated[Optional[bool], Field(default=None, description = "Whether the heading item has an image", example = True)]
 
 class RequestFieldItem(BaseModel):
@@ -59,13 +60,13 @@ class RequestFormTemplate(BaseModel):
         example = {
             "technician": {
                 "items": [
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "type": "heading", "content": "This is a heading", "image": "images/container/path/image.png", "hasImage": True},
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "type": "heading", "content": "This is a heading", "headingType": "h1", "image": "images/container/path/image.png", "hasImage": True},
                     {"uuid": "123e4567-e89b-426614174000", "index": 1, "type": "field", "question": "What is the motor speed?", "answerFormat": "number", "spreadsheetCell": "A1", "image": "images/container/path/image.png", "hasImage": True}
                 ]
             },
             "engineer": {
                 "items": [
-                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "type": "heading", "content": "Another heading", "image": "images/container/path/image.png", "hasImage": True},
+                    {"uuid": "123e4567-e89b-12d3-a456-426614174000", "type": "heading", "content": "Another heading", "headingType": "h2", "image": "images/container/path/image.png", "hasImage": True},
                     {"uuid": "123e4567-e89b-426614174000", "type": "field", "question": "What is the temperature?", "answerFormat": "number", "spreadsheetCell": "B1", "image": "images/container/path/image.png", "hasImage": True}
                 ]
             }

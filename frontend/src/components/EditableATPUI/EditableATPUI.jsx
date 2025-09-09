@@ -20,8 +20,6 @@ export default function EditableATPUI()
     const location = useLocation().pathname.split('/')[1];
     const {atpFormGroupId, prevSubmissionId} = useParams();
     const startTime = useRef(new Date().toISOString());
-    const [error, setError] = React.useState(null);
-    
 
     const user = useContext(UserContext);
     
@@ -296,10 +294,7 @@ export default function EditableATPUI()
         return <LoadingSpinner />
     }
 
-    if (error) {
-        return <div>{error}</div>;
-    }
-
+   
     return(
         <div className={styles.fillATPPage}>
             <Navbar title = {location === 'review-atp' ? 'Review Pending ATP' : (location === 'fill-atp' ? 'Fill ATP' : 'View Completed ATP')}/>

@@ -7,6 +7,7 @@ class ResponseHeadingItem(BaseModel):
     uuid: Annotated[str, Field(description="The UUID of the heading item", example="123e4567-e89b-12d3-a456-426614174000")]
     type: Annotated[Literal['heading'], Field(description="The type of the heading item", example="heading")]
     content: Annotated[str, Field(description="The content of the heading item", example="This is a heading")]
+    headingType: Annotated[Literal['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], Field(description="The type of the heading item", example="h1")]
     hasImage: Annotated[bool, Field(description="Whether the heading item has an image", example=True)]
     imageBlobPath: Annotated[Optional[str], Field(description="The blob path of the heading item image", example="images/container/path/image.png")]
     imageUrl: Annotated[Optional[AnyUrl], Field(description="The full URL of the heading item image for display", example="https://storage.blob.core.windows.net/images/container/path/image.png?sv=...")]
@@ -147,6 +148,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "uuid": "e1e6bd9a-3803-4022-aa47-8c8196655b07",
                                                      "type": "heading",
                                                      "content": "This is not a engineer heading",
+                                                     "headingType": "h1",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True
@@ -157,6 +159,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "question": "This is a engineer question",
                                                      "answerFormat": "text",
                                                      "spreadsheetCell": "B2",
+                                                     "headingType": "h2",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True
@@ -185,6 +188,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174002",
                                                      "type": "heading",
                                                      "content": "Another heading",
+                                                     "headingType": "h1",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True
@@ -195,6 +199,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "question": "What is the temperature?",
                                                      "answerFormat": "number",
                                                      "spreadsheetCell": "B1",
+                                                     "headingType": "h2",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True
@@ -207,6 +212,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174000",
                                                      "type": "heading",
                                                      "content": "This is a heading",
+                                                     "headingType": "h1",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True
@@ -217,6 +223,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "question": "What is the motor speed?",
                                                      "answerFormat": "number",
                                                      "spreadsheetCell": "A1",
+                                                     "headingType": "h2",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True
