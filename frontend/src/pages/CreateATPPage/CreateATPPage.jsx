@@ -10,6 +10,8 @@ import { UserContext } from '../../auth/UserProvider';
 //Path: /create-atp
 export default function CreateATPPage()
 {
+    
+    const navigate = useNavigate();
     const user = useContext(UserContext);
     if (user.userRole !== 'admin')
     {
@@ -17,7 +19,7 @@ export default function CreateATPPage()
         navigate('/');
     }
     
-    const navigate = useNavigate();
+    
     const defaultMetadata = {
         title: "this is not a test title",
         description: "this is not a test description",
