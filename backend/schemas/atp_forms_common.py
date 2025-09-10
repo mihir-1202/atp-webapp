@@ -5,7 +5,7 @@ from fastapi import UploadFile, Form, File
 
 # Common models shared between request and response schemas
 
-class Metadata(BaseModel):
+class ATPFormMetadata(BaseModel):
     title: Annotated[str, Field(min_length = 1, description = "The title of the ATP form", example = "ATP 03")]
     description: Annotated[str, Field(min_length = 1, description = "The description of the ATP form", example = "This is a description of the ATP form")]
     createdBy: Annotated[EmailStr, Field(min_length = 1, description = "The email of the user who created the ATP form", example = "admin@upwingenergy.com")]
@@ -13,5 +13,5 @@ class Metadata(BaseModel):
     status: Annotated[Optional[Literal['active', 'inactive']], Field(default=None, description = "The status of the ATP form", example = 'active')]
     version: Annotated[Optional[int], Field(default=None, ge = 1, description = "The version of the ATP form", example = 1)]
     formGroupID: Annotated[Optional[str], Field(default=None, description = "The ID of the ATP form group", example = "68af7b2a710b560dffc8741b")]
-
+    spreadsheetTemplateBlobPath: Annotated[Optional[str], Field(default=None, description = "The blob path of the ATP form spreadsheet template", example = "3294kjsdgkdg833/3294346sioudbg33.xlsx")]
 

@@ -2,7 +2,7 @@
 
 .technicianFormSection,
 .engineerFormSection {
-    margin-bottom: 40px;
+    margin: 20px 0 40px 0;
     padding: 20px;
     border: 2px solid #e9ecef;
     border-radius: 12px;
@@ -55,7 +55,6 @@
     padding: 0;
     margin: 0;
 }
-
 .technicianFormSection {
     border-left: 4px solid #28a745;
 }
@@ -63,3 +62,4 @@
 .engineerFormSection {
     border-left: 4px solid #007bff;
 }
+

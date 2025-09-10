@@ -15,7 +15,7 @@ class ATPSpreadsheetManager:
             self.wb = xl.load_workbook(excel_filepath)
             self.ws = self.wb.active
         except Exception as e:
-            raise IOError(f"Failed to ATP Template excel file: {str(e)}")
+            raise IOError(f"Failed to register ATP Template excel file: {str(e)}")
         return self
         
     """Saves the workbook to the specified filepath."""

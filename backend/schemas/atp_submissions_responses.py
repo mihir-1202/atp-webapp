@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, AnyUrl
 from typing import Annotated, List, Optional, Literal
-from .atp_submissions import ATPTechnicianSubmission, ATPReviewSubmission, Responses
+from .atp_submissions_requests import ATPTechnicianSubmission, ATPReviewSubmission, Responses
 
 class ATPSubmissionCreationResponse(BaseModel):
     message: Annotated[str, Field(description = "The message of the ATP submission creation response", example = "Submitted ATP succesfully")]

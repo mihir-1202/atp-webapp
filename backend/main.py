@@ -6,6 +6,7 @@ import uvicorn
 from routers import atp_forms_router, atp_submissions_router, atp_users_router
 from pymongo.errors import PyMongoError
 from exceptions import *
+from pydantic import ValidationError
 
 app = FastAPI(
     title = "ATP Web Application API",
@@ -20,6 +21,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(ValidationError)
+async def validation_error_handler(request: Request, exc: ValidationError):
+    print(type(exc).__name__, str(exc))
+    print(exc.__dict__)
+    return JSONResponse(
+        status_code=422,
+        content={"message": str(exc.errors()[0]['msg'])}
+    )
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):

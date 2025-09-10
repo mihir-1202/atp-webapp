@@ -157,9 +157,7 @@ export default function ReadOnlyATPUI()
                 </form>
             </div>
             
-            <footer className={styles.footer}>
-                <p>&copy; 2024 Upwing Energy. All rights reserved.</p>
-            </footer>
+            
         </div>
     )
 }

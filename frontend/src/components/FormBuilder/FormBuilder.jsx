@@ -9,10 +9,9 @@ import styles from './FormBuilder.module.css';
 
 export default function FormBuilder({defaultMetadata, defaultTechnicianItems, defaultEngineerItems, onSubmit})
 {
+    console.log('Metadata:', defaultMetadata);
     const location = useLocation().pathname.split('/')[1];
-
     const [lastClicked, setLastClicked] = useState({index: null, role: null});
-    
     const {register, control, handleSubmit, resetField, setValue} = useForm(
         {
             defaultValues:
@@ -43,7 +42,7 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
     });
 
     // Default onSubmit function that handles UUID assignment
-    const handleFormSubmit = (formData) => {
+    function handleFormSubmit(formData) {
         console.log("Frontend sending:", formData);
 
         // Use the UUIDs from useFieldArray fields (they contain the uuid property)
@@ -61,27 +60,57 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
         if (onSubmit) {
             onSubmit(formData);
         }
-    };
+    }
+    const [showRemoveExcelFileButton, setShowRemoveExcelFileButton] = useState(false);
+    const [excelFileName, setExcelFileName] = React.useState(defaultMetadata.spreadsheetTemplateBlobPath);
+    //custom onChange function for the spreadsheet template input
+    const {onChange, ...registerWithoutDefaultOnChange} = register("spreadsheetTemplate");
+    function handleExcelFileChange(e)
+    {
+        const file = e.target.files[0];
+        setExcelFileName(file.name);
+        if(location === 'update-atp')
+            setShowRemoveExcelFileButton(true);
+        onChange(e);
+    }
+    function handleExcelFileRemove()
+    {
+        setExcelFileName(defaultMetadata.spreadsheetTemplateBlobPath);
+        if (showRemoveExcelFileButton)
+            setShowRemoveExcelFileButton(false);
+    }
+
 
     return(
         <main>
 
             <div className={styles.formContainer}>
-                <h1 className={styles.formTitle}>{location === "create-atp" ? "Create New ATP Form" : "Update ATP Form"}</h1>
+                <h1 className={styles.formTitle}>Form Details</h1>
                 <form className="atp-form" onSubmit = {handleSubmit(handleFormSubmit)}> 
                     
-                    <label style = {{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: "20px"}}>
-                        <input 
-                            type = "file" 
-                            accept=".xlsx,.xls"
-                            {...register("spreadsheetTemplate")}
-                        />
-                        <span>{location === "create-atp" ? "Import ATP Excel Spreadsheet Template" : "Replace ATP Excel Spreadsheet Template"}</span>
-                    </label>
+                    
                     
                     <FormMetadata 
                         register = {register}
                     />
+
+                    {/* Spreadsheet template upload under Form Details, below description (above divider) */}
+                    <div className={styles.fileUploadContainer}>
+                        <div className={styles.fileUploadLabel}> {location === "create-atp" ? "Import ATP Excel Spreadsheet Template" : "Replace ATP Excel Spreadsheet Template"} </div>
+                        <div className={styles.fileUploadRow}>
+                            <span className={styles.fileButtonWrapper}>
+                                <input 
+                                    className={styles.fileUploadInput}
+                                    type = "file" 
+                                    accept=".xlsx,.xls"
+                                    onChange = {handleExcelFileChange}
+                                    {...registerWithoutDefaultOnChange} 
+                                />
+                            </span>
+                            <span className={styles.fileUploadFilename}>{excelFileName}</span>
+                            {showRemoveExcelFileButton && <button className={styles.removeFileButton} type = "button" onClick = {handleExcelFileRemove}>Remove</button>}
+                        </div>
+                    </div>
 
                     <hr className="divider" />
 

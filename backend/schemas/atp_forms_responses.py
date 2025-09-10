@@ -1,12 +1,13 @@
 from pydantic import BaseModel, Field, AnyUrl
 from typing import Annotated, List, Optional, Literal, Union
-from .atp_forms_common import Metadata
+from .atp_forms_common import ATPFormMetadata
 
 # Response-specific item models that include imageUrl for display
 class ResponseHeadingItem(BaseModel):
     uuid: Annotated[str, Field(description="The UUID of the heading item", example="123e4567-e89b-12d3-a456-426614174000")]
     type: Annotated[Literal['heading'], Field(description="The type of the heading item", example="heading")]
     content: Annotated[str, Field(description="The content of the heading item", example="This is a heading")]
+    headingType: Annotated[Literal['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], Field(description="The type of the heading item", example="h1")]
     hasImage: Annotated[bool, Field(description="Whether the heading item has an image", example=True)]
     imageBlobPath: Annotated[Optional[str], Field(description="The blob path of the heading item image", example="images/container/path/image.png")]
     imageUrl: Annotated[Optional[AnyUrl], Field(description="The full URL of the heading item image for display", example="https://storage.blob.core.windows.net/images/container/path/image.png?sv=...")]
@@ -17,7 +18,7 @@ class ResponseFieldItem(BaseModel):
     type: Annotated[Literal['field'], Field(description="The type of the field item", example="field")]
     question: Annotated[str, Field(description="The question of the field item", example="What is the motor speed?")]
     answerFormat: Annotated[str, Field(description="The answer format of the field item", example="number")]
-    spreadsheetCell: Annotated[str, Field(description="Cell reference in format A1, B5, AA10, etc.", example="A1")]
+    spreadsheetCell: Annotated[Optional[str], Field(description="Cell reference in format A1, B5, AA10, etc.", example="A1")]
     hasImage: Annotated[Optional[bool], Field(description="Whether the field item has an image", example=True)]
     imageBlobPath: Annotated[Optional[str], Field(description="The blob path of the field item image", example="images/container/path/image.png")]
     imageUrl: Annotated[Optional[AnyUrl], Field(description="The full URL of the field item image for display", example="https://storage.blob.core.windows.net/images/container/path/image.png?sv=...")]
@@ -46,7 +47,7 @@ class ATPSpecifiedFormMetadata(BaseModel):
 
 class ATPSpecifiedForm(BaseModel):
     id: Annotated[str, Field(alias="_id", description="The ID of the ATP form", example="68af7b2a710b560dffc8741c")]
-    metadata: Annotated[Metadata, 
+    metadata: Annotated[ATPFormMetadata, 
                         Field(description="The metadata of the ATP form", 
                         example={
                             "title": "asdasdad",
@@ -55,7 +56,8 @@ class ATPSpecifiedForm(BaseModel):
                             "createdAt": "2025-08-27T14:39:54.525021",
                             "status": "inactive",
                             "version": 1,
-                            "formGroupID": "68af7b2a710b560dffc8741b"
+                            "formGroupID": "68af7b2a710b560dffc8741b",
+                            "spreadsheetTemplateBlobPath": "3294kjsdgkdg833/3294346sioudbg33.xlsx"
                         })]
     sections: Annotated[dict[str, ResponseSection], 
                         Field(description="The sections of the ATP form",
@@ -104,17 +106,18 @@ class ATPSpecifiedForm(BaseModel):
 
 ATPAllActiveForms = Annotated[List[ATPSpecifiedForm], 
                              Field(description="The list of ATP forms", 
-                                                           example=[
+                                    example=[
                                   {
                                       "_id": "68af7b2a710b560dffc8741c",
-                                                                                                                  "metadata": {
+                                        "metadata": {
                                            "title": "asdasdad",
                                            "description": "asdasdasdasd",
                                            "createdBy": "someone@upwingenergy.com",
                                            "createdAt": "2025-08-27T14:39:54.525021",
                                            "status": "inactive",
                                            "version": 1,
-                                           "formGroupID": "68af7b2a710b560dffc8741b"
+                                           "formGroupID": "68af7b2a710b560dffc8741b",
+                                           "spreadsheetTemplateBlobPath": "3294kjsdgkdg833/3294346sioudbg33.xlsx"
                                        },
                                      "sections": {
                                          "technician": {
@@ -145,6 +148,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "uuid": "e1e6bd9a-3803-4022-aa47-8c8196655b07",
                                                      "type": "heading",
                                                      "content": "This is not a engineer heading",
+                                                     "headingType": "h1",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True
@@ -155,6 +159,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "question": "This is a engineer question",
                                                      "answerFormat": "text",
                                                      "spreadsheetCell": "B2",
+                                                     "headingType": "h2",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True
@@ -173,7 +178,8 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                            "createdAt": "2025-08-27T14:48:58.994781",
                                            "status": "active",
                                            "version": 1,
-                                           "formGroupID": "68af7d4aea334609889360eb"
+                                           "formGroupID": "68af7d4aea334609889360eb",
+                                           "spreadsheetTemplateBlobPath": "3294kjsdgkdg833/3294346sioudbg33.xlsx"
                                        },
                                      "sections": {
                                          "engineer": {
@@ -182,6 +188,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174002",
                                                      "type": "heading",
                                                      "content": "Another heading",
+                                                     "headingType": "h1",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True
@@ -192,6 +199,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "question": "What is the temperature?",
                                                      "answerFormat": "number",
                                                      "spreadsheetCell": "B1",
+                                                     "headingType": "h2",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True
@@ -204,6 +212,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "uuid": "123e4567-e89b-12d3-a456-426614174000",
                                                      "type": "heading",
                                                      "content": "This is a heading",
+                                                     "headingType": "h1",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True
@@ -214,6 +223,7 @@ ATPAllActiveForms = Annotated[List[ATPSpecifiedForm],
                                                      "question": "What is the motor speed?",
                                                      "answerFormat": "number",
                                                      "spreadsheetCell": "A1",
+                                                     "headingType": "h2",
                                                      "image": "images/container/path/image.png",
                                                      "imageUrl": "https://storage.blob.core.windows.net/images/container/path/image.png?sv=...",
                                                      "hasImage": True

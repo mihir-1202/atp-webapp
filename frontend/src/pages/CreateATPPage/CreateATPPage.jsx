@@ -5,6 +5,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import styles from './CreateATPPage.module.css';
 import { useContext } from 'react';
 import { UserContext } from '../../auth/UserProvider';
+import UnauthorizedUI from '../../components/UnauthorizedUI/UnauthorizedUI.jsx';
 
 
 //Path: /create-atp
@@ -15,29 +16,31 @@ export default function CreateATPPage()
     const user = useContext(UserContext);
     if (user.userRole !== 'admin')
     {
-        alert('You are not authorized to create ATPs');
-        navigate('/');
+        return <UnauthorizedUI message='You are not authorized to create ATPs' />;
     }
+
+    console.log('User:', user);
     
     
     const defaultMetadata = {
-        title: "this is not a test title",
-        description: "this is not a test description",
-        createdBy: "someone@upwingenergy.com"
+        title: "",
+        description: "",
+        createdBy: user.userEmail
     }
     
     const defaultTechnicianItems = [
         {
             uuid: crypto.randomUUID(),
             type: "heading",
-            content: "This is a technician heading",
+            headingType: "h1",
+            content: "",
             image: null
         },
 
         {
             uuid: crypto.randomUUID(),
             type: "field",
-            question: "This is a technician question",
+            question: "",
             answerFormat: "text",
             spreadsheetCell: "A2",
             image: null
@@ -48,14 +51,14 @@ export default function CreateATPPage()
         {
             uuid: crypto.randomUUID(),
             type: "heading",
-            content: "This is not a engineer heading",
+            content: "",
             image: null
         },
 
         {
             uuid: crypto.randomUUID(),
             type: "field",
-            question: "This is a engineer question",
+            question: "",
             answerFormat: "text",
             spreadsheetCell: "B2",
             image: null
@@ -85,6 +88,7 @@ export default function CreateATPPage()
         const spreadsheetTemplate = formData.spreadsheetTemplate[0];
         if (!spreadsheetTemplate)
         {
+            //if we are creating an atp form for the first time, an excel file is required
             alert("Please select an Excel file to upload");
             return;
         }

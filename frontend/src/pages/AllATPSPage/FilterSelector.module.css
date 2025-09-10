@@ -1,0 +1,67 @@
+/* FilterSelector CSS Module */
+
+.filterContainer {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0 0 0;
+    margin-bottom: 20px;
+}
+
+.filterInner {
+    width: 100%;
+    max-width: 1000px;
+    padding: 0 80px;
+}
+
+.filterLabel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    color: rgb(76, 75, 75);
+}
+
+.filterSelect {
+    padding: 8px 12px;
+    border: 2px solid rgb(225, 229, 233);
+    border-radius: 8px;
+    font-family: "Inter", "Roboto", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    background-color: white;
+    color: rgb(76, 75, 75);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.filterSelect:focus {
+    outline: none;
+    border-color: rgb(44, 76, 142);
+}
+
+.filterSelect:hover {
+    border-color: rgb(200, 200, 200);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .filterInner {
+        padding: 0 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .filterInner {
+        padding: 0 20px;
+    }
+    
+    .filterLabel {
+        font-size: 14px;
+    }
+    
+    .filterSelect {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+}

@@ -6,16 +6,19 @@ import LogoutButton from '../LogoutButton/LogoutButton.jsx';
 
 export default function Navbar({ title }) {
     return (
-        <Link to = "/">
-            <nav className={styles.navbar}>
+        <nav className={styles.navbar}>
+            <Link to = "/" className={styles.logoContainer}>
                 <img 
                     className={styles.upwingLogo} 
                     src={upwingLogo} 
                     alt="Upwing Logo" 
                 />
-                <span>{title}</span>
+                <span className={styles.tooltip}>Go Home</span>
+            </Link>
+            <span>{title}</span>
+            <div className={styles.logoutContainer}>
                 <LogoutButton />
-            </nav>
-        </Link>
+            </div>
+        </nav>
     );
 }

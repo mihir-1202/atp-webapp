@@ -9,6 +9,7 @@ import styles from './EditableATPUI.module.css'
 import StatusSelector from './StatusSelector'
 import LoadingSpinner from '../LoadingSpinner/LoadingSpinner'
 import {UserContext} from '../../auth/UserProvider';
+import UnauthorizedUI from '../UnauthorizedUI/UnauthorizedUI.jsx';
 
 //Path: /review-atp/:atpFormGroupId/:prevSubmissionId
 
@@ -19,28 +20,27 @@ export default function EditableATPUI()
     const location = useLocation().pathname.split('/')[1];
     const {atpFormGroupId, prevSubmissionId} = useParams();
     const startTime = useRef(new Date().toISOString());
-    const [error, setError] = React.useState(null);
 
     const user = useContext(UserContext);
+    
     if (location === 'review-atp' && user.userRole === 'technician')
     {
-        alert('You are not authorized to review ATP submissions');
-        navigate('/');
+        return <UnauthorizedUI message='You are not authorized to review ATP submissions' />;
     }
-    
+
     let defaultValues;
     //formId will be NULL at first since it is not in the path parameter
     if(location === 'fill-atp')
         defaultValues = {defaultValues: 
             {formGroupId: atpFormGroupId, 
             formId: null, 
-            submittedBy: 'technician@upwingenergy.com'}};
+            submittedBy: user.userEmail}};
 
     else if (location === 'review-atp')
         defaultValues = {defaultValues: 
             {formGroupId: atpFormGroupId, 
             formId: null, 
-            reviewedBy: 'engineer@upwingenergy.com'}};
+            reviewedBy: user.userEmail}};
     
     
     const {register, handleSubmit, reset, setValue} = useForm(defaultValues);
@@ -77,7 +77,7 @@ export default function EditableATPUI()
                 formId: atpTemplateData._id,
                 engineerStartTime: startTime.current,
                 technicianStartTime: submissionData.technicianStartTime,
-                reviewedBy: 'engineer@upwingenergy.com', 
+                reviewedBy: user.userEmail, 
                 submittedBy: submissionData.submittedBy, 
                 submittedAt: submissionData.submittedAt, 
                 submissionId: prevSubmissionId,
@@ -110,7 +110,7 @@ export default function EditableATPUI()
                 {formGroupId: atpFormGroupId, 
                 formId: data._id,
                 engineerStartTime: startTime.current,
-                reviewedBy: 'engineer@upwingenergy.com' //populate reviewedBy field with the current engineer logged in to prepare for submission
+                reviewedBy: user.userEmail //populate reviewedBy field with the current engineer logged in to prepare for submission
                 }); 
         }
         else if(location === 'fill-atp')
@@ -120,7 +120,7 @@ export default function EditableATPUI()
                 {formGroupId: atpFormGroupId, 
                 formId: data._id,
                 technicianStartTime: startTime.current,
-                submittedBy: 'technician@upwingenergy.com', //populate submittedBy field with the current technician logged in to prepare for submission
+                submittedBy: user.userEmail, //populate submittedBy field with the current technician logged in to prepare for submission
                 });
         }  
     }
@@ -228,7 +228,7 @@ export default function EditableATPUI()
                 
                 
                 // Only add if we found the question and answer exists
-                if (answerFormat && spreadsheetCell && answer !== undefined && answer !== '') {
+                if (answerFormat && answer && answer !== '') {
                     formattedTechnicianResponses.push({
                         questionUUID: questionUUID,
                         spreadsheetCell: spreadsheetCell,
@@ -294,10 +294,7 @@ export default function EditableATPUI()
         return <LoadingSpinner />
     }
 
-    if (error) {
-        return <div>{error}</div>;
-    }
-
+   
     return(
         <div className={styles.fillATPPage}>
             <Navbar title = {location === 'review-atp' ? 'Review Pending ATP' : (location === 'fill-atp' ? 'Fill ATP' : 'View Completed ATP')}/>
@@ -333,14 +330,9 @@ export default function EditableATPUI()
                             setValue = {setValue}
                         />
                      )}
-
-                    {location === 'review-atp' && <StatusSelector register = {register} />}
                 </form>
             </div>
             
-            <footer className={styles.footer}>
-                <p>&copy; 2024 Upwing Energy. All rights reserved.</p>
-            </footer>
         </div>
     )
 }

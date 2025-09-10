@@ -9,7 +9,6 @@ export default function ManageATPCard({ atpForm, onUpdate, onDelete }) {
                 <div className={styles.atpTitle}>{atpForm.metadata.title}</div>
                 <div className={styles.atpDescription}>{atpForm.metadata.description}</div>
                 <div className={styles.atpVersion}>Version {atpForm.metadata.version}</div>
-                <div className={styles.atpStatus}>Status: {atpForm.metadata.status}</div>
             </div>
             
             <div className={styles.actionButtons}>

@@ -5,15 +5,59 @@
     border: none;
     padding: 20px 0;
     margin: 30px 0 20px 0;
-    border-bottom: 3px solid rgb(44, 76, 142);
 }
 
 .headingText {
     color: rgb(44, 76, 142);
-    font-size: 22px;
     font-weight: bold;
     margin: 0;
     line-height: 1.5;
     letter-spacing: 0px;
     text-align: center;
+}
+
+.headingH1 {
+    font-size: 48px;
+}
+
+.headingItem:has(.headingH1) {
+    border-bottom: 3px solid rgb(44, 76, 142);
+}
+
+.headingH2 {
+    font-size: 42px;
+}
+
+.headingH3 {
+    font-size: 36px;
+}
+
+.headingH4 {
+    font-size: 30px;
+}
+
+.headingH5 {
+    font-size: 24px;
+}
+
+.headingH6 {
+    font-size: 20px;
+}
+
+.imageContainer {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.headingImage {
+    max-width: 600px;
+    max-height: 450px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+    background: white;
+    padding: 8px;
 }

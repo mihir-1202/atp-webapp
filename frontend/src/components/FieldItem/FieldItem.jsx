@@ -42,8 +42,8 @@ export default function FieldItem({questionUUID, questionText, answerFormat, reg
             </label>
 
             {imageUrl && (
-                <div>
-                    <img src = {imageUrl} style = {{width: '50%', height: '50%', objectFit: 'contain'}} alt = "Heading Image" />
+                <div className={styles.imageContainer}>
+                    <img src = {imageUrl} className={styles.fieldImage} alt = "Field Image" />
                 </div>
             )}
 

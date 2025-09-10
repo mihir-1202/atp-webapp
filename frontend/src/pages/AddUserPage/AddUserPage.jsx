@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { UserContext } from '../../auth/UserProvider';
+import UnauthorizedUI from '../../components/UnauthorizedUI/UnauthorizedUI.jsx';
 
 export default function AddUserPage()
 {
@@ -13,8 +14,7 @@ export default function AddUserPage()
     const user = useContext(UserContext);
     if (user.userRole !== 'admin')
     {
-        alert('You are not authorized to add users');
-        navigate('/');
+        return <UnauthorizedUI message='You are not authorized to add users' />;
     }
 
     function onSubmit(data)

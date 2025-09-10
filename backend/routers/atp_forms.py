@@ -44,7 +44,7 @@ async def create_form_template(
                 #Request body validation (excludes the image data)
                 validated_request_body = schemas.RequestFormTemplate(
                     spreadsheetTemplate=spreadsheetTemplate,
-                    metadata=schemas.Metadata(**metadata_obj),
+                    metadata=schemas.ATPFormMetadata(**metadata_obj),
                     sections=sections_obj
                 )
                 
@@ -121,11 +121,16 @@ async def create_form_template(
                 
                 # Insert into MongoDB
                 try:
+                    new_form_id = ObjectId()
+                    spreadsheet_template_blob_path = f'{form_group_id}/{new_form_id}.xlsx'
+                    
+                    new_form_template_data['_id'] = new_form_id
+                    new_form_template_data['metadata']['spreadsheetTemplateBlobPath'] = spreadsheet_template_blob_path
+                    
                     inserted_document = await atp_forms.insert_one(new_form_template_data, session=session)
-                    new_form_id = inserted_document.inserted_id
                     
                     # Upload excel spreadsheet to Azure Blob Storage
-                    container_name, blob_path = 'spreadsheets', f'{form_group_id}/active-form/{new_form_id}.xlsx'
+                    container_name, blob_path = 'spreadsheets', spreadsheet_template_blob_path
                     await blob_handler.upload_blob(container_name, blob_path, spreadsheetTemplate.file)
                     await session.commit_transaction()
                 except PyMongoError as e:
@@ -173,7 +178,7 @@ async def update_active_form_template(
                 #Request body validation (excludes the image data)
                 validated_request_body = schemas.RequestFormTemplate(
                     spreadsheetTemplate = spreadsheetTemplate,
-                    metadata = schemas.Metadata(**metadata_obj),
+                    metadata = schemas.ATPFormMetadata(**metadata_obj),
                     sections = sections_obj
                 )
                 
@@ -279,7 +284,7 @@ async def update_active_form_template(
                 
                 prevEngineerImageData = {item['uuid']: item.get('imageBlobPath', None) for item in old_form['sections']['engineer']['items']}
                 
-                #Handle images for technician section
+                #Handle images for engineer section
                 new_engineer_items = new_form_template_data['sections']['engineer']['items']
                 
                 
@@ -338,40 +343,28 @@ async def update_active_form_template(
                 
                 await session.start_transaction()
                 
-                try:
-                    # Make the old template inactive
-                    await atp_forms.update_one(query, {'$set': {'metadata.status': 'inactive'}}, session=session)
-                    # Insert the new template
-                    inserted_document = await atp_forms.insert_one(new_form_template_data, session=session)
-                    new_form_id = inserted_document.inserted_id
-                except PyMongoError as e:
-                    raise DatabaseUpdateError(collection_name = 'atp_forms', document_id = new_form_id)
-                
+              
+                # Make the old template inactive
+                await atp_forms.update_one(query, {'$set': {'metadata.status': 'inactive'}}, session=session)
                 
                 # Upload new spreadsheet to Azure Blob Storage if a replacement was provided
                 if hasattr(spreadsheetTemplate, 'file') and hasattr(spreadsheetTemplate, 'filename'):
-                    blob_path = f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
-                    await blob_handler.upload_blob('spreadsheets', blob_path, spreadsheetTemplate.file)
-                
-                    # Archive the old spreadsheet if it exists
-                    old_blob_path = f'{atp_form_group_id}/active-form/{old_form["_id"]}.xlsx'
+                    new_form_id = ObjectId()
+                    new_spreadsheet_template_blob_path = f'{atp_form_group_id}/{new_form_id}.xlsx'
+                    new_form_template_data['_id'] = new_form_id
+                    new_form_template_data['metadata']['spreadsheetTemplateBlobPath'] = new_spreadsheet_template_blob_path
+                    inserted_document = await atp_forms.insert_one(new_form_template_data, session=session)
+                    container_name, blob_path = 'spreadsheets', new_spreadsheet_template_blob_path
+                    await blob_handler.upload_blob(container_name, blob_path, spreadsheetTemplate.file)
+                    await session.commit_transaction()
                     
-                    await blob_handler.move_blob(
-                        from_container_name='spreadsheets',
-                        blob_path=old_blob_path,
-                        to_container_name='spreadsheets',
-                        to_blob_path=f'{atp_form_group_id}/archived-forms/{old_form["_id"]}.xlsx'
-                    )
-                    
-
                 #Update the spreadsheet template name in Blob Storage with the new form id
                 else:
-                    await blob_handler.move_blob(
-                    from_container_name='spreadsheets',
-                    blob_path=f'{atp_form_group_id}/active-form/{old_form_id}.xlsx',
-                    to_container_name='spreadsheets',
-                        to_blob_path=f'{atp_form_group_id}/active-form/{new_form_id}.xlsx'
-                    )
+                    # Copy the spreadsheet blob path from the old form when no new spreadsheet is provided
+                    new_form_template_data['metadata']['spreadsheetTemplateBlobPath'] = old_form['metadata']['spreadsheetTemplateBlobPath']
+                    # Insert the new template
+                    inserted_document = await atp_forms.insert_one(new_form_template_data, session=session)
+                    new_form_id = inserted_document.inserted_id
                     
                     
                 

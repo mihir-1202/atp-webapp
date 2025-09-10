@@ -1,25 +1,27 @@
 /* FormHeader CSS Module */
 
 .formHeader {
-    padding: 30px 40px;
-    border-bottom: 2px solid #f0f0f0;
+    max-width: 940px;
+    margin: 0 auto 30px auto;
     background: white;
-    border-radius: 12px 12px 0 0;
-    margin-bottom: 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+    padding: 30px;
 }
 
 .formTitle {
     font-size: 32px;
     font-weight: 700;
     color: #333;
-    margin-bottom: 8px;
+    margin: 0 0 8px 0;
     text-align: center;
 }
 
 .formDescription {
-    font-size: 24px;
-    font-weight: 600;
-    color: #333;
+    font-size: 18px;
+    font-weight: 400;
+    color: #666;
     text-align: center;
-    margin-bottom: 30px;
+    margin: 0;
 }

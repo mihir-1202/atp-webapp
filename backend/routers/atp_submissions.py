@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Callable
 from bson import ObjectId
 from dependencies import get_atp_submissions_collection, get_atp_forms_collection, get_blob_handler, get_mongo_client, get_atp_spreadsheet_manager, ATPSpreadsheetManager
-from schemas import atp_submissions as schemas, atp_submissions_responses as responses
+from schemas import atp_submissions_requests as schemas, atp_submissions_responses as responses
 import aiofiles
 import pymongo
 from azure.core.exceptions import AzureError
@@ -44,6 +44,7 @@ async def create_atp_submission(
 @router.put("/{atp_submission_id}", response_model = responses.ATPReviewSubmissionResponse)
 async def update_atp_submission(atp_submission_id: str, 
                                 atp_submission: Annotated[schemas.ATPReviewSubmission, Body()], 
+                                atp_forms: AsyncCollection = Depends(get_atp_forms_collection),
                                 atp_submissions: AsyncCollection = Depends(get_atp_submissions_collection),
                                 client: AsyncMongoClient = Depends(get_mongo_client),
                                 atp_spreadsheet_manager: ATPSpreadsheetManager = Depends(get_atp_spreadsheet_manager),
@@ -65,7 +66,9 @@ async def update_atp_submission(atp_submission_id: str,
 
             
             atp_review_data = atp_submission.model_dump()
+            upload_path = f'{atp_review_data["formGroupId"]}/submissions/{atp_review_data["formId"]}_{completion_time_path_format}.xlsx'
             atp_review_data['reviewedAt'] = completion_time_isoformat
+            atp_review_data['completedSpreadsheetBlobPath'] = upload_path
             
             # Check if the submission exists and update it
             
@@ -74,21 +77,31 @@ async def update_atp_submission(atp_submission_id: str,
             if result.matched_count == 0:
                 raise ATPSubmissionNotFoundError(collection_name = 'atp_submissions', document_id = atp_submission_id)
 
-            if result.modified_count == 0:
-                raise ATPSubmissionUpdateError(collection_name = 'atp_submissions', document_id = atp_submission_id)
+            #if result.modified_count == 0:
+                #raise ATPSubmissionUpdateError(collection_name = 'atp_submissions', document_id = atp_submission_id)
             
             
-            spreadsheet_path = await blob_handler.download_blob(container_name = 'spreadsheets', blob_path = f'{atp_review_data["formGroupId"]}/active-form/{atp_review_data["formId"]}.xlsx')
+            # Get the form template to find the correct spreadsheet blob path
+            form = await atp_forms.find_one({'_id': ObjectId(atp_review_data["formId"])})
+            if not form:
+                raise ATPFormNotFoundError(collection_name = 'atp_forms', document_id = atp_review_data["formId"])
             
+            # Download the spreadsheet from blob storage to a temporary file
+            spreadsheet_path = await blob_handler.download_blob(container_name = 'spreadsheets', blob_path = form["metadata"]["spreadsheetTemplateBlobPath"])
 
             with atp_spreadsheet_manager.register_workbook(spreadsheet_path):
                 cell_to_response_mappings = {}
                 for response in atp_review_data['technicianResponses']:
+                    if not response['spreadsheetCell']:
+                        continue
                     cell_to_response_mappings[response['spreadsheetCell']] = response['answer']
+                
                 for response in atp_review_data['engineerResponses']:
+                    if not response['spreadsheetCell']:
+                        continue
                     cell_to_response_mappings[response['spreadsheetCell']] = response['answer']
+                
                 atp_spreadsheet_manager.populate_cells_with_responses(cell_to_response_mappings)
-                upload_path = f'{atp_review_data["formGroupId"]}/submissions/{atp_review_data["formId"]}_{completion_time_path_format}.xlsx'
                 
                 async with aiofiles.open(spreadsheet_path, 'rb') as file_stream:
                     await blob_handler.upload_blob(container_name = 'spreadsheets', blob_path = upload_path, file_stream = file_stream)

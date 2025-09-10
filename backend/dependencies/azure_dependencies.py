@@ -38,6 +38,7 @@ class BlobHandler:
             
             # Verify blob exists
             if not await blob_client.exists():
+                print(f"Blob not found @ {container_name}/{blob_path}")
                 raise BlobNotFoundError(container_name = container_name, blob_path = blob_path)
             
             # TODO: rename to download_excel_blob since it is only used for excel blobs (images arent downloaded, they only need a url)

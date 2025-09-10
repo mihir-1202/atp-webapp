@@ -69,6 +69,15 @@
     color: rgb(120, 120, 120);
 }
 
+.reviewedBy {
+    color: rgb(76, 75, 75);
+    font-weight: 500;
+}
+
+.reviewedDate {
+    color: rgb(120, 120, 120);
+}
+
 .status {
     font-weight: 600;
     padding: 4px 8px;

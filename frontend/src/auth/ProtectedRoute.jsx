@@ -1,21 +1,16 @@
 import {useMsal} from '@azure/msal-react'
-import {useNavigate} from 'react-router-dom'
-import {useEffect, useState} from 'react'
 import {useContext} from 'react'
 import {UserContext} from './UserProvider'
+import UnauthorizedUI from '../components/UnauthorizedUI/UnauthorizedUI'
 
 
 
 export default function ProtectedRoute({children})
 {
     const user = useContext(UserContext);
-    const navigate = useNavigate();
 
     if (!user || user?.userRole === 'unauthorized')
-    {
-        alert('You are not authorized to use this application');
-        return null;
-    }
+        return <UnauthorizedUI message='You are not authorized to use this application' />;
 
     else
         return children;

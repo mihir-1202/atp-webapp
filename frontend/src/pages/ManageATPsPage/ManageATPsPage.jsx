@@ -6,6 +6,7 @@ import ManageATPCard from './ManageATPCard';
 import styles from './ManageATPsPage.module.css';
 import { useContext } from 'react';
 import { UserContext } from '../../auth/UserProvider';
+import UnauthorizedUI from '../../components/UnauthorizedUI/UnauthorizedUI.jsx';
 
 //Path: /manage-atps
 export default function ManageATPsPage() 
@@ -13,8 +14,7 @@ export default function ManageATPsPage()
     const user = useContext(UserContext);
     if (user.userRole !== 'admin')
     {
-        alert('You are not authorized to manage ATPs');
-        navigate('/');
+        return <UnauthorizedUI message='You are not authorized to manage ATPs' />;
     }
     
     const navigate = useNavigate();
