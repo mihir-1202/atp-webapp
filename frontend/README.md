@@ -1,5 +1,16 @@
 # ATP Form Builder
 
+staticwebapp.config.js
+/*
+When a user navigates to a route that doesn't map to an html file, the browser will fallback to the index.html file -> react will handle the routing
+*/
+{
+    "navigationFallback": {
+      "rewrite": "/index.html",
+      "exclude": ["/images/*.{png,jpg,gif}", "/css/*"]
+    }
+  }
+
 A full-stack application for creating and managing ATP (Acceptance Test Procedure) forms with separate technician and engineer sections.
 
 ## Project Structure

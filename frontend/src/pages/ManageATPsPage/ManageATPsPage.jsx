@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import ManageATPCard from './ManageATPCard';
