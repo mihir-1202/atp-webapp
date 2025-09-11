@@ -11,7 +11,7 @@ import { LogLevel } from '@azure/msal-browser';
  * For a full list of MSAL.js configuration parameters, visit:
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/configuration.md 
  */
-console.log(import.meta.env.AZURE_APPLICATION_CLIENT_ID);
+console.log(import.meta.env.VITE_AZURE_APPLICATION_CLIENT_ID);
 export const msalConfig = {
     //'VITE_' prefix is necessary to add to the environment variables for vite to work correctly
     auth: {
