@@ -5,6 +5,9 @@
     },
     {
       "route": "/"
+    },
+    {
+      "route": "/create-atp"
     }
   ]
 }
