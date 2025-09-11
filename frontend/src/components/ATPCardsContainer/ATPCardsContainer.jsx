@@ -5,6 +5,8 @@ import LoadingSpinner from '../LoadingSpinner/LoadingSpinner';
 import styles from './ATPCardsContainer.module.css';
 import {useNavigate} from 'react-router-dom';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function ATPCardsContainer()
 {
     const [atpCards, setATPCards] = useState([]);
@@ -15,7 +17,7 @@ export default function ATPCardsContainer()
 
     useEffect(() => {
         async function fetchATPCards(){
-            const response = await fetch('http://localhost:8000/atp-forms/active');
+            const response = await fetch(`${API_BASE_URL}/atp-forms/active`);
             const data = await response.json();
 
             if (!response.ok)

@@ -11,6 +11,8 @@ import LoadingSpinner from '../LoadingSpinner/LoadingSpinner'
 import {UserContext} from '../../auth/UserProvider';
 import UnauthorizedUI from '../UnauthorizedUI/UnauthorizedUI.jsx';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 //Path: /review-atp/:atpFormGroupId/:prevSubmissionId
 
 //TODO: avoid repeated logic in this page (ReviewATPPage) and FillATPPage
@@ -89,7 +91,7 @@ export default function EditableATPUI()
     //Get the atp template data from the database
     async function getATPTemplateData()
     {
-        const response = await fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`);
+        const response = await fetch(`${API_BASE_URL}/atp-forms/active/${atpFormGroupId}`);
         const data = await response.json();
 
         if (!response.ok)
@@ -131,7 +133,7 @@ export default function EditableATPUI()
         if(prevSubmissionId)
         {
             
-            const response = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`);
+            const response = await fetch(`${API_BASE_URL}/atp-submissions/${prevSubmissionId}`);
             const data = await response.json();
             if (!response.ok) 
             {
@@ -339,7 +341,7 @@ export default function EditableATPUI()
 
 async function createInitialSubmission(data, navigate)
 {
-    const response = await fetch('http://localhost:8000/atp-submissions/', {
+    const response = await fetch(`${API_BASE_URL}/atp-submissions/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -365,7 +367,7 @@ async function createInitialSubmission(data, navigate)
 
 async function createReviewSubmission(prevSubmissionId, data, navigate)
 {
-    const response = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`, {
+    const response = await fetch(`${API_BASE_URL}/atp-submissions/${prevSubmissionId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'

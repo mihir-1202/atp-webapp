@@ -5,6 +5,8 @@ import {createContext} from 'react'
 import LoadingSpinner from '../components/LoadingSpinner/LoadingSpinner.jsx'
 import UnauthorizedUI from '../components/UnauthorizedUI/UnauthorizedUI.jsx'
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 
 /*
 The Full OAuth Flow:
@@ -85,7 +87,7 @@ export default function UserProvider({children})
 
             const userEmail = activeAccount?.username;
             console.log('User email:', userEmail);
-            const response = await fetch(`http://localhost:8000/atp-users/${userEmail}`);
+            const response = await fetch(`${API_BASE_URL}/atp-users/${userEmail}`);
             const data = await response.json();
             console.log('User role response:', data);
             if (data.userRole === 'unauthorized')

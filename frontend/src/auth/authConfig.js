@@ -3,6 +3,7 @@
  * Licensed under the MIT License.
  */
 
+
 import { LogLevel } from '@azure/msal-browser';
 
 /**
@@ -10,12 +11,13 @@ import { LogLevel } from '@azure/msal-browser';
  * For a full list of MSAL.js configuration parameters, visit:
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/configuration.md 
  */
-
+console.log(import.meta.env.AZURE_APPLICATION_CLIENT_ID);
 export const msalConfig = {
+    //'VITE_' prefix is necessary to add to the environment variables for vite to work correctly
     auth: {
-        clientId: 'f041b5a8-3064-46b3-a3f4-b79d48596fef', // This is the ONLY mandatory field that you need to supply.
-        authority: 'https://login.microsoftonline.com/0cce32a2-75cd-42b6-baa2-8a6eedc35735/', // Replace the placeholder with your tenant subdomain 
-        redirectUri: 'http://localhost:5173/', // Points to window.location.origin. You must register this URI on Microsoft Entra admin center/App Registration.
+        clientId: import.meta.env.VITE_AZURE_APPLICATION_CLIENT_ID, // This is the ONLY mandatory field that you need to supply.
+        authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_DIRECTORY_TENANT_ID}`, // Replace the placeholder with your tenant subdomain 
+        redirectUri: import.meta.env.VITE_AZURE_REDIRECT_URI, // Points to window.location.origin. You must register this URI on Microsoft Entra admin center/App Registration.
         postLogoutRedirectUri: '/', // Indicates the page to navigate after logout.
         navigateToLoginRequestUrl: false, // If "true", will navigate back to the original request location before processing the auth code response.
     },

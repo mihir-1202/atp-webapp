@@ -8,6 +8,8 @@ import UnauthorizedUI from '../../components/UnauthorizedUI/UnauthorizedUI.jsx';
 import { useContext } from 'react';
 import { UserContext } from '../../auth/UserProvider';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 
 //Path: /pending-atps
 export default function PendingATPSPage()
@@ -26,7 +28,7 @@ export default function PendingATPSPage()
     React.useEffect(() => {
         async function fetchPendingSubmissions()
         {
-            const response = await fetch(`http://localhost:8000/atp-submissions/pending/metadata`)
+            const response = await fetch(`${API_BASE_URL}/atp-submissions/pending/metadata`)
             const data = await response.json()
             if (!response.ok)
             {

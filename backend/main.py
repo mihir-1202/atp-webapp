@@ -24,8 +24,6 @@ app.add_middleware(
 
 @app.exception_handler(ValidationError)
 async def validation_error_handler(request: Request, exc: ValidationError):
-    print(type(exc).__name__, str(exc))
-    print(exc.__dict__)
     return JSONResponse(
         status_code=422,
         content={"message": str(exc.errors()[0]['msg'])}
@@ -49,8 +47,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "input": str(error.get("input", "")) if error.get("input") is not None else None
         })
     
-    print("Missing fields:", missing_fields)  # prints to console for debugging
-    print("All validation errors:", error_details)  # prints all errors for debugging
 
     return JSONResponse(
         status_code=422,
@@ -64,7 +60,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(PyMongoError)
 async def pymongo_exception_handler(request: Request, exc: PyMongoError):
-    print(type(exc).__name__, str(exc))
     return JSONResponse(
         status_code=500,
         content={"message": str(exc)}
@@ -72,7 +67,6 @@ async def pymongo_exception_handler(request: Request, exc: PyMongoError):
 
 @app.exception_handler(AzureBlobStorageError)
 async def azure_blob_storage_error_handler(request: Request, exc: AzureBlobStorageError):
-    print(type(exc).__name__, str(exc))
     return JSONResponse(
         status_code=500,
         content={"message": str(exc)}
@@ -80,18 +74,9 @@ async def azure_blob_storage_error_handler(request: Request, exc: AzureBlobStora
 
 @app.exception_handler(ATPException)
 async def atp_error_handler(request: Request, exc: ATPException):
-    print(type(exc).__name__, str(exc))
     return JSONResponse(
         status_code=500,
         content={"message": str(exc)}
-    )
-
-@app.exception_handler(Exception)
-async def exception_handler(request: Request, exc: Exception):
-    print(type(exc).__name__, str(exc))
-    return JSONResponse(
-        status_code=500,
-        content={"message": 'Something unexpected happened'}
     )
 
 """
@@ -110,4 +95,4 @@ app.include_router(atp_submissions_router, prefix = "/atp-submissions", tags = [
 app.include_router(atp_users_router, prefix = "/atp-users", tags = ['ATP Users'])
     
 if __name__ == "__main__":
-    uvicorn.run('main:app', host="localhost", port=8000, reload=True)
+    uvicorn.run('main:app', host="localhost", port=80, reload=True)

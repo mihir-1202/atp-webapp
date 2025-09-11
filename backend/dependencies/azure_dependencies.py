@@ -26,6 +26,8 @@ class BlobHandler:
             )
             await blob_client.upload_blob(file_stream, overwrite=True)
         except AzureError as e:
+            if "ContainerNotFound" in str(e):
+                print(f"ERROR: Azure container '{container_name}' was not found. Please create the container in your Azure Storage account.")
             raise BlobUploadError(container_name = container_name, blob_path = blob_path)
         
     @staticmethod

@@ -8,6 +8,8 @@ import { useContext } from 'react';
 import { UserContext } from '../../auth/UserProvider';
 import UnauthorizedUI from '../../components/UnauthorizedUI/UnauthorizedUI.jsx';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 //Path: /manage-atps
 export default function ManageATPsPage() 
 {
@@ -24,7 +26,7 @@ export default function ManageATPsPage()
     React.useEffect(() => {
         async function fetchATPForms()
         {
-            const response = await fetch('http://localhost:8000/atp-forms/active');
+            const response = await fetch(`${API_BASE_URL}/atp-forms/active`);
             const data = await response.json();
             if (!response.ok)
             {
@@ -52,7 +54,7 @@ export default function ManageATPsPage()
         if (window.confirm('Are you sure you want to delete this ATP form and all associated submissions? This action cannot be undone.')) 
         {
             setIsLoading(true);
-            const response = await fetch(`http://localhost:8000/atp-forms/${atpFormGroupId}`, {
+            const response = await fetch(`${API_BASE_URL}/atp-forms/${atpFormGroupId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json"

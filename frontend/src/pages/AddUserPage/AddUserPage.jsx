@@ -6,6 +6,8 @@ import { useContext } from 'react';
 import { UserContext } from '../../auth/UserProvider';
 import UnauthorizedUI from '../../components/UnauthorizedUI/UnauthorizedUI.jsx';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function AddUserPage()
 {
     const {register, handleSubmit} = useForm();
@@ -22,7 +24,7 @@ export default function AddUserPage()
         console.log(data);
         
         const addUser = async () => {
-            const response = await fetch(`http://localhost:8000/atp-users`, {
+            const response = await fetch(`${API_BASE_URL}/atp-users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

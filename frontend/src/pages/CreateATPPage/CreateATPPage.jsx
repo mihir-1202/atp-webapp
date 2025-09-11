@@ -7,6 +7,8 @@ import { useContext } from 'react';
 import { UserContext } from '../../auth/UserProvider';
 import UnauthorizedUI from '../../components/UnauthorizedUI/UnauthorizedUI.jsx';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 
 //Path: /create-atp
 export default function CreateATPPage()
@@ -32,7 +34,7 @@ export default function CreateATPPage()
         {
             uuid: crypto.randomUUID(),
             type: "heading",
-            headingType: "h1",
+            headingType: "",
             content: "",
             image: null
         },
@@ -41,8 +43,8 @@ export default function CreateATPPage()
             uuid: crypto.randomUUID(),
             type: "field",
             question: "",
-            answerFormat: "text",
-            spreadsheetCell: "A2",
+            answerFormat: "",
+            spreadsheetCell: "",
             image: null
         }
     ]
@@ -51,6 +53,7 @@ export default function CreateATPPage()
         {
             uuid: crypto.randomUUID(),
             type: "heading",
+            headingType: "",
             content: "",
             image: null
         },
@@ -59,8 +62,8 @@ export default function CreateATPPage()
             uuid: crypto.randomUUID(),
             type: "field",
             question: "",
-            answerFormat: "text",
-            spreadsheetCell: "B2",
+            answerFormat: "",
+            spreadsheetCell: "",
             image: null
         }
     ]
@@ -179,7 +182,7 @@ export default function CreateATPPage()
 
 async function createATP(processedFormData, navigate)
 {
-    const response = await fetch("http://localhost:8000/atp-forms/", {
+    const response = await fetch(`${API_BASE_URL}/atp-forms/`, {
         method: "POST",
         body: processedFormData
     })

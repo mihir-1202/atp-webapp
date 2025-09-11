@@ -6,6 +6,8 @@ import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner';
 import FilterSelector from '../AllATPSPage/FilterSelector'
 import {useNavigate} from 'react-router-dom';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 //Path: /all-atps
 export default function AllATPSPage()
 {
@@ -19,7 +21,7 @@ export default function AllATPSPage()
     React.useEffect(() => {
         async function fetchAllSubmissions()
         {
-            const response = await fetch(`http://localhost:8000/atp-submissions/metadata`)
+            const response = await fetch(`${API_BASE_URL}/atp-submissions/metadata`)
             const data = await response.json()
             if (!response.ok)
             {

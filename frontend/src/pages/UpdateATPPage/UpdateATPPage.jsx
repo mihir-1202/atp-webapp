@@ -10,6 +10,8 @@ import { useContext } from 'react';
 import { UserContext } from '../../auth/UserProvider';
 import UnauthorizedUI from '../../components/UnauthorizedUI/UnauthorizedUI.jsx';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 //TODO: fix the path to the update ATP page
 //Path: /update-atp/atpFormGroupId
 export default function UpdateATPPage()
@@ -31,7 +33,7 @@ export default function UpdateATPPage()
     React.useEffect(() => {
         async function fetchData()
         {
-            const response = await fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`);
+            const response = await fetch(`${API_BASE_URL}/atp-forms/active/${atpFormGroupId}`);
             const data = await response.json();
             if (!response.ok) 
             {
@@ -166,7 +168,7 @@ export default function UpdateATPPage()
 
 async function updateATP(processedFormData, atpFormGroupId, navigate)
 {
-    const response = await fetch(`http://localhost:8000/atp-forms/active/${atpFormGroupId}`, {
+    const response = await fetch(`${API_BASE_URL}/atp-forms/active/${atpFormGroupId}`, {
         method: "PUT",
         body: processedFormData
     })

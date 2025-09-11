@@ -61,8 +61,6 @@ async def create_form_template(
                 new_form_template_data['metadata']['status'] = 'active'
                 new_form_template_data['metadata']['version'] = version = 1
                 new_form_template_data['metadata']['formGroupID'] = form_group_id
-                
-                print('here1')
 
                 # Initialize all items with default image values
                 for item in new_form_template_data['sections']['technician']['items']:
@@ -78,11 +76,9 @@ async def create_form_template(
                     container_name, blob_path = 'images', f'{form_group_id}/{uuid}_v{version}.png'
                     # Support both uploaded files and remote URLs
                     
-                    print(type(image))
                     if hasattr(image, 'file') and hasattr(image, 'filename'):
                         data = image.file  # file-like
                     else:
-                        print(f'{image} is not an UploadFile')
                         continue
                     
                     await blob_handler.upload_blob(container_name, blob_path, data)
@@ -99,11 +95,9 @@ async def create_form_template(
                 for uuid, image in engineerImageData.items():
                     container_name, blob_path = 'images', f'{form_group_id}/{uuid}_v{version}.png'
                     
-                    print(type(image))
                     if hasattr(image, 'file') and hasattr(image, 'filename'):
                         data = image.file
                     else:
-                        print(f'{image} is not an UploadFile')
                         continue
                     await blob_handler.upload_blob(container_name, blob_path, data)
                     
@@ -138,11 +132,8 @@ async def create_form_template(
             
     #connection to the database fails
     except pymongo.errors.ConnectionFailure as e:
-        print(type(e).__name__, str(e))
         raise DatabaseConnectionError()
     except (AzureError, PyMongoError) as e:
-        print(type(e).__name__, str(e))
-        print('we caught an azure/mongo error')
         # Abort transaction if anything unexpectedfails
         if session.in_transaction:
             await session.abort_transaction()
@@ -150,7 +141,6 @@ async def create_form_template(
         if isinstance(e, AzureError):
             raise AzureBlobStorageError()
         elif isinstance(e, PyMongoError):
-            print(type(e).__name__, str(e))
             raise MongoDBError()
     else:
         return {"message": "Form template created successfully", "form_template_id": str(inserted_document.inserted_id)}

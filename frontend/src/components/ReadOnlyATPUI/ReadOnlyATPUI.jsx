@@ -7,6 +7,8 @@ import FormHeader from '../../components/FormHeader/FormHeader'
 import styles from './ReadOnlyATPUI.module.css'
 import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner'
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 //Path: /review-atp/:atpFormGroupId/:prevSubmissionId
 
 //TODO: avoid repeated logic in this page (ReviewATPPage) and FillATPPage
@@ -69,7 +71,7 @@ export default function ReadOnlyATPUI()
     //Get the atp template data from the database
     async function getATPTemplateData()
     {
-        const response = await fetch(`http://localhost:8000/atp-forms/${atpFormId}`);
+        const response = await fetch(`${API_BASE_URL}/atp-forms/${atpFormId}`);
         
         const data = await response.json();
         if (!response.ok) 
@@ -90,7 +92,7 @@ export default function ReadOnlyATPUI()
         if(prevSubmissionId)
         {
            
-            const response = await fetch(`http://localhost:8000/atp-submissions/${prevSubmissionId}`);
+            const response = await fetch(`${API_BASE_URL}/atp-submissions/${prevSubmissionId}`);
             const data = await response.json();
             if (!response.ok) 
             {

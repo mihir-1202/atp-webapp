@@ -57,7 +57,6 @@ export default function FormHeadingBuilder({index, role, removeItem, defaultValu
                     defaultValue=""
                     required
                     {...register(`sections.${role}.items.${index}.headingType`)}>
-                        <option value = "" disabled>Select Heading Type</option>
                         <option value = "h1">H1</option>
                         <option value = "h2">H2</option>
                         <option value = "h3">H3</option>
