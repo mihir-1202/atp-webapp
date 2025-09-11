@@ -9,7 +9,6 @@ import styles from './FormBuilder.module.css';
 
 export default function FormBuilder({defaultMetadata, defaultTechnicianItems, defaultEngineerItems, onSubmit})
 {
-    console.log('Metadata:', defaultMetadata);
     const location = useLocation().pathname.split('/')[1];
     const [lastClicked, setLastClicked] = useState({index: null, role: null});
     const {register, control, handleSubmit, resetField, setValue} = useForm(
@@ -43,7 +42,6 @@ export default function FormBuilder({defaultMetadata, defaultTechnicianItems, de
 
     // Default onSubmit function that handles UUID assignment
     function handleFormSubmit(formData) {
-        console.log("Frontend sending:", formData);
 
         // Use the UUIDs from useFieldArray fields (they contain the uuid property)
         formData.sections.technician.items.forEach((item, index) => {

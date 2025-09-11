@@ -36,7 +36,6 @@ export default function ManageATPsPage()
             }
             else
             {
-                console.log(data);
                 setATPForms(data);
                 setIsLoading(false);
             }

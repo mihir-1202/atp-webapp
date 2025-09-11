@@ -21,7 +21,6 @@ export default function CreateATPPage()
         return <UnauthorizedUI message='You are not authorized to create ATPs' />;
     }
 
-    console.log('User:', user);
     
     
     const defaultMetadata = {
@@ -159,7 +158,6 @@ export default function CreateATPPage()
         
         for (const [key, value] of processedFormData.entries())
         {
-            console.log(key, value);
         }
 
         createATP(processedFormData, navigate);
@@ -191,7 +189,6 @@ async function createATP(processedFormData, navigate)
         alert(data?.message || 'Failed to create form template');
     else
     {
-        console.log("Backend response:", data);
         alert("Successfully created form template!");
         navigate('/');
     }

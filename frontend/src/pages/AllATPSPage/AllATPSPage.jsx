@@ -32,7 +32,6 @@ export default function AllATPSPage()
 
             else
             {
-                console.log(data);
                 setAllSubmissions(data);
                 setIsLoading(false);
             }

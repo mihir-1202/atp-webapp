@@ -26,7 +26,6 @@ export default function ATPInputSection({register, role, showFormActions, atpTem
         const previousResponse = getResponseByUUID(item.uuid);
         const previousValue = previousResponse ? previousResponse.answer : '';
         
-        console.log('Full item:', item);
         return item.type === 'heading' ? 
         <HeadingItem 
             key = {item.uuid} 

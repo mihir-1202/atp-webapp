@@ -60,7 +60,6 @@ export default function EditableATPUI()
     */
     React.useEffect(() => {
         if (atpTemplateData && location === 'review-atp' && prevSubmissionId && submissionData) {
-            console.log('resetting form with template data');
             
             // Transform technicianResponses to the format that the form works with (see onSubmit function for more details)
             const technicianResponsesFormatted = {};
@@ -96,18 +95,15 @@ export default function EditableATPUI()
 
         if (!response.ok)
         {
-            console.log('response', response);
             //the string passed to the Error constructor becomes the 'message' property of the Error obejct
             alert(data?.message);
             navigate('/');
             return;
         }
 
-        console.log(data);
         setATPTemplateData(data);
         if(location === 'review-atp')
         {
-            console.log('data._id', data._id);
             reset(
                 {formGroupId: atpFormGroupId, 
                 formId: data._id,
@@ -117,7 +113,6 @@ export default function EditableATPUI()
         }
         else if(location === 'fill-atp')
         {
-            console.log('data._id', data._id);
             reset(
                 {formGroupId: atpFormGroupId, 
                 formId: data._id,
@@ -214,8 +209,6 @@ export default function EditableATPUI()
         }
         */
 
-        console.log('RAW FORM DATA (before transformation):', data);
-        //console.log(data);
 
         
         let formattedTechnicianResponses = [];
@@ -245,8 +238,6 @@ export default function EditableATPUI()
 
     
         let formattedEngineerResponses = [];
-        console.log('engineerResponses', data.engineerResponses);
-        console.log('data.engineerResponses', data.engineerResponses);
         if (data?.engineerResponses)
         {
             for (let questionUUID in data.engineerResponses)
@@ -269,17 +260,6 @@ export default function EditableATPUI()
 
 
         
-        console.log('TRANSFORMED DATA (for backend):', data);
-        console.log('data.formId', data.formId);
-
-        console.log('data.formGroupId', data.formGroupId);
-        console.log('data.submittedBy', data.submittedBy);
-        console.log('data.submittedAt', data.submittedAt);
-        console.log('data.reviewedBy', data.reviewedBy);
-        console.log('data.technicianResponses', data.technicianResponses);
-        console.log('data.engineerResponses', data.engineerResponses);
-        console.log('prevSubmissionId', prevSubmissionId);
-        console.log('atpFormGroupId', atpFormGroupId);
 
         if (location === 'fill-atp')
            createInitialSubmission(data, navigate);
@@ -356,7 +336,6 @@ async function createInitialSubmission(data, navigate)
 
     else
     {
-        console.log(responseData);
         alert('ATP submitted successfully');
         navigate('/');
     }
@@ -382,7 +361,6 @@ async function createReviewSubmission(prevSubmissionId, data, navigate)
     
     else
     {
-        console.log('Submission updated successfully:', responseData);
         //TODO: instead of hardcoding alert, display the message returned by the backend
         alert('Submission updated successfully');
         navigate('/');

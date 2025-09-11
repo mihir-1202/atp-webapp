@@ -48,7 +48,6 @@ export default function ATPCardsContainer()
 
     if(error)
     {
-        console.log('in error');
         return (
             <div className={styles.errorContainer}>
                 <h2 className={styles.errorTitle}>Error</h2>
@@ -74,7 +73,6 @@ export default function ATPCardsContainer()
 
     else
     {
-        console.log('in here');
         const atpCardsJSX = atpCards.map((atpCard) => 
             {
                 return <ATPCard 

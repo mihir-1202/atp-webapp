@@ -35,7 +35,6 @@ export default function ReadOnlyATPUI()
     */
     React.useEffect(() => {
         if (atpTemplateData && prevSubmissionId && submissionData) {
-            console.log('resetting form with template data');
             
             // Transform technicianResponses to the format that the form works with (see onSubmit function for more details)
             const technicianResponsesFormatted = {};
@@ -82,7 +81,6 @@ export default function ReadOnlyATPUI()
             return;
         }
         
-        console.log(data);
         setATPTemplateData(data);
     }
 

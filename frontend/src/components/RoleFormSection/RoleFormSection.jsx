@@ -8,7 +8,6 @@ export default function RoleFormSection({role, items, appendItem, removeItem, in
     const numItems = items.length;
     const formItemsJSX = items.map((item, index) => 
         {
-            console.log(item);
             return (item.type === "heading") 
             ? <FormHeadingBuilder 
                 key = {item.uuid} 

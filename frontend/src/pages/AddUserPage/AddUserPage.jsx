@@ -21,7 +21,6 @@ export default function AddUserPage()
 
     function onSubmit(data)
     {
-        console.log(data);
         
         const addUser = async () => {
             const response = await fetch(`${API_BASE_URL}/atp-users`, {

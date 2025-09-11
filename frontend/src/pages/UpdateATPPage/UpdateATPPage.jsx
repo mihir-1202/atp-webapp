@@ -44,7 +44,6 @@ export default function UpdateATPPage()
             }
             else
             {
-                console.log(data);
                 setATPFormData(data);
                 setIsLoading(false);
             }
@@ -144,7 +143,6 @@ export default function UpdateATPPage()
 
         for (const [key, value] of processedFormData.entries())
         {
-            console.log(key, value);
         }
 
         updateATP(processedFormData, atpFormGroupId, navigate);
@@ -179,7 +177,6 @@ async function updateATP(processedFormData, atpFormGroupId, navigate)
 
     else
     {
-        console.log(data);
         alert('Form template updated successfully!');
         navigate('/');
     }

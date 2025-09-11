@@ -29,7 +29,6 @@ export default function FieldItem({questionUUID, questionText, answerFormat, reg
 
     function handleChange(e)
     {
-        console.log('Setting lastEdited to:', new Date().toISOString());
         setValue(`${role}Responses.${questionUUID}.lastEdited`, new Date().toISOString());
         defaultOnChange(e);
     }

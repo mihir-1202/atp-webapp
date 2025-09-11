@@ -70,7 +70,6 @@ export default function UserProvider({children})
             Since the component will mount before MSAL finishes exchanging the code for the token, we need to wait for the token to be obtained before rendering anything that needs to be dispalyed.
             */
             if (inProgress !== 'none') {
-                console.log(inProgress);
                 setIsLoading(true);
                 return;
             }
@@ -79,17 +78,14 @@ export default function UserProvider({children})
             
             if (!activeAccount)
             {
-                console.log('No active account found, redirecting to login');
                 setIsLoading(false);
                 navigate('/login');
                 return;
             }
 
             const userEmail = activeAccount?.username;
-            console.log('User email:', userEmail);
             const response = await fetch(`${API_BASE_URL}/atp-users/${userEmail}`);
             const data = await response.json();
-            console.log('User role response:', data);
             if (data.userRole === 'unauthorized')
                 setIsLoading(false);
           
@@ -112,8 +108,6 @@ export default function UserProvider({children})
         return <UnauthorizedUI message = "You are not authorized to use this application" />;
 
     const activeAccount = instance.getActiveAccount();
-    console.log('Active account found, rendering children');
-    console.log(`User Name: ${activeAccount?.name}\nUser Email: ${activeAccount?.username}`);
     
     if (isLoading)
         return <LoadingSpinner />;
